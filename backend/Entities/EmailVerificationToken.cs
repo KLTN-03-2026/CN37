@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 public class EmailVerificationToken
 {
     public long Id { get; set; }
+    [Column("user_id")]
     public long UserId { get; set; }
     public User User { get; set; } = null!;
     public string Token { get; set; } = null!;
