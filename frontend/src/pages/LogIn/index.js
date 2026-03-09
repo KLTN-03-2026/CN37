@@ -1,10 +1,114 @@
+import { useState } from "react";
 import styles from "./LogIn.module.scss";
 import classNames from "classnames/bind";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
+import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
 
 const cx = classNames.bind(styles);
 
 function LogIn() {
-    return ( <h1>Log In Page</h1> );
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberChecked, setRememberChecked] = useState(false);
+
+  return (
+    <div className={cx("container")}>
+      <div className={cx("header_title")}>
+        <div className={cx("welcome_title")}>
+          <h1>Chào mừng trở lại!</h1>
+          <p>Đăng nhập bằng tài khoản bạn để tiếp tục</p>
+        </div>
+      </div>
+      <div className={cx("input_container")}>
+        <div className={cx("input_email_container")}>
+          <h4>Email</h4>
+          <div className={cx("input_email")}>
+            <div className={cx("input_icon")}>
+              <FontAwesomeIcon icon={faEnvelope} />
+            </div>
+            <input
+              type="text"
+              autoComplete="username"
+              style={{ display: "none" }}
+            />
+            <input
+              type="email"
+              placeholder="you@gmail.com"
+              autoComplete="off"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            ></input>
+          </div>
+        </div>
+        <div className={cx("input_password_container")}>
+            <div  className={cx("password-title")}>
+                <h4>Mật khẩu</h4>
+                <Link to="/register">Quên mật khẩu</Link>
+            </div>
+          
+          <div className={cx("input_password")}>
+            <div className={cx("input_icon")}>
+              <FontAwesomeIcon icon={faLock} />
+            </div>
+            <input
+              type="password"
+              autoComplete="new-password"
+              style={{ display: "none" }}
+            />
+            <input
+              type="password"
+              placeholder="● ● ● ● ● ●"
+              autoComplete="off"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            ></input>
+          </div>
+        </div>
+      </div>
+      <div className={cx("remember_me")}>
+        <input className={cx("checkbox")}
+          type="checkbox"
+          checked={rememberChecked}
+          onChange={(e) => setRememberChecked(e.target.checked)}
+        />
+        Lưu mật khẩu cho lần đăng nhập tới
+      </div>
+      <div className={cx("signin-button")}>
+        <button
+          className={cx("button", "signin-btn")}
+          type="submit"
+          color="white"
+        >
+          Đăng nhập
+        </button>
+      </div>
+      <div className={cx("divider")}>
+        <span>or continue with</span>
+      </div>
+      <div className={cx("signin-button")}>
+        <button className={cx("button", "google-btn")}>
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="google"
+          />
+          <span>Đăng nhập bằng Google</span>
+        </button>
+        <button className={cx("button", "passkey-btn")}>
+          <img
+            src="https://img.icons8.com/?size=100&id=21602&format=png&color=000000"
+            alt="google"
+          />
+          <span>Đăng nhập bằng Passkey</span>
+        </button>
+      </div>
+      <div className={cx("signup-link")}>
+        <span>Bạn chưa có tài khoản? </span>
+        <Link to="/register">Đăng ký</Link>
+      </div>
+    </div>
+  );
 }
 
 export default LogIn;

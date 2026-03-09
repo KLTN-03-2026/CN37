@@ -12,6 +12,16 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(
     builder.Configuration.GetConnectionString("DefaultConnection"),
     ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
 ));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReact",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 builder.Services.AddControllers();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -25,6 +35,7 @@ builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection("JwtOptions"));
 
 var app = builder.Build();
+app.UseCors("AllowReact");
 app.MapControllers();
 
 // Configure the HTTP request pipeline.

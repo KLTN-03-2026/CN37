@@ -1,0 +1,144 @@
+.container{
+    max-width:520px;
+    margin:50px auto;
+    background:white;
+    padding:50px;
+    // text-align:center;
+    border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+.welcome_title{
+    text-align:left;
+    margin-block-end: 3em;
+    p{
+        color: #6b7280;
+    }
+}
+.input_email_container, .input_password_container{
+    padding-right: 20px;
+}
+.input_email, .input_password{
+    width: 100%;
+    min-height: 50px;
+    display: flex;
+    padding-left: 20px;
+    border-radius: 20px;
+    display: flex;
+    text-align:center;
+    justify-content: center;
+    background-color: rgba(22, 24, 35, 0.06);
+
+    input{
+        flex: 1;
+        min-height: 50px;
+        border: none;
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+        outline: none;
+        background-color: rgba(22, 24, 35, 0.06);
+        font-size: 18px;
+    }
+}
+.checkbox{
+    margin-right: 7px; 
+    font-size: 20px;
+}
+.input_icon{
+    display: flex;
+    align-items: center;
+    margin-right: 0.5rem;
+    
+}
+.password-title{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.remember_me{
+    margin-block-start: 1.33em;
+    margin-inline-start: 0em;
+    margin-inline-end: 0em;
+}
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+    margin-block-end: 1.33em;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.divider span {
+  padding: 0 12px;
+}
+.button {
+  width: 100%;
+  height: 52px;
+  border-radius: 30px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  margin-block-end: 1.33em;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  font-size: 1em;
+  font-weight: 500;
+  
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button img {
+  width: 20px;
+  height: 20px;
+}
+
+.button:hover {
+  background: #f3f4f6;
+}
+.signin-btn{
+    background-color: blue;
+    color: white !important;
+    font-size: 1.2em !important;
+    font-weight: bold;
+    margin-block-start: 1.33em;
+}
+.google-btn{
+    color: #374151;
+}
+.passkey-btn{
+    background:white;
+    border: none;
+    color: #374151;
+}
+
+.signup-link {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 15px;
+  color: #6b7280;
+//   display: flex;
+//   justify-content: center;
+}
+
+.signup-link a, .password-title a {
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.signup-link a:hover, .password-title a:hover {
+  text-decoration: underline;
+}

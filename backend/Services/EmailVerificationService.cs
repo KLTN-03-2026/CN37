@@ -25,13 +25,17 @@ public class EmailVerificationService : IEmailVerificationService
         await _context.EmailVerificationTokens.AddAsync(verificationToken);
         await _context.SaveChangesAsync();
 
-        var verificationLink = $"http://localhost:3000/verify-email?token={Uri.EscapeDataString(rawToken)}";
+        var verificationLink = $"http://localhost:3000/email-verify?token={Uri.EscapeDataString(rawToken)}";
 
         await _emailSender.SendEmailAsync(user.Email, "Verify Your Email", $"Please verify your email by clicking the following link: {verificationLink}");
     }
 
     public async Task VerifyEmailTokenAsync(string token)
     {
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new Exception("Token is required.");
+        }
         var tokens = _context.EmailVerificationTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.UtcNow).ToList();
         var matchingToken = tokens.FirstOrDefault(x => BCrypt.Net.BCrypt.Verify(token, x.Token));
         if (matchingToken == null)
