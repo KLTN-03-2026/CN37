@@ -8,3 +8,7 @@ export const logIn = (email, password) =>
 
 export const register = (email, password, confirmPassword) =>
   api.post(`/auth/register`, { Email: email, Password: password, ConfirmPassword: confirmPassword });
+
+export const logOut = (refreshToken) =>{
+  api.post(`/auth/logout`, {refreshToken: refreshToken});
+}

@@ -10,7 +10,7 @@ import {
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
 import { logIn } from "../../api/AuthApi";
-import { Bounce, ToastContainer, toast } from "react-toastify";
+import { notifySuccess, notifyError } from "../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -27,17 +27,7 @@ function LogIn() {
     try {
       const res = await logIn(email, password);
       if (res) {
-        toast.success("Đăng nhập thành công", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          transition: Bounce,
-        });
+        notifySuccess("Đăng nhập thành công");
         localStorage.setItem("accessToken", res.data.accessToken);
         localStorage.setItem("refreshToken", res.data.refreshToken);
         setTimeout(() => {
@@ -46,17 +36,7 @@ function LogIn() {
       }
     } catch (error) {
       const errorMsg = error.response?.data || "Đăng nhập thất bại";
-      toast.error(errorMsg, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-        transition: Bounce,
-      });
+      notifyError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -131,19 +111,6 @@ function LogIn() {
         />
         Lưu mật khẩu cho lần đăng nhập tới
       </div>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        transition={Bounce}
-      />
       <div className={cx("signin-button")}>
         <button
           className={cx("button", "signin-btn")}

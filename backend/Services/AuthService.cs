@@ -10,15 +10,19 @@ public class AuthService : IAuthService
         _passwordService = passwordService;
         _tokenService = tokenService;
         _emailVerify = emailVerification;
-    }  
+    }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
+        if(request.Password == "" || request.ConfirmPassword == ""|| request.Email == "")
+        {
+            throw new Exception("Hãy nhập đầy đủ các ô đăng kí.");
+        }
         var existingUser = await _userRepo.GetUserByEmailAsync(request.Email);
         if (existingUser != null)
         {
             throw new Exception("Email này đã được đăng kí.");
-        }       
+        }
         ValidatePassword(request.Password, request.ConfirmPassword);
         var user = new User
         {
@@ -30,7 +34,7 @@ public class AuthService : IAuthService
         await _userRepo.AddUserAsync(user);
         await _userRepo.SaveChangesAsync();
 
-        await _emailVerify.SendVerificationEmailAsync(user);   
+        await _emailVerify.SendVerificationEmailAsync(user);
         var tokenService = _tokenService.GenerateAccessToken(user);
         return new AuthResponse
         {
@@ -42,7 +46,7 @@ public class AuthService : IAuthService
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
         var user = await _userRepo.GetUserByEmailAsync(request.Email);
-        if(user == null || request.Password == null || !_passwordService.VerifyPassword(request.Password, user.PasswordHash))
+        if (user == null || request.Password == null || !_passwordService.VerifyPassword(request.Password, user.PasswordHash))
         {
             throw new Exception("Email hoặc mật khẩu không chính xác");
         }
@@ -64,9 +68,23 @@ public class AuthService : IAuthService
         };
     }
 
+    public async Task LogOutAsync(LogOutRequest request)
+    {
+        var searchToken = await _userRepo.GetRefreshToken(request.refreshToken);
+        if (searchToken == null)
+        {
+            Console.WriteLine("null");
+            throw new Exception("Không tồn tại token");
+            
+        }
+        searchToken.IsRevoked = true;
+        searchToken.RevokedAt = DateTime.UtcNow;
+        await _userRepo.SaveChangesAsync();
+    }
+
     public void ValidatePassword(string password, string confirmPassword)
     {
-        if(password != confirmPassword)
+        if (password != confirmPassword)
         {
             throw new Exception("Mật khẩu không trùng khớp.");
         }
@@ -76,11 +94,13 @@ public class AuthService : IAuthService
         }
         if (!password.Any(char.IsUpper))
         {
-            throw new Exception("Mật khẩu phải chứa ít nhất 1 chữ hoa.");        
+            throw new Exception("Mật khẩu phải chứa ít nhất 1 chữ hoa.");
         }
         if (!password.Any(char.IsNumber))
         {
             throw new Exception("Mật khẩu phải chứa ít nhất 1 số.");
         }
     }
+
+
 }

@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> LogIn([FromBody] LoginRequest request)
     {
         try
-        {
+        {  
             var result = await _authService.LoginAsync(request);
             return Ok(result);
         }
@@ -43,6 +43,22 @@ public class AuthController : ControllerBase
             
             return BadRequest(ex.Message);
         }
+    }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> LogOut([FromBody] LogOutRequest request)
+    {
+        try
+        {
+            await _authService.LogOutAsync(request);
+            return Ok("Đăng xuất thành công");
+        }
+        catch (System.Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        
+
     }
 
     [HttpGet("email-verify")]

@@ -17,6 +17,11 @@ public class UserRepository : IUserRepository
         return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
     }
 
+    public async Task<RefreshToken?> GetRefreshToken(string refreshToken)
+    {
+        return await _context.RefreshTokens.FirstOrDefaultAsync(x => x.TokenHash == refreshToken);
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

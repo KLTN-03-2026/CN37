@@ -1,13 +1,20 @@
-import LogIn from "pages/LogIn";    
-import Register from "pages/Register";
-import VerifyEmail from "pages/VerifyEmail"
 
-const publicRoutes = [
-  { path: "/login", component: LogIn },
-  { path: "/register", component: Register },
-  { path: "/email-verify", component: VerifyEmail}
-];
+import { Children } from "react";
+import { Navigate } from "react-router-dom";
 
-const privateRoutes = [];
+const PublicRoutes = ({ children }) => {
+  const token = localStorage.getItem("accessToken");
+  if (token) {
+    return <Navigate to="/home"></Navigate>;
+  }
+  return children;
+};
 
-export { publicRoutes, privateRoutes };
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) {
+    return <Navigate to="/"></Navigate>;
+  }
+  return children;
+};
+export { PublicRoutes, ProtectedRoute };

@@ -1,37 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "../../api/UserApi";
+import { logOut } from "../../api/AuthApi";
 
 function Home() {
 
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-
-  // lấy session từ accessToken
-  useEffect(() => {
-
-    const token = localStorage.getItem("accessToken");
-
-    if (!token) {
-      navigate("/");
-      return;
-    }
-
-    try {
-
-      const payload = JSON.parse(atob(token.split(".")[1]));
-
-      setUserId(payload.sub);
-
-    } catch (error) {
-
-      console.log("Token lỗi");
-      navigate("/");
-
-    }
-
-  }, []);
 
 
   const handleGetUser = async() => {
@@ -47,11 +23,10 @@ function Home() {
   };
 
   // logout
-  const handleLogout = () => {
-
+  const handleLogout = async () => {
+    await logOut(localStorage.getItem("refreshToken"));
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-
     navigate("/");
   };
 

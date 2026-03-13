@@ -26,7 +26,7 @@
     display: flex;
     text-align:center;
     justify-content: center;
-    background-color: rgba(22, 24, 35, 0.06);
+    background-color: light-dark(rgb(232, 240, 254), rgba(70, 90, 126, 0.4)) !important;
 
     input{
         flex: 1;
@@ -35,7 +35,7 @@
         border-top-right-radius: 20px;
         border-bottom-right-radius: 20px;
         outline: none;
-        background-color: rgba(22, 24, 35, 0.06);
+        background: transparent;
         font-size: 18px;
     }
 }
@@ -113,6 +113,9 @@
     font-size: 1.2em !important;
     font-weight: bold;
     margin-block-start: 1.33em;
+}
+.signin-btn:hover{
+    background: darkblue!important;
 }
 .google-btn{
     color: #374151;

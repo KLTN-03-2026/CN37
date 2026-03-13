@@ -36,7 +36,6 @@ public class TokenService : ITokenService
     }
     public async Task<string> GenerateRefreshToken(User user)
     {
-        Console.WriteLine("tạo db");
         var refreshTokenValue = Guid.NewGuid().ToString();
         var refreshToken = new RefreshToken
         {
@@ -48,7 +47,6 @@ public class TokenService : ITokenService
         };
         await _context.RefreshTokens.AddAsync(refreshToken);
         await _context.SaveChangesAsync();
-        Console.WriteLine("lưu db");
         return refreshTokenValue;
     }
 
@@ -65,6 +63,8 @@ public class TokenService : ITokenService
         }
         if (searchToken.ExpiresAt < DateTime.UtcNow)
         {
+            searchToken.IsRevoked = true;
+            searchToken.RevokedAt = DateTime.UtcNow;
             throw new Exception("Refresh Token đã hết hạn");
         }
         var user = await _context.Users.FirstOrDefaultAsync(X => X.Id == searchToken.UserId);
@@ -73,6 +73,7 @@ public class TokenService : ITokenService
             throw new Exception("user này không tồn tại");
         }
         searchToken.IsRevoked = true;
+        searchToken.RevokedAt = DateTime.UtcNow;
         var newAccessToken = GenerateAccessToken(user);
         var newRefreshTokenValue = Guid.NewGuid().ToString();
         var newRefreshToken = new RefreshToken
@@ -84,8 +85,7 @@ public class TokenService : ITokenService
         };
         await _context.RefreshTokens.AddAsync(newRefreshToken);
         await _context.SaveChangesAsync();
-        Console.WriteLine("lưu db");
-        
+
         return new AuthResponse
         {
             AccessToken = newAccessToken,

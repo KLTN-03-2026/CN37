@@ -6,6 +6,7 @@ import { faEnvelope, faEye, faEyeSlash } from "@fortawesome/free-regular-svg-ico
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { register } from "../../api/AuthApi";
+import { notifySuccess, notifyError } from "../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -13,7 +14,6 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword1, setShowPassword1] = useState(false);
@@ -22,20 +22,13 @@ function Register() {
     setLoading(true);
     try {
       await register(email, password, confirmPassword);
-      msg("Đăng ký thành công");
+      notifySuccess("Đăng ký thành công");
     } catch (error) {
       const errMsg = error.response?.data || "Đăng ký thất bại";
-      msg(errMsg);
+      notifyError(errMsg);
     } finally {
       setLoading(false);
     }
-  };
-  const msg = (text) => {
-    setMessage(text);
-
-    setTimeout(() => {
-      setMessage("");
-    }, 3000);
   };
 
   return (
@@ -120,7 +113,6 @@ function Register() {
           </div>
         </div>
       </div>
-      {message && <div className={cx("message")}>{message}</div>}
       <div className={cx("signin-button")}>
         <button
           className={cx("button", "signin-btn")}
