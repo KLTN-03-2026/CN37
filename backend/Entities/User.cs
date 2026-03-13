@@ -1,8 +1,8 @@
 public class User
 {
     public long Id{ get; set;}
-    public required string Email { get; set;}
-    public required string PasswordHash { get; set;}
+    public string Email { get; set;}
+    public string PasswordHash { get; set;}
     public bool IsActive { get; set;} = true;
     public bool EmailVerified { get; set;} = false;
     public DateTime? EmailVerifiedAt { get; set;}

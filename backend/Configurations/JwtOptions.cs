@@ -1,5 +1,5 @@
 public class JwtOptions
 {
-    public required string SecretKey {get; set;}
+    public string SecretKey {get; set;}
     public int ExpiryMinutes {get; set;}
 }

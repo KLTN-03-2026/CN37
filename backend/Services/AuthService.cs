@@ -35,7 +35,7 @@ public class AuthService : IAuthService
         return new AuthResponse
         {
             AccessToken = tokenService,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(15)
+            ExpiresAt = DateTime.UtcNow.AddMinutes(1)
         };
     }
 
@@ -54,11 +54,13 @@ public class AuthService : IAuthService
         {
             throw new Exception("Tài khoản của bạn đã bị vô hiệu hóa.");
         }
-        var tokenService = _tokenService.GenerateAccessToken(user);
+        var refreshToken = await _tokenService.GenerateRefreshToken(user);
+        var accessToken = _tokenService.GenerateAccessToken(user);
         return new AuthResponse
         {
-            AccessToken = tokenService,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(15)
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(1)
         };
     }
 

@@ -2,15 +2,41 @@ import { useState } from "react";
 import styles from "../LogIn/LogIn.module.scss";
 import classNames from "classnames/bind";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
+import { faEnvelope, faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import { register } from "../../api/AuthApi";
 
 const cx = classNames.bind(styles);
 
 function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword1, setShowPassword1] = useState(false);
+
+  const handleRegister = async () => {
+    setLoading(true);
+    try {
+      await register(email, password, confirmPassword);
+      msg("Đăng ký thành công");
+    } catch (error) {
+      const errMsg = error.response?.data || "Đăng ký thất bại";
+      msg(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const msg = (text) => {
+    setMessage(text);
+
+    setTimeout(() => {
+      setMessage("");
+    }, 3000);
+  };
 
   return (
     <div className={cx("container")}>
@@ -53,12 +79,18 @@ function Register() {
               style={{ display: "none" }}
             />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="● ● ● ● ● ●"
               autoComplete="off"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             ></input>
+            <i onClick={() => setShowPassword(!showPassword)}>
+              <FontAwesomeIcon
+                className={cx("eye")}
+                icon={showPassword ? faEyeSlash : faEye}
+              ></FontAwesomeIcon>
+            </i>
           </div>
         </div>
         <div className={cx("input_password_container")}>
@@ -73,22 +105,39 @@ function Register() {
               style={{ display: "none" }}
             />
             <input
-              type="password"
+              type={showPassword1 ? "text" : "password"}
               placeholder="● ● ● ● ● ●"
               autoComplete="off"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
             ></input>
+            <i onClick={() => setShowPassword1(!showPassword1)}>
+              <FontAwesomeIcon
+                className={cx("eye")}
+                icon={showPassword1 ? faEyeSlash : faEye}
+              ></FontAwesomeIcon>
+            </i>
           </div>
         </div>
       </div>
+      {message && <div className={cx("message")}>{message}</div>}
       <div className={cx("signin-button")}>
         <button
           className={cx("button", "signin-btn")}
+          onClick={handleRegister}
           type="submit"
           color="white"
         >
-          Đăng ký
+          {loading ? (
+            <>
+              <span>
+                <span className={cx("spinner")} aria-hidden="true"></span>
+                Đang xử lý...
+              </span>
+            </>
+          ) : (
+            "Đăng ký"
+          )}
         </button>
       </div>
       <div className={cx("signup-link")}>

@@ -1,5 +1,10 @@
-import axios from 'axios'
-const Api = axios.create({baseURL: "http://localhost:5235/api"});
-export const verifyEmail = (token) =>(Api.get(`/auth/email-verify?token=${token}`));
+import api from "./AxiosClient"
 
-export const logIn = (email, password) =>(Api.post(`/auth/login`));
+export const verifyEmail = (token) =>
+  api.get(`/auth/email-verify?token=${token}`);
+
+export const logIn = (email, password) =>
+  api.post(`/auth/login`, { Email: email, Password: password });
+
+export const register = (email, password, confirmPassword) =>
+  api.post(`/auth/register`, { Email: email, Password: password, ConfirmPassword: confirmPassword });

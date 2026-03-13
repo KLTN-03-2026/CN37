@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,25 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(
     builder.Configuration.GetConnectionString("DefaultConnection"),
     ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
 ));
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>();
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtOptions.SecretKey)
+        ),
+
+        ClockSkew = TimeSpan.Zero
+    };
+});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact",
@@ -36,6 +58,8 @@ builder.Services.Configure<JwtOptions>(
 
 var app = builder.Build();
 app.UseCors("AllowReact");
+app.UseAuthentication(); 
+app.UseAuthorization(); 
 app.MapControllers();
 
 // Configure the HTTP request pipeline.
