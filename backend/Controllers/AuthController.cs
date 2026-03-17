@@ -67,4 +67,5 @@ public class AuthController : ControllerBase
         await _emailVerify.VerifyEmailTokenAsync(token);
         return Ok("Xác thực email thành công.");
     }
+    
 }

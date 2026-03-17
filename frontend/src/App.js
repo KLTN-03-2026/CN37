@@ -1,9 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import LogIn from "./pages/LogIn";
-import Register from "./pages/Register";
-import VerifyEmail from "./pages/VerifyEmail";
-import Home from "./pages/Home";
-import { ProtectedRoute, PublicRoutes } from "./routes";
+import DefaultLayout from "./Layout/DefaultLayout";
+import routes from "./routes";
+import { ProtectedRoute, PublicRoutes } from "./routes/Routes.js";
 import { ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,33 +9,53 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <PublicRoutes>
-                <LogIn />
-              </PublicRoutes>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicRoutes>
-                <Register />
-              </PublicRoutes>
-            }
-          />
-          <Route path="/email-verify" element={<VerifyEmail />} />
-          <Route
-            path="/home"
-            element={
+         <Routes>
+        {routes.map((route, index) => {
+
+          const Page = route.component;
+
+          // layout mặc định
+          let Layout = DefaultLayout;
+
+          if (route.layout === null) {
+            Layout = ({ children }) => <>{children}</>;
+          } else if (route.layout) {
+            Layout = route.layout;
+          }
+
+          let element = (
+            <Layout>
+              <Page />
+            </Layout>
+          );
+
+          // protected route
+          if (route.protected) {
+            element = (
               <ProtectedRoute>
-                <Home />
+                {element}
               </ProtectedRoute>
-            }
-          />
-        </Routes>
+            );
+          }
+
+          // public route
+          if (route.publicOnly) {
+            element = (
+              <PublicRoutes>
+                {element}
+              </PublicRoutes>
+            );
+          }
+
+          return (
+            <Route
+              key={index}
+              path={route.path}
+              element={element}
+            />
+          );
+        })}
+      </Routes>
         <ToastContainer
           position="top-right"
           autoClose={4000}

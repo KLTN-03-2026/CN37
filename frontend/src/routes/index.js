@@ -1,20 +1,34 @@
+// layouts
+import DefaultLayout from "../Layout/DefaultLayout";
+// pages
+import Home from "../pages/Home";
+import Register from "../pages/Register";
+import LogIn from "../pages/LogIn";
+import VerifyEmail from "../pages/VerifyEmail";
 
-import { Children } from "react";
-import { Navigate } from "react-router-dom";
-
-const PublicRoutes = ({ children }) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    return <Navigate to="/home"></Navigate>;
+const routes = [
+  {
+    path: "/",
+    component: Home,
+    layout: DefaultLayout
+  },
+  {
+    path: "/register",
+    component: Register,
+    layout: DefaultLayout,
+    publicOnly: true
+  },
+  {
+    path: "/login",
+    component: LogIn,
+    layout: DefaultLayout,
+    publicOnly: true
+  },
+  {
+    path: "/email-verify",
+    component: VerifyEmail,
+    layout: DefaultLayout,
   }
-  return children;
-};
+];
 
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("accessToken");
-  if (!token) {
-    return <Navigate to="/"></Navigate>;
-  }
-  return children;
-};
-export { PublicRoutes, ProtectedRoute };
+export default routes;

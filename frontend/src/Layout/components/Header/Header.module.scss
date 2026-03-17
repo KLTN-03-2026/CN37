@@ -1,0 +1,101 @@
+.header {
+  background: linear-gradient(90deg, #d70018, #d70018);
+  padding: 10px 0;
+}
+
+.container {
+  max-width: 1280px;
+  min-height: 60px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.categoryBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #b60014;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 25px;
+  cursor: pointer;
+}
+
+.searchWrapper {
+  flex: 1;
+}
+
+.searchBox {
+  display: flex;
+  background: white;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.searchBox input {
+  flex: 1;
+  border: none;
+  padding: 12px 16px;
+  outline: none;
+}
+
+.searchBox button {
+  border: none;
+  padding: 0 18px;
+  background: white;
+  cursor: pointer;
+}
+
+.keywords {
+  display: flex;
+  gap: 14px;
+  font-size: 14px;
+  margin-top: 6px;
+  color: white;
+}
+
+
+.userBtn {
+  background: #b60014;
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.cartBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #00223e;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 25px;
+  cursor: pointer;
+}
+
+/* responsive */
+
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-wrap: wrap;
+  }
+}

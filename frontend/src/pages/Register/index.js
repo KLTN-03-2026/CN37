@@ -134,7 +134,7 @@ function Register() {
       </div>
       <div className={cx("signup-link")}>
         <span>Bạn đã có tài khoản? </span>
-        <Link to="/">Đăng nhập</Link>
+        <Link to="/login">Đăng nhập</Link>
       </div>
     </div>
   );

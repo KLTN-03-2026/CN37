@@ -31,7 +31,7 @@ function LogIn() {
         localStorage.setItem("accessToken", res.data.accessToken);
         localStorage.setItem("refreshToken", res.data.refreshToken);
         setTimeout(() => {
-          navigate("/home");
+          navigate("/");
         }, 3000);
       }
     } catch (error) {
@@ -129,7 +129,7 @@ function LogIn() {
         </button>
       </div>
       <div className={cx("divider")}>
-        <span>or continue with</span>
+        <span>Hoặc đăng nhập với</span>
       </div>
       <div className={cx("signin-button")}>
         <button className={cx("button", "google-btn")}>
