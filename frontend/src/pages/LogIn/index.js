@@ -11,6 +11,7 @@ import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
 import { logIn } from "../../api/AuthApi";
 import { notifySuccess, notifyError } from "../../components/Nofitication";
+import GoogleLoginButton from "../../Layout/components/GoogleLoginButton";
 
 const cx = classNames.bind(styles);
 
@@ -132,13 +133,9 @@ function LogIn() {
         <span>Hoặc đăng nhập với</span>
       </div>
       <div className={cx("signin-button")}>
-        <button className={cx("button", "google-btn")}>
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="google"
-          />
-          <span>Đăng nhập bằng Google</span>
-        </button>
+        <div className={cx("button", "google-btn")}>
+          <GoogleLoginButton  className={cx("google-icon")}/>
+        </div>
         <button className={cx("button", "passkey-btn")}>
           <img
             src="https://img.icons8.com/?size=100&id=21602&format=png&color=000000"

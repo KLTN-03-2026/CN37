@@ -24,3 +24,5 @@ function GoogleLoginButton() {
     />
   );
 }
+
+export default GoogleLoginButton;

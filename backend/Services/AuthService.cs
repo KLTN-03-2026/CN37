@@ -1,20 +1,24 @@
+using Google.Apis.Auth;
+
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepo;
     private readonly IPasswordService _passwordService;
     private readonly ITokenService _tokenService;
     private readonly IEmailVerificationService _emailVerify;
-    public AuthService(IUserRepository userRepo, IPasswordService passwordService, ITokenService tokenService, IEmailVerificationService emailVerification)
+    private readonly AppDbContext _context;
+    public AuthService(IUserRepository userRepo, IPasswordService passwordService, ITokenService tokenService, IEmailVerificationService emailVerification, AppDbContext context)
     {
         _userRepo = userRepo;
         _passwordService = passwordService;
         _tokenService = tokenService;
         _emailVerify = emailVerification;
+        _context = context;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
-        if(request.Password == "" || request.ConfirmPassword == ""|| request.Email == "")
+        if (request.Password == "" || request.ConfirmPassword == "" || request.Email == "")
         {
             throw new Exception("Hãy nhập đầy đủ các ô đăng kí.");
         }
@@ -75,7 +79,7 @@ public class AuthService : IAuthService
         {
             Console.WriteLine("null");
             throw new Exception("Không tồn tại token");
-            
+
         }
         searchToken.IsRevoked = true;
         searchToken.RevokedAt = DateTime.UtcNow;
@@ -102,5 +106,111 @@ public class AuthService : IAuthService
         }
     }
 
+    public async Task<AuthResponse> HandleGoogleLogin(GoogleJsonWebSignature.Payload payload)
+    {
+        // 1. tìm external login
+        var external = _context.ExternalLogins
+            .FirstOrDefault(x =>
+                x.Provider == "google" &&
+                x.ProviderUserId == payload.Subject);
 
+        User user;
+
+        if (external != null)
+        {
+            user = _context.Users.First(x => x.Id == external.UserId);
+        }
+        else
+        {
+            // 2. kiểm tra email
+            user = _context.Users.FirstOrDefault(x => x.Email == payload.Email);
+
+            if (user == null)
+            {
+                // 3. tạo user mới
+                user = new User
+                {
+                    Email = payload.Email,
+                    PasswordHash = null,
+                    IsActive = true,
+                    EmailVerified = true,
+                    EmailVerifiedAt = DateTime.UtcNow
+                };
+
+                _context.Users.Add(user);
+                _context.SaveChanges();
+
+                // 🔥 4. tạo profile (QUAN TRỌNG)
+                var profile = new UserProfile
+                {
+                    UserId = user.Id,
+                    FullName = payload.Name,
+                    Avatar = payload.Picture
+                };
+
+                _context.UserProfiles.Add(profile);
+                _context.SaveChanges();
+            }
+            else
+            {
+                // nếu user đã tồn tại nhưng chưa verify
+                if (!user.EmailVerified)
+                {
+                    user.EmailVerified = true;
+                    user.EmailVerifiedAt = DateTime.UtcNow;
+                    _context.SaveChanges();
+                }
+
+                // 🔥 nếu chưa có profile thì tạo
+                var profile = _context.UserProfiles
+                    .FirstOrDefault(x => x.UserId == user.Id);
+
+                if (profile == null)
+                {
+                    profile = new UserProfile
+                    {
+                        UserId = user.Id,
+                        FullName = payload.Name,
+                        Avatar = payload.Picture
+                    };
+
+                    _context.UserProfiles.Add(profile);
+                    _context.SaveChanges();
+                }
+            }
+
+            // 5. tạo external login
+            var newExternal = new ExternalLogin
+            {
+                UserId = user.Id,
+                Provider = "google",
+                ProviderUserId = payload.Subject,
+                Email = payload.Email
+            };
+
+            _context.ExternalLogins.Add(newExternal);
+            _context.SaveChanges();
+        }
+
+        // ❗ check user bị khóa
+        if (!user.IsActive)
+        {
+            throw new Exception("Tài khoản đã bị khóa");
+        }
+
+        // 🔥 lấy profile để trả về FE
+        var userProfile = _context.UserProfiles
+            .FirstOrDefault(x => x.UserId == user.Id);
+
+        // 6. tạo JWT
+        var accessToken = _tokenService.GenerateAccessToken(user);
+        var refreshToken = await _tokenService.GenerateRefreshToken(user);
+
+        return new AuthResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(1),
+        };
+    }
 }
