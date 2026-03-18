@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 public class ExternalLogin
 {
     public long Id { get; set; }
+    [Column("user_id")]
     public long UserId { get; set; }
     public string Provider { get; set; }
     public string ProviderUserId { get; set; }

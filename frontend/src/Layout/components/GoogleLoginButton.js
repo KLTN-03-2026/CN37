@@ -3,12 +3,14 @@ import api from "../../api/AxiosClient";
 
 function GoogleLoginButton() {
   const handleSuccess = async (credentialResponse) => {
+    console.log(credentialResponse);
     try {
       const res = await api.post("/auth/google", {
         idToken: credentialResponse.credential,
       });
 
       localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("refreshToken", res.data.refreshToken);
 
       // redirect
       window.location.href = "/";

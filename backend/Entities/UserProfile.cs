@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 public class UserProfile
 {
     public long Id { get; set; }
+    [Column("user_id")]
     public long UserId { get; set; }
     public string FullName { get; set; }
     public string Avatar { get; set; }

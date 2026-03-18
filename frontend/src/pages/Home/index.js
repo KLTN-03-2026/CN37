@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "../../api/UserApi";
-import { logOut } from "../../api/AuthApi";
 import styles from "./Home.module.scss"
 import classNames from "classnames/bind";
 
@@ -24,14 +23,6 @@ function Home() {
       console.log("Get user lỗi");
 
     }
-  };
-
-  // logout
-  const handleLogout = async () => {
-    await logOut(localStorage.getItem("refreshToken"));
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    navigate("/login");
   };
 
   return (

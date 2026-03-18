@@ -1,4 +1,5 @@
 using Google.Apis.Auth;
+using Microsoft.EntityFrameworkCore;
 
 public class AuthService : IAuthService
 {
@@ -108,63 +109,43 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> HandleGoogleLogin(GoogleJsonWebSignature.Payload payload)
     {
-        // 1. tìm external login
-        var external = _context.ExternalLogins
-            .FirstOrDefault(x =>
-                x.Provider == "google" &&
-                x.ProviderUserId == payload.Subject);
+        // 1. Tìm trong ExternalLogins trước (Dùng Subject của Google là chuẩn nhất)
+        var external = await _context.ExternalLogins
+            .FirstOrDefaultAsync(x => x.Provider == "google" && x.ProviderUserId == payload.Subject);
 
-        User user;
+        User user = null;
 
         if (external != null)
         {
-            user = _context.Users.First(x => x.Id == external.UserId);
+            user = await _context.Users.FirstOrDefaultAsync(x => x.Id == external.UserId);
         }
         else
         {
-            // 2. kiểm tra email
-            user = _context.Users.FirstOrDefault(x => x.Email == payload.Email);
+            // 2. Nếu chưa có ExternalLogin, kiểm tra Email trong bảng Users
+            user = await _context.Users.FirstOrDefaultAsync(x => x.Email == payload.Email);
 
-            if (user == null)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                // 3. tạo user mới
-                user = new User
+                if (user == null)
                 {
-                    Email = payload.Email,
-                    PasswordHash = null,
-                    IsActive = true,
-                    EmailVerified = true,
-                    EmailVerifiedAt = DateTime.UtcNow
-                };
-
-                _context.Users.Add(user);
-                _context.SaveChanges();
-
-                // 🔥 4. tạo profile (QUAN TRỌNG)
-                var profile = new UserProfile
-                {
-                    UserId = user.Id,
-                    FullName = payload.Name,
-                    Avatar = payload.Picture
-                };
-
-                _context.UserProfiles.Add(profile);
-                _context.SaveChanges();
-            }
-            else
-            {
-                // nếu user đã tồn tại nhưng chưa verify
-                if (!user.EmailVerified)
-                {
-                    user.EmailVerified = true;
-                    user.EmailVerifiedAt = DateTime.UtcNow;
-                    _context.SaveChanges();
+                    // 3. Tạo User mới hoàn toàn
+                    user = new User
+                    {
+                        Email = payload.Email,
+                        PasswordHash = null, // Đăng nhập MXH không cần pass
+                        IsActive = true,
+                        EmailVerified = true,
+                        EmailVerifiedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    await _context.Users.AddAsync(user);
+                    await _context.SaveChangesAsync(); // Lưu để có User.Id
                 }
 
-                // 🔥 nếu chưa có profile thì tạo
-                var profile = _context.UserProfiles
-                    .FirstOrDefault(x => x.UserId == user.Id);
-
+                // 4. Kiểm tra/Tạo UserProfile
+                var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == user.Id);
                 if (profile == null)
                 {
                     profile = new UserProfile
@@ -173,36 +154,35 @@ public class AuthService : IAuthService
                         FullName = payload.Name,
                         Avatar = payload.Picture
                     };
-
-                    _context.UserProfiles.Add(profile);
-                    _context.SaveChanges();
+                    await _context.UserProfiles.AddAsync(profile);
                 }
+
+                // 5. Tạo liên kết ExternalLogin
+                var newExternal = new ExternalLogin
+                {
+                    UserId = user.Id,
+                    Provider = "google",
+                    ProviderUserId = payload.Subject,
+                    Email = payload.Email
+                };
+                await _context.ExternalLogins.AddAsync(newExternal);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
-
-            // 5. tạo external login
-            var newExternal = new ExternalLogin
+            catch (Exception)
             {
-                UserId = user.Id,
-                Provider = "google",
-                ProviderUserId = payload.Subject,
-                Email = payload.Email
-            };
-
-            _context.ExternalLogins.Add(newExternal);
-            _context.SaveChanges();
+                await transaction.RollbackAsync();
+                throw new Exception("Lỗi trong quá trình tạo tài khoản Google.");
+            }
         }
 
-        // ❗ check user bị khóa
-        if (!user.IsActive)
+        if (user == null || !user.IsActive)
         {
-            throw new Exception("Tài khoản đã bị khóa");
+            throw new Exception("Tài khoản không tồn tại hoặc đã bị khóa.");
         }
 
-        // 🔥 lấy profile để trả về FE
-        var userProfile = _context.UserProfiles
-            .FirstOrDefault(x => x.UserId == user.Id);
-
-        // 6. tạo JWT
+        // 6. Tạo Token hệ thống
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshToken = await _tokenService.GenerateRefreshToken(user);
 
@@ -210,7 +190,7 @@ public class AuthService : IAuthService
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(1),
+            ExpiresAt = DateTime.UtcNow.AddMinutes(1) // Nên để thời gian dài hơn 1 phút để test
         };
     }
 }

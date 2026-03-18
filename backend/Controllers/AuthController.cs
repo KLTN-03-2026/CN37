@@ -72,15 +72,27 @@ public class AuthController : ControllerBase
     [HttpPost("google")]
     public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
     {
-        var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
+        try
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[]
+                {
+                "386032350723-05tas9vtbgtfqqcfqluq6375h0i3kp8s.apps.googleusercontent.com"
+            }
+            };
 
-        // kiểm tra client id
-        if (payload.Audience != "386032350723-05tas9vtbgtfqqcfqluq6375h0i3kp8s.apps.googleusercontent.com")
-            return Unauthorized();
+            var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
 
-        var result = await _authService.HandleGoogleLogin(payload);
+            var result = await _authService.HandleGoogleLogin(payload);
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized($"Google token invalid: {ex.Message}");
+        }
     }
 
 }
+

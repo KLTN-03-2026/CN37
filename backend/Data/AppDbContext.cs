@@ -66,7 +66,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.Provider).HasColumnName("provider").HasMaxLength(255);
             entity.Property(x => x.ProviderUserId).HasColumnName("provider_user_id").HasMaxLength(255);
             entity.Property(x => x.Email).HasColumnName("email").HasMaxLength(255);
-            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<UserProfile>(entity =>
@@ -75,12 +75,12 @@ public class AppDbContext : DbContext
             entity.HasKey(x => x.Id);
             entity.HasOne(x => x.User).WithOne().HasForeignKey<UserProfile>(x => x.UserId);
             entity.Property(x => x.FullName).HasColumnName("full_name").HasMaxLength(255);
-            entity.Property(x => x.Avatar).HasColumnName("avatar").HasMaxLength(255);
+            entity.Property(x => x.Avatar).HasColumnName("avatar_url").HasMaxLength(255);
             entity.Property(x => x.Phone).HasColumnName("phone").HasMaxLength(20);
-            entity.Property(x => x.BirthDate).HasColumnName("birth_date");
+            entity.Property(x => x.BirthDate).HasColumnName("date_of_birth");
             entity.Property(x => x.Gender).HasColumnName("gender").HasMaxLength(10);
-            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP");  
+            entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.UpdatedAt).HasColumnName("update_at").HasDefaultValueSql("CURRENT_TIMESTAMP");  
         });
     }
 }

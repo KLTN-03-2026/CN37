@@ -86,6 +86,46 @@
   cursor: pointer;
 }
 
+.userBtnWrapper {
+  position: relative;
+  display: inline-block;
+
+  &:hover .dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: 0.3s;
+
+  min-width: 150px;
+  z-index: 1000;
+}
+
+.dropdownItem {
+  padding: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background: #CCFFCC;
+    color: #006600;
+    border-radius: 8px;
+  }
+}
+
 /* responsive */
 
 @media (max-width: 1024px) {
