@@ -44,109 +44,121 @@ function LogIn() {
   };
 
   return (
-    <div className={cx("container")}>
-      <div className={cx("header_title")}>
-        <div className={cx("welcome_title")}>
-          <h1>Chào mừng trở lại!</h1>
-          <p>Đăng nhập bằng tài khoản bạn để tiếp tục</p>
-        </div>
+    <div className={cx("wrapper")}>
+      {/* LEFT IMAGE */}
+      <div className={cx("left")}>
+        <img
+          src={require("../../assets/Login_img/login_img.png")}
+          alt="login"
+        />
       </div>
-      <div className={cx("input_container")}>
-        <div className={cx("input_email_container")}>
-          <h4>Email</h4>
-          <div className={cx("input_email")}>
-            <div className={cx("input_icon")}>
-              <FontAwesomeIcon icon={faEnvelope} />
+
+      {/* RIGHT FORM */}
+      <div className={cx("right")}>
+        <div className={cx("container")}>
+          <div className={cx("header_title")}>
+            <div className={cx("welcome_title")}>
+              <h1>Chào mừng trở lại!</h1>
+              <p>Đăng nhập bằng tài khoản bạn để tiếp tục</p>
             </div>
-            <input
-              type="text"
-              autoComplete="username"
-              style={{ display: "none" }}
-            />
-            <input
-              type="email"
-              placeholder="you@gmail.com"
-              autoComplete="off"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            ></input>
-          </div>
-        </div>
-        <div className={cx("input_password_container")}>
-          <div className={cx("password-title")}>
-            <h4>Mật khẩu</h4>
-            <Link to="/input-email-reset">Quên mật khẩu</Link>
           </div>
 
-          <div className={cx("input_password")}>
-            <div className={cx("input_icon")}>
-              <FontAwesomeIcon icon={faLock} />
+          <div className={cx("input_container")}>
+            {/* EMAIL */}
+            <div className={cx("input_email_container")}>
+              <h4>Email</h4>
+              <div className={cx("input_email")}>
+                <div className={cx("input_icon")}>
+                  <FontAwesomeIcon icon={faEnvelope} />
+                </div>
+                <input type="text" autoComplete="username" style={{ display: "none" }} />
+                <input
+                  type="email"
+                  placeholder="you@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
             </div>
+
+            {/* PASSWORD */}
+            <div className={cx("input_password_container")}>
+              <div className={cx("password-title")}>
+                <h4>Mật khẩu</h4>
+                <Link to="/input-email-reset">Quên mật khẩu</Link>
+              </div>
+
+              <div className={cx("input_password")}>
+                <div className={cx("input_icon")}>
+                  <FontAwesomeIcon icon={faLock} />
+                </div>
+                <input type="password" style={{ display: "none" }} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="● ● ● ● ● ●"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <i onClick={() => setShowPassword(!showPassword)}>
+                  <FontAwesomeIcon
+                    className={cx("eye")}
+                    icon={showPassword ? faEyeSlash : faEye}
+                  />
+                </i>
+              </div>
+            </div>
+          </div>
+
+          {/* REMEMBER */}
+          <div className={cx("remember_me")}>
             <input
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              style={{ display: "none" }}
+              className={cx("checkbox")}
+              type="checkbox"
+              checked={rememberChecked}
+              onChange={(e) => setRememberChecked(e.target.checked)}
             />
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="● ● ● ● ● ●"
-              autoComplete="off"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            ></input>
-            <i onClick={() => setShowPassword(!showPassword)}>
-              <FontAwesomeIcon
-                className={cx("eye")}
-                icon={showPassword ? faEyeSlash : faEye}
-              ></FontAwesomeIcon>
-            </i>
+            Lưu mật khẩu cho lần đăng nhập tới
+          </div>
+
+          {/* LOGIN BTN */}
+          <div className={cx("signin-button")}>
+            <button className={cx("button", "signin-btn")} onClick={handleLogin}>
+              {loading ? (
+                <>
+                  <span className={cx("spinner")} />
+                  Đang xử lý...
+                </>
+              ) : (
+                "Đăng nhập"
+              )}
+            </button>
+          </div>
+
+          {/* SOCIAL */}
+          <div className={cx("divider")}>
+            <span>Hoặc đăng nhập với</span>
+          </div>
+
+          <div className={cx("signin-button")}>
+            <div className={cx("button", "google-btn")}>
+              <GoogleLoginButton />
+            </div>
+
+            <button className={cx("button", "passkey-btn")}>
+              <img
+                src="https://img.icons8.com/?size=100&id=21602&format=png&color=000000"
+                alt="google"
+              />
+              <span>Đăng nhập bằng Passkey</span>
+            </button>
+          </div>
+
+          {/* REGISTER */}
+          <div className={cx("signup-link")}>
+            <span>Bạn chưa có tài khoản? </span>
+            <Link to="/register">Đăng ký</Link>
           </div>
         </div>
-      </div>
-      <div className={cx("remember_me")}>
-        <input
-          className={cx("checkbox")}
-          type="checkbox"
-          checked={rememberChecked}
-          onChange={(e) => setRememberChecked(e.target.checked)}
-        />
-        Lưu mật khẩu cho lần đăng nhập tới
-      </div>
-      <div className={cx("signin-button")}>
-        <button
-          className={cx("button", "signin-btn")}
-          onClick={handleLogin}
-          type="submit"
-          color="white"
-        >
-          {loading ? (
-            <>
-              <span className={cx("spinner")} aria-hidden="true"></span>
-              Đang xử lý...
-            </>
-          ) : (
-            "Đăng nhập"
-          )}
-        </button>
-      </div>
-      <div className={cx("divider")}>
-        <span>Hoặc đăng nhập với</span>
-      </div>
-      <div className={cx("signin-button")}>
-        <div className={cx("button", "google-btn")}>
-          <GoogleLoginButton  className={cx("google-icon")}/>
-        </div>
-        <button className={cx("button", "passkey-btn")}>
-          <img
-            src="https://img.icons8.com/?size=100&id=21602&format=png&color=000000"
-            alt="google"
-          />
-          <span>Đăng nhập bằng Passkey</span>
-        </button>
-      </div>
-      <div className={cx("signup-link")}>
-        <span>Bạn chưa có tài khoản? </span>
-        <Link to="/register">Đăng ký</Link>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import styles from "../LogIn/LogIn.module.scss";
+import styles from "./InputEmailReset.module.scss";
 import classNames from "classnames/bind";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
