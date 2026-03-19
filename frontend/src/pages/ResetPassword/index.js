@@ -4,22 +4,30 @@ import classNames from "classnames/bind";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { notifySuccess, notifyError } from "../../components/Nofitication";
+import { resetPassword } from "../../api/AuthApi";
 
 const cx = classNames.bind(styles);
 
 function ResetPassword() {
+  const [searchParam] = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword1, setShowPassword1] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const token = searchParam.get("token");
 
   const handleResetPassword = async () => {
     setLoading(true);
     try {
-      await ResetPassword(password, confirmPassword);
+      await resetPassword(token, password, confirmPassword);
       notifySuccess("Đặt lại mật khẩu thành công");
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (error) {
       const errMsg = error.response?.data || "Đặt lại mật khẩu thất bại";
       notifyError(errMsg);
@@ -68,16 +76,16 @@ function ResetPassword() {
               style={{ display: "none" }}
             />
             <input
-              type={showPassword1 ? "text" : "password"}
+              type={showPassword ? "text" : "password"}
               placeholder="● ● ● ● ● ●"
               autoComplete="off"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             ></input>
-            <i onClick={() => setShowPassword1(!showPassword1)}>
+            <i onClick={() => setShowPassword(!showPassword)}>
               <FontAwesomeIcon
                 className={cx("eye")}
-                icon={showPassword1 ? faEyeSlash : faEye}
+                icon={showPassword ? faEyeSlash : faEye}
               ></FontAwesomeIcon>
             </i>
           </div>

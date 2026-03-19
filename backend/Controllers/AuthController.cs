@@ -113,8 +113,8 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var result = await _authService.ResetPasswordAsync(request);
-            return Ok(result);
+            await _authService.ResetPasswordAsync(request);
+            return Ok("Đặt lại mật khẩu thành công.");
         }
         catch (System.Exception ex)
         {

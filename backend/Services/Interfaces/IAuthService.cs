@@ -7,5 +7,5 @@ public interface IAuthService
     Task LogOutAsync(LogOutRequest request);
     Task<AuthResponse> HandleGoogleLogin(GoogleJsonWebSignature.Payload payload);
     Task ForgotPasswordAsync(ForgotPasswordRequest request);
-    Task<AuthResponse> ResetPasswordAsync(ResetPasswordRequest request);
+    Task ResetPasswordAsync(ResetPasswordRequest request);
 }

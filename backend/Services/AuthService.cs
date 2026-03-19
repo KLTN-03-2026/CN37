@@ -203,8 +203,26 @@ public class AuthService : IAuthService
         return _emailVerify.sendResetPasswordEmailAsync(user);
     }
 
-    public Task<AuthResponse> ResetPasswordAsync(ResetPasswordRequest request)
+    public async Task ResetPasswordAsync(ResetPasswordRequest request)
     {
-        throw new NotImplementedException();
+        ValidatePassword(request.Password, request.ConfirmPassword);
+        if (string.IsNullOrEmpty(request.Token))
+        {
+            throw new Exception("Token is required.");
+        }
+        var tokens = _context.ResetPasswordTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.UtcNow).ToList();
+        var matchingToken = tokens.FirstOrDefault(x => BCrypt.Net.BCrypt.Verify(request.Token, x.TokenHash));
+        if (matchingToken == null)
+        {
+            throw new Exception("Invalid or expired token.");
+        }
+        var user = await _context.Users.FindAsync(matchingToken.UserId);
+        if (user == null)
+        {
+            throw new Exception("User not found.");
+        }
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+        matchingToken.IsUsed = true;
+        await _context.SaveChangesAsync();
     }
 }

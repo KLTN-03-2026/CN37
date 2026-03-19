@@ -72,19 +72,4 @@ public class EmailVerificationService : IEmailVerificationService
 
         await _emailSender.SendEmailAsync(user.Email, "Reset Your Password", $"Please click the following link to reset your password: {verificationLink}, This link will expire in 1 hour.");
     }
-
-    public Task<ResetPasswordToken> VerifyResetPasswordTokenAsync(string token)
-    {
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new Exception("Token is required.");
-        }
-        var tokens = _context.ResetPasswordTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.UtcNow).ToList();
-        var matchingToken = tokens.FirstOrDefault(x => BCrypt.Net.BCrypt.Verify(token, x.TokenHash));
-        if (matchingToken == null)
-        {
-            throw new Exception("Invalid or expired token.");
-        }
-        return Task.FromResult(matchingToken);
-    }
 }
