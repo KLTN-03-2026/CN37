@@ -8,10 +8,11 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
-    public DbSet<RefreshToken> RefreshTokens{ get;set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<ExternalLogin> ExternalLogins { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<ResetPasswordToken> ResetPasswordTokens { get; set; }
+    public DbSet<Category> Categories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,7 +82,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.BirthDate).HasColumnName("date_of_birth");
             entity.Property(x => x.Gender).HasColumnName("gender").HasMaxLength(10);
             entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(x => x.UpdatedAt).HasColumnName("update_at").HasDefaultValueSql("CURRENT_TIMESTAMP");  
+            entity.Property(x => x.UpdatedAt).HasColumnName("update_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<ResetPasswordToken>(entity =>
@@ -93,6 +94,18 @@ public class AppDbContext : DbContext
             entity.Property(x => x.ExpiresAt).HasColumnName("expires_at");
             entity.Property(x => x.IsUsed).HasColumnName("is_used").HasDefaultValue(false);
             entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.ToTable("categories");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(255);
+            entity.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(255);
+            entity.Property(x => x.Description).HasColumnName("description").HasMaxLength(1000);
+            entity.Property(x => x.ParentId).HasColumnName("parent_id");
+            entity.Property(x => x.CreateAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasOne(x => x.Parent).WithMany(c => c.Children).HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

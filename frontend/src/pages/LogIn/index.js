@@ -97,6 +97,7 @@ function LogIn() {
                   type={showPassword ? "text" : "password"}
                   placeholder="● ● ● ● ● ●"
                   value={password}
+                  autoComplete="new-password"
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <i onClick={() => setShowPassword(!showPassword)}>
