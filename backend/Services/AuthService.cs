@@ -193,4 +193,18 @@ public class AuthService : IAuthService
             ExpiresAt = DateTime.UtcNow.AddMinutes(1) // Nên để thời gian dài hơn 1 phút để test
         };
     }
+
+    public Task ForgotPasswordAsync(ForgotPasswordRequest request)
+    {
+        var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
+        if (user == null)        {
+            throw new Exception("Không tìm thấy tài khoản với email này.");
+        }
+        return _emailVerify.sendResetPasswordEmailAsync(user);
+    }
+
+    public Task<AuthResponse> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        throw new NotImplementedException();
+    }
 }

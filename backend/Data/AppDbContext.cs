@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens{ get;set; }
     public DbSet<ExternalLogin> ExternalLogins { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<ResetPasswordToken> ResetPasswordTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,6 +82,17 @@ public class AppDbContext : DbContext
             entity.Property(x => x.Gender).HasColumnName("gender").HasMaxLength(10);
             entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(x => x.UpdatedAt).HasColumnName("update_at").HasDefaultValueSql("CURRENT_TIMESTAMP");  
+        });
+
+        modelBuilder.Entity<ResetPasswordToken>(entity =>
+        {
+            entity.ToTable("password_reset_tokens");
+            entity.HasKey(x => x.Id);
+            entity.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+            entity.Property(x => x.TokenHash).HasColumnName("token_hash").HasMaxLength(255);
+            entity.Property(x => x.ExpiresAt).HasColumnName("expires_at");
+            entity.Property(x => x.IsUsed).HasColumnName("is_used").HasDefaultValue(false);
+            entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
     }
 }

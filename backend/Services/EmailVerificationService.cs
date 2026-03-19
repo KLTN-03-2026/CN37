@@ -52,4 +52,39 @@ public class EmailVerificationService : IEmailVerificationService
         matchingToken.IsUsed = true;
         await _context.SaveChangesAsync();
     }
+    
+    public async Task sendResetPasswordEmailAsync(User user)
+    {
+        var rawToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        var tokenHash = BCrypt.Net.BCrypt.HashPassword(rawToken);
+        var resetToken = new ResetPasswordToken
+        {
+            UserId = user.Id,
+            TokenHash = tokenHash,
+            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            IsUsed = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _context.ResetPasswordTokens.AddAsync(resetToken);
+        await _context.SaveChangesAsync();
+
+        var verificationLink = $"http://localhost:3000/reset-password?token={Uri.EscapeDataString(rawToken)}";
+
+        await _emailSender.SendEmailAsync(user.Email, "Reset Your Password", $"Please click the following link to reset your password: {verificationLink}, This link will expire in 1 hour.");
+    }
+
+    public Task<ResetPasswordToken> VerifyResetPasswordTokenAsync(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new Exception("Token is required.");
+        }
+        var tokens = _context.ResetPasswordTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.UtcNow).ToList();
+        var matchingToken = tokens.FirstOrDefault(x => BCrypt.Net.BCrypt.Verify(token, x.TokenHash));
+        if (matchingToken == null)
+        {
+            throw new Exception("Invalid or expired token.");
+        }
+        return Task.FromResult(matchingToken);
+    }
 }

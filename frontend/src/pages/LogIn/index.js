@@ -75,7 +75,7 @@ function LogIn() {
         <div className={cx("input_password_container")}>
           <div className={cx("password-title")}>
             <h4>Mật khẩu</h4>
-            <Link to="/register">Quên mật khẩu</Link>
+            <Link to="/input-email-reset">Quên mật khẩu</Link>
           </div>
 
           <div className={cx("input_password")}>

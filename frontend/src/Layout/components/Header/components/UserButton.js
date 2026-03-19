@@ -1,7 +1,7 @@
 import styles from "../Header.module.scss";
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { logOut } from "../../../../api/AuthApi";
 
@@ -33,7 +33,7 @@ function UserButton() {
 
   return (
     <div className={cx("userBtnWrapper")}>
-      <button className={cx("userBtn")} onClick={handleClick}>
+      <button className={login ? cx("userBtn") : cx("categoryBtn")} onClick={handleClick}>
         <FaUser />
         {login ? "" : "Đăng nhập"}
       </button>

@@ -12,3 +12,10 @@ export const register = (email, password, confirmPassword) =>
 export const logOut = (refreshToken) =>{
   api.post(`/auth/logout`, {refreshToken: refreshToken});
 }
+
+export const requestPasswordReset = (email) =>
+  api.post(`/auth/forgot-password`, { Email: email });
+
+export const ResetPassword = (password, confirmPassword) =>
+  api.post(`/auth/reset-password`, { Password: password, ConfirmPassword: confirmPassword });
+
