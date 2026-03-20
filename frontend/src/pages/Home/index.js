@@ -1,23 +1,14 @@
-import styles from "./Home.module.scss";
+import styles from "./Home.module.scss"; 
 import classNames from "classnames/bind";
-import MainBanner from "./components/MainBanner.js";
-import SubBannerSlider from "./components/SubBanner.js";
-import CategoryMenu from "./components/Categorymenu.js";
+import CategoryBanner from "./Block_Cate_Banner/index.js";
 
-const cx = classNames.bind(styles);
-
+const cx = classNames.bind(styles);   
 function Home() {
-  return (
-    <div className={cx("home")}>
-      <div className={cx("topSection")}>
-        <CategoryMenu />
-        <div className={cx("bannerGroup")}>
-          <MainBanner />
-          <SubBannerSlider />
+    return ( 
+        <div className={cx("homecontainer")}>
+            <CategoryBanner />
         </div>
-      </div> 
-    </div>
-  );
+    );
 }
 
 export default Home;

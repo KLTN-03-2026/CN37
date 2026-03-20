@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import styles from "../Home.module.scss";
-import {getCategories} from "../../../api/CategoryApi";
+import styles from "../CateBanner.module.scss";
+import {getCategories} from "../../../../api/CategoryApi";
 import classNames from "classnames/bind";
 
 const cx = classNames.bind(styles);

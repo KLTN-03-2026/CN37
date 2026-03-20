@@ -1,7 +1,7 @@
 // layouts
 import DefaultLayout from "../Layout/DefaultLayout";
 // pages
-import Home from "../pages/Home";
+import Home from "../pages/Home/Block_Cate_Banner";
 import Register from "../pages/Register";
 import LogIn from "../pages/LogIn";
 import VerifyEmail from "../pages/VerifyEmail";
