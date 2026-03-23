@@ -7,6 +7,8 @@ import LogIn from "../pages/LogIn";
 import VerifyEmail from "../pages/VerifyEmail";
 import ResetPassword from "../pages/ResetPassword";
 import InputEmailReset from "../pages/InputEmailReset";
+import AccountSetting from "../pages/AccountSetting";
+import { ProtectedRoute } from "./Routes";
 
 const routes = [
   {
@@ -42,6 +44,12 @@ const routes = [
     component: InputEmailReset,
     layout: DefaultLayout,
     publicOnly: true
+  },
+  {
+    path: "/account-setting",
+    component: AccountSetting,
+    layout: DefaultLayout,
+    ProtectedRoute: true
   }
 ];
 

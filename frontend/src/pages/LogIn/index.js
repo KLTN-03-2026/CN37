@@ -12,6 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { logIn } from "../../api/AuthApi";
 import { notifySuccess, notifyError } from "../../components/Nofitication";
 import GoogleLoginButton from "../../Layout/components/GoogleLoginButton";
+import { loginPasskey } from "../../api/PasskeyApi";
 
 const cx = classNames.bind(styles);
 
@@ -38,6 +39,21 @@ function LogIn() {
     } catch (error) {
       const errorMsg = error.response?.data || "Đăng nhập thất bại";
       notifyError(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasskeyLogin = async () => {
+    setLoading(true);
+    try {
+      const res = await loginPasskey();
+      if (res) {
+        notifySuccess("Đăng nhập bằng Passkey thành công");
+        navigate("/"); // redirect luôn
+      }
+    } catch (error) {
+      notifyError(error.response?.data || "Đăng nhập thất bại");
     } finally {
       setLoading(false);
     }
@@ -71,7 +87,11 @@ function LogIn() {
                 <div className={cx("input_icon")}>
                   <FontAwesomeIcon icon={faEnvelope} />
                 </div>
-                <input type="text" autoComplete="username" style={{ display: "none" }} />
+                <input
+                  type="text"
+                  autoComplete="username"
+                  style={{ display: "none" }}
+                />
                 <input
                   type="email"
                   placeholder="you@gmail.com"
@@ -123,7 +143,10 @@ function LogIn() {
 
           {/* LOGIN BTN */}
           <div className={cx("signin-button")}>
-            <button className={cx("button", "signin-btn")} onClick={handleLogin}>
+            <button
+              className={cx("button", "signin-btn")}
+              onClick={handleLogin}
+            >
               {loading ? (
                 <>
                   <span className={cx("spinner")} />
@@ -145,7 +168,10 @@ function LogIn() {
               <GoogleLoginButton />
             </div>
 
-            <button className={cx("button", "passkey-btn")}>
+            <button
+              className={cx("button", "passkey-btn")}
+              onClick={handlePasskeyLogin}
+            >
               <img
                 src="https://img.icons8.com/?size=100&id=21602&format=png&color=000000"
                 alt="google"

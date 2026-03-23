@@ -4,6 +4,7 @@ import MainBanner from "./components/MainBanner.js";
 import SubBannerSlider from "./components/SubBanner.js";
 import CategoryMenu from "./components/Categorymenu.js";
 import InfoComponent from "./components/InfoComponent.js";
+import UnderBanner from "./components/UnderBanner.js";
 
 const cx = classNames.bind(styles);
 
@@ -17,7 +18,8 @@ function CategoryBanner() {
           <SubBannerSlider />
         </div>
         <InfoComponent />
-      </div> 
+      </div>
+      <UnderBanner />
     </div>
   );
 }

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Fido2NetLib;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,15 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod();
         });
 });
+builder.Services.AddSingleton<Fido2>(sp =>
+{
+    return new Fido2(new Fido2Configuration
+    {
+        ServerDomain = "localhost",
+        ServerName = "TechAI",
+        Origins = new HashSet<string> { "http://localhost:3000" }
+    });
+});
 builder.Services.AddControllers();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -51,6 +61,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailVerificationService,EmailVerificationService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IPasskeyService, PasskeyService>();
 
 
 builder.Services.Configure<JwtOptions>(

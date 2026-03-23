@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<ResetPasswordToken> ResetPasswordTokens { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Passkey> Passkeys { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -106,6 +107,18 @@ public class AppDbContext : DbContext
             entity.Property(x => x.ParentId).HasColumnName("parent_id");
             entity.Property(x => x.CreateAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.HasOne(x => x.Parent).WithMany(c => c.Children).HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Passkey>(entity =>
+        {
+            entity.ToTable("passkeys");
+            entity.HasKey(x => x.Id);
+            entity.HasOne<User>().WithMany().HasForeignKey(x => x.UserId);
+            entity.Property(x => x.CredentialId).HasColumnName("credential_id").HasMaxLength(255);
+            entity.Property(x => x.PublicKey).HasColumnName("public_key").HasMaxLength(1000);
+            entity.Property(x => x.SignCount).HasColumnName("sign_count");
+            entity.Property(x => x.DeviceName).HasColumnName("device_name").HasMaxLength(255);
+            entity.Property(x => x.CreateAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
     }
 }
