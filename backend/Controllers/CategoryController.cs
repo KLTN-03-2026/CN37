@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +11,7 @@ public class CategoryController : ControllerBase
     {
         _context = context;
     }
-
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetCategories()
     {
@@ -26,7 +27,7 @@ public class CategoryController : ControllerBase
 
         return Ok(categories);
     }
-
+    [Authorize]
     [HttpGet("{slug}")]
     public async Task<IActionResult> GetCategory(string slug)
     {

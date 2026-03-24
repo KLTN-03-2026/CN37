@@ -32,9 +32,7 @@ function LogIn() {
         notifySuccess("Đăng nhập thành công");
         localStorage.setItem("accessToken", res.data.accessToken);
         localStorage.setItem("refreshToken", res.data.refreshToken);
-        setTimeout(() => {
-          navigate("/");
-        }, 3000);
+        navigate("/");
       }
     } catch (error) {
       const errorMsg = error.response?.data || "Đăng nhập thất bại";

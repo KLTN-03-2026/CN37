@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +12,8 @@ public class ProductController : ControllerBase
     {
         _context = context;
     }
-
+    
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetProducts(string categorySlug)
     {
