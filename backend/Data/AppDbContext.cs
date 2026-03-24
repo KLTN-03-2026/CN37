@@ -14,6 +14,9 @@ public class AppDbContext : DbContext
     public DbSet<ResetPasswordToken> ResetPasswordTokens { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Passkey> Passkeys { get; set; }
+    public DbSet<Product> Products { get; set; }
+    public DbSet<ProductImage> productImages { get; set; }
+    public DbSet<ProductSpecification> productSpecifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -119,6 +122,53 @@ public class AppDbContext : DbContext
             entity.Property(x => x.SignCount).HasColumnName("sign_count");
             entity.Property(x => x.DeviceName).HasColumnName("device_name").HasMaxLength(255);
             entity.Property(x => x.CreateAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.ToTable("products");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
+            entity.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(255);
+            entity.Property(x => x.CategoryId).HasColumnName("category_id").IsRequired();
+            entity.Property(x => x.Brand).HasColumnName("brand").HasMaxLength(100);
+            entity.Property(x => x.Description).HasColumnName("description");
+            entity.Property(x => x.Price).HasColumnName("price").HasColumnType("decimal(12,2)").IsRequired();
+            entity.Property(x => x.DiscountPrice).HasColumnName("discount_price").HasColumnType("decimal(12,2)");
+            entity.Property(x => x.Thumbnail).HasColumnName("thumbnail").HasMaxLength(500);
+            entity.Property(x => x.RatingAvg).HasColumnName("rating_avg").HasColumnType("decimal(3,2)").HasDefaultValue(0);
+            entity.Property(x => x.RatingCount).HasColumnName("rating_count").HasDefaultValue(0);
+            entity.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            entity.Property(x => x.CreateAt).HasColumnName("create_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.UpdateAt).HasColumnName("update_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            // 🔗 Relation Category
+            entity.HasOne(x => x.Category).WithMany(c => c.Products).HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ProductImage>(entity =>
+        {
+            entity.ToTable("product_images");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.ProductId).HasColumnName("product_id").IsRequired();
+            entity.Property(x => x.ImageUrl).HasColumnName("image_url").HasMaxLength(500).IsRequired();
+            entity.Property(x => x.IsMain).HasColumnName("is_main").HasDefaultValue(false);
+            entity.Property(x => x.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
+            // 🔗 Relation Product
+            entity.HasOne(x => x.Product).WithMany(p => p.Images).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProductSpecification>(entity =>
+        {
+            entity.ToTable("product_specifications");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.ProductId).HasColumnName("product_id").IsRequired();
+            entity.Property(x => x.SpecName).HasColumnName("spec_name").HasMaxLength(255);
+            entity.Property(x => x.SpecValue).HasColumnName("spec_value").HasMaxLength(255);
+            // 🔗 Relation Product
+            entity.HasOne(x => x.Product).WithMany(p => p.Specifications).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

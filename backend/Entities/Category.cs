@@ -8,4 +8,5 @@ public class Category
     public DateTime CreateAt { get; set; }
     public Category Parent { get; set; }
     public List<Category> Children { get; set; } = new List<Category>();
+    public ICollection<Product> Products { get; set; }
 }

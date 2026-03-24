@@ -19,10 +19,38 @@ public class CategoryController : ControllerBase
             .Select(c => new
             {
                 c.Id,
-                c.Name
+                c.Name,
+                c.Slug
             })
             .ToListAsync();
 
         return Ok(categories);
     }
+
+    [HttpGet("{slug}")]
+    public async Task<IActionResult> GetCategory(string slug)
+    {
+        var category = await _context.Categories
+            .Where(c => c.Slug == slug)
+            .Select(c => new
+            {
+                c.Id,
+                c.Name,
+                c.Description,
+                c.Slug,
+
+                Children = c.Children.Select(child => new
+                {
+                    child.Id,
+                    child.Name,
+                    child.Slug
+                })
+            })
+            .FirstOrDefaultAsync();
+
+        if (category == null) return NotFound();
+
+        return Ok(category);
+    }
 }
+

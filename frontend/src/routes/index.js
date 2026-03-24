@@ -8,7 +8,7 @@ import VerifyEmail from "../pages/VerifyEmail";
 import ResetPassword from "../pages/ResetPassword";
 import InputEmailReset from "../pages/InputEmailReset";
 import AccountSetting from "../pages/AccountSetting";
-import { ProtectedRoute } from "./Routes";
+import CategoryPage from "../pages/CategoryPage";
 
 const routes = [
   {
@@ -50,6 +50,11 @@ const routes = [
     component: AccountSetting,
     layout: DefaultLayout,
     ProtectedRoute: true
+  },
+  {
+    path: "/category/:slug",
+    component: CategoryPage,
+    layout: DefaultLayout
   }
 ];
 
