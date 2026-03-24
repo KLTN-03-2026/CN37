@@ -1,13 +1,23 @@
 import classNames from "classnames/bind";
 import styles from "../CategoryPage.module.scss";
+import { useNavigate } from "react-router-dom";
 
 const cx = classNames.bind(styles);
 
 export default function ProductGrid({ products }) {
+  const navigate = useNavigate();
+  const handleProduct = (slug) => {
+    console.log(slug);
+    navigate(`/product/${slug}`)
+  }
+  {products.map((p) => (
+    console.log(p)
+  ))}
+
   return (
     <div className={cx("grid")}>
       {products.map((p) => (
-        <div key={p.id} className={cx("card")}>
+        <div key={p.id} className={cx("card")} onClick={() => handleProduct(p.slug)}>         
           {/* IMAGE */}
           <div className={cx("image-wrap")}>
             <img src={p.thumbnail} alt={p.name} />

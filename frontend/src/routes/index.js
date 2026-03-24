@@ -9,6 +9,7 @@ import ResetPassword from "../pages/ResetPassword";
 import InputEmailReset from "../pages/InputEmailReset";
 import AccountSetting from "../pages/AccountSetting";
 import CategoryPage from "../pages/CategoryPage";
+import ProductDetail from "../pages/ProductDetail";
 
 const routes = [
   {
@@ -54,6 +55,11 @@ const routes = [
   {
     path: "/category/:slug",
     component: CategoryPage,
+    layout: DefaultLayout
+  },
+  {
+    path: "/product/:slug",
+    component: ProductDetail,
     layout: DefaultLayout
   }
 ];

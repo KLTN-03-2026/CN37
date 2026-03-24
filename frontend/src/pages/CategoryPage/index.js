@@ -8,7 +8,7 @@ import SubCategoryTabs from "./components/SubCategoryTabs";
 import BannerSlider from "./components/BannerSlider";
 import FilterSidebar from "./components/FilterSidebar";
 import ProductGrid from "./components/ProductGrid";
-import { getProduct } from "../../api/CategoryApi";
+import { getProducts } from "../../api/ProductApi";
 import { getCategory } from "../../api/CategoryApi";
 
 import classNames from "classnames/bind";
@@ -25,7 +25,7 @@ export default function CategoryPage() {
   useEffect(() => {
     setLoading(true);
 
-    Promise.all([getCategory(slug), getProduct(slug)]).then(
+    Promise.all([getCategory(slug), getProducts(slug)]).then(
       ([catRes, productRes]) => {
         setCategory(catRes.data); // ✅ Axios dùng .data
         setProducts(productRes.data); // ✅
@@ -47,7 +47,7 @@ export default function CategoryPage() {
       {category && <BannerSlider category={category} />}
 
       <div className={cx("main")}>
-        <FilterSidebar />
+        <FilterSidebar products={products} />
         <ProductGrid products={products} />
       </div>
     </div>

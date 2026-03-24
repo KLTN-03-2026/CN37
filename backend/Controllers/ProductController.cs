@@ -40,6 +40,8 @@ public class ProductController : ControllerBase
 
                 Rating = p.RatingAvg,
                 ReviewCount = p.RatingCount,
+                p.Brand,
+                p.Slug,
 
                 // 🔥 tính % giảm giá
                 DiscountPercent = p.DiscountPrice != null
@@ -56,5 +58,58 @@ public class ProductController : ControllerBase
             .ToListAsync();
 
         return Ok(products);
+    }
+
+    [Authorize]
+    [HttpGet("{slug}")]
+    public async Task<IActionResult> GetProductDetail(string slug)
+    {
+        var product = await _context.Products
+            .Where(p => p.Slug == slug && p.IsActive)
+            .Select(p => new {
+                p.Id,
+                p.Name,
+                p.Brand,
+                p.Price,
+                p.DiscountPrice,
+                p.Description,
+                p.RatingAvg,
+                p.RatingCount,
+                p.Thumbnail,
+                Images = _context.productImages
+                    .Where(i => i.ProductId == p.Id)
+                    .OrderByDescending(i => i.IsMain)
+                    .ThenBy(i => i.SortOrder)
+                    .Select(i => new {
+                        i.Id,
+                        i.ImageUrl,
+                        i.IsMain
+                    }).ToList(),
+                Specifications = _context.productSpecifications
+                    .Where(s => s.ProductId == p.Id)
+                    .Select(s => new {
+                        s.Id,
+                        s.SpecName,
+                        s.SpecValue
+                    }).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (product == null)
+            return NotFound(new { message = "Product not found" });
+
+        // Related products: cùng category, khác sản phẩm hiện tại
+        var related = await _context.Products
+            .Where(r => r.CategoryId == product.Id && r.Id != product.Id && r.IsActive)
+            .Select(r => new {
+                r.Id,
+                r.Name,
+                r.Price,
+                r.Thumbnail
+            })
+            .Take(5)
+            .ToListAsync();
+
+        return Ok(new { product, related });
     }
 }
