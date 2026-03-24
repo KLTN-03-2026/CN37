@@ -20,7 +20,7 @@ public class ProductController : ControllerBase
 
         if (category == null) return NotFound();
 
-        // 🔥 lấy cả category con
+        // lấy category cha + con
         var categoryIds = await _context.Categories
             .Where(c => c.Id == category.Id || c.ParentId == category.Id)
             .Select(c => c.Id)
@@ -32,9 +32,24 @@ public class ProductController : ControllerBase
             {
                 p.Id,
                 p.Name,
-                p.Price,
-                p.DiscountPrice,
-                p.Thumbnail
+                p.Price, // giá gốc
+                p.DiscountPrice, // giá KM
+                p.Thumbnail,
+
+                Rating = p.RatingAvg,
+                ReviewCount = p.RatingCount,
+
+                // 🔥 tính % giảm giá
+                DiscountPercent = p.DiscountPrice != null
+                    ? (int)((p.Price - p.DiscountPrice) * 100 / p.Price)
+                    : 0,
+
+                // 🔥 lấy specs
+                Specs = _context.productSpecifications
+                    .Where(s => s.ProductId == p.Id)
+                    .Select(s => s.SpecValue)
+                    .Take(3)
+                    .ToList()
             })
             .ToListAsync();
 
