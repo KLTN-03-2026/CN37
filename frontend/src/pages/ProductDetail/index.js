@@ -44,12 +44,14 @@ export default function ProductDetail() {
   return (
     <div className={cx("page")}>
       <div className={cx("top-section")}>
-        <ProductGallery images={product.Images} />
+        <ProductGallery images={product.images} />
         <ProductInfo product={product} />
       </div>
-      <ProductDescription description={product.Description} />
-      <ProductSpecifications specs={product.Specifications} />
-      <RelatedProducts products={related} />
+      <div className={cx("top-section")}>
+        <ProductDescription description={product.description} />
+        <ProductSpecifications specs={product.specifications} />
+      </div>
+      <RelatedProducts products={product.related} />
       <Reviews reviews={product.Reviews || []} /> {/* bạn có thể fetch Reviews riêng */}
     </div>
   );

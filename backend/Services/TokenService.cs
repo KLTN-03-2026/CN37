@@ -34,7 +34,7 @@ public class TokenService : ITokenService
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(token);
     }
-    public async Task<string> GenerateRefreshToken(User user)
+    public async Task<string> GenerateRefreshToken(User user, string deviceInfo, string ip)
     {
         var refreshTokenValue = Guid.NewGuid().ToString();
         var refreshToken = new RefreshToken
@@ -43,11 +43,87 @@ public class TokenService : ITokenService
             TokenHash = refreshTokenValue,
             ExpiresAt = DateTime.UtcNow.AddDays(7),
             IsRevoked = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            DeviceInfo = deviceInfo,
+            IpAddress = ip
         };
         await _context.RefreshTokens.AddAsync(refreshToken);
         await _context.SaveChangesAsync();
+
+        var session = new Session
+        {
+            UserId = user.Id,
+            RefreshTokenId = refreshToken.Id,
+            DeviceInfo = deviceInfo,
+            IpAddress = ip
+        };
+        _context.Sessions.Add(session);
+        await _context.SaveChangesAsync();
+
         return refreshTokenValue;
+    }
+
+    public async Task<List<SessionResponse>> GetSessionsAsync(long userId, string currentRefreshToken)
+    {
+        var currentTokenHash = Hash(currentRefreshToken);
+
+        var sessions = await (
+            from s in _context.Sessions
+            join r in _context.RefreshTokens
+                on s.RefreshTokenId equals r.Id
+            where s.UserId == userId && !r.IsRevoked
+            orderby s.LastActiveAt descending
+            select new SessionResponse
+            {
+                SessionId = s.Id,
+                Device = s.DeviceInfo,
+                Ip = s.IpAddress,
+                LastActive = s.LastActiveAt,
+                CreatedAt = s.CreateAt,
+                IsCurrent = r.TokenHash == currentTokenHash
+            }
+        ).ToListAsync();
+
+        return sessions;
+    }
+
+    public async Task<bool> LogoutSessionAsync(long userId, long sessionId)
+    {
+        Console.WriteLine(sessionId);
+        // 1. Tìm session thuộc user
+        var session = await _context.Sessions
+            .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId);
+
+        if (session == null)
+            return false;
+        
+        
+
+        // 2. Lấy refresh token tương ứng
+        var refresh = await _context.RefreshTokens
+            .FirstOrDefaultAsync(r => r.Id == session.RefreshTokenId);
+
+        if (refresh == null)
+            return false;
+
+        // 3. Revoke refresh token
+        refresh.IsRevoked = true;
+        refresh.RevokedAt = DateTime.UtcNow;
+
+        // 4. Xóa session (khuyến nghị)
+        _context.Sessions.Remove(session);
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    private string Hash(string input)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = System.Text.Encoding.UTF8.GetBytes(input);
+        var hash = sha256.ComputeHash(bytes);
+        return Convert.ToBase64String(hash);
     }
 
     public async Task<AuthResponse> RefreshTokenAsync(string refreshToken)
@@ -81,9 +157,21 @@ public class TokenService : ITokenService
             UserId = user.Id,
             TokenHash = newRefreshTokenValue,
             ExpiresAt = searchToken.ExpiresAt,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            DeviceInfo = searchToken.DeviceInfo,
+            IpAddress = searchToken.IpAddress
         };
         await _context.RefreshTokens.AddAsync(newRefreshToken);
+        await _context.SaveChangesAsync();
+
+        var session = new Session
+        {
+            UserId = user.Id,
+            RefreshTokenId = newRefreshToken.Id,
+            DeviceInfo = newRefreshToken.DeviceInfo,
+            IpAddress = newRefreshToken.IpAddress
+        };
+        _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
 
         return new AuthResponse

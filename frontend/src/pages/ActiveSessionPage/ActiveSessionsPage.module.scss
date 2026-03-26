@@ -1,0 +1,142 @@
+.wrapper {
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  p {
+    color: #6b7280;
+  }
+}
+
+.btnDangerOutline {
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    background: #fee2e2;
+  }
+}
+
+.warning {
+  background: #fff7ed;
+  border: 1px solid #f59e0b;
+  color: #92400e;
+  padding: 14px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  padding: 40px;
+}
+
+/* SESSION LISTS */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
+}
+
+.refresh {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+}
+
+/* SESSION ITEMS */
+.item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  transition: 0.2s;
+
+  &:hover {
+    background: #f9fafb;
+  }
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  background: #eef2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  margin-right: 16px;
+}
+
+.info {
+  flex: 1;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.device {
+  font-weight: 600;
+}
+
+.badge {
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.meta {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.action {
+}
+
+.now {
+  color: #6b7280;
+}
+
+.btnLogout {
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    background: #fee2e2;
+  }
+}

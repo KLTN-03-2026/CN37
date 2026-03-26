@@ -12,5 +12,6 @@ public class RefreshToken
     public DateTime? RevokedAt{get;set;}
     public string? DeviceInfo{get;set;}
     public string? IpAddress{get;set;}
-    public DateTime CreatedAt{get;set;}    
+    public DateTime CreatedAt{get;set;} 
+    public virtual Session Session { get; set; }   
 }

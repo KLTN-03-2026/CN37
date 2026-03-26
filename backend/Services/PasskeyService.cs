@@ -155,7 +155,7 @@ public class PasskeyService : IPasskeyService
             throw new Exception("User not found");
 
         var accessToken = _tokenService.GenerateAccessToken(user);
-        var refreshToken = await _tokenService.GenerateRefreshToken(user);
+        var refreshToken = await _tokenService.GenerateRefreshToken(user, "", "");
 
         _cache.Remove("login");
 

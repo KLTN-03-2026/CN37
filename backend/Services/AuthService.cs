@@ -48,7 +48,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<AuthResponse> LoginAsync(LoginRequest request)
+    public async Task<AuthResponse> LoginAsync(LoginRequest request, string ip)
     {
         var user = await _userRepo.GetUserByEmailAsync(request.Email);
         if (user == null || request.Password == null || !_passwordService.VerifyPassword(request.Password, user.PasswordHash))
@@ -63,7 +63,7 @@ public class AuthService : IAuthService
         {
             throw new Exception("Tài khoản của bạn đã bị vô hiệu hóa.");
         }
-        var refreshToken = await _tokenService.GenerateRefreshToken(user);
+        var refreshToken = await _tokenService.GenerateRefreshToken(user, request.DeviceInfo, ip);
         var accessToken = _tokenService.GenerateAccessToken(user);
         return new AuthResponse
         {
@@ -107,7 +107,7 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<AuthResponse> HandleGoogleLogin(GoogleJsonWebSignature.Payload payload)
+    public async Task<AuthResponse> HandleGoogleLogin(GoogleJsonWebSignature.Payload payload, string deviceInfo, string ip)
     {
         // 1. Tìm trong ExternalLogins trước (Dùng Subject của Google là chuẩn nhất)
         var external = await _context.ExternalLogins
@@ -184,8 +184,7 @@ public class AuthService : IAuthService
 
         // 6. Tạo Token hệ thống
         var accessToken = _tokenService.GenerateAccessToken(user);
-        var refreshToken = await _tokenService.GenerateRefreshToken(user);
-
+        var refreshToken = await _tokenService.GenerateRefreshToken(user, deviceInfo, ip);
         return new AuthResponse
         {
             AccessToken = accessToken,
@@ -197,7 +196,8 @@ public class AuthService : IAuthService
     public Task ForgotPasswordAsync(ForgotPasswordRequest request)
     {
         var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
-        if (user == null)        {
+        if (user == null)
+        {
             throw new Exception("Không tìm thấy tài khoản với email này.");
         }
         return _emailVerify.sendResetPasswordEmailAsync(user);

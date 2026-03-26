@@ -1,0 +1,30 @@
+.container{
+    
+}
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.sidebar {
+  width: 260px;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+}
+
+.content {
+  flex: 1;
+  padding: 32px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 16px;
+  }
+}

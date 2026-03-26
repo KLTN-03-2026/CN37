@@ -1,15 +1,25 @@
-.page {
-  padding: 1rem;
+/* ProductDetail.module.scss */
 
-  .top-section {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    @media(min-width: 768px) {
-      flex-direction: row;
-      gap: 2rem;
-    }
-  }
+.page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0px;
+  font-family: "Roboto", sans-serif;
+  color: #333;
+  background: #fff;
+}
+
+/* === Top Section: Gallery + Info === */
+.top-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 50px;
+}
+
+.top-section > * {
+  flex: 1 1 45%;
 }
 
 /*PRODUCT GALLERY*/

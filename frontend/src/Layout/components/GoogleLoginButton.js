@@ -1,5 +1,6 @@
 import { GoogleLogin } from "@react-oauth/google";
 import api from "../../api/AxiosClient";
+import { deviceInfo } from "../../helper/GetDeviceInfoHelper";
 
 function GoogleLoginButton() {
   const handleSuccess = async (credentialResponse) => {
@@ -7,6 +8,7 @@ function GoogleLoginButton() {
     try {
       const res = await api.post("/auth/google", {
         idToken: credentialResponse.credential,
+        DeviceInfo: deviceInfo
       });
 
       localStorage.setItem("accessToken", res.data.accessToken);

@@ -11,13 +11,13 @@ export default function ProductGallery({ images = [] }) {
   return (
     <div className={cx("gallery")}>
       <div className={cx("main-image")}>
-        <img src={selectedImage?.image_url} alt="product" />
+        <img src={selectedImage?.imageUrl} alt="product" />
       </div>
       <div className={cx("thumbnails")}>
         {images.map(img => (
           <img
             key={img.id}
-            src={img.image_url}
+            src={img.imageUrl}
             alt="thumbnail"
             className={cx({ selected: img.id === selectedImage.id })}
             onClick={() => setSelectedImage(img)}

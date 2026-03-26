@@ -13,6 +13,7 @@ import { logIn } from "../../api/AuthApi";
 import { notifySuccess, notifyError } from "../../components/Nofitication";
 import GoogleLoginButton from "../../Layout/components/GoogleLoginButton";
 import { loginPasskey } from "../../api/PasskeyApi";
+import { deviceInfo } from "../../helper/GetDeviceInfoHelper";
 
 const cx = classNames.bind(styles);
 
@@ -27,7 +28,7 @@ function LogIn() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const res = await logIn(email, password);
+      const res = await logIn(email, password, deviceInfo);
       if (res) {
         notifySuccess("Đăng nhập thành công");
         localStorage.setItem("accessToken", res.data.accessToken);

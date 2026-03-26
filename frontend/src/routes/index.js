@@ -1,5 +1,6 @@
 // layouts
 import DefaultLayout from "../Layout/DefaultLayout";
+import SettingsLayout from "../Layout/SidebarLayout";
 // pages
 import Home from "../pages/Home/Block_Cate_Banner";
 import Register from "../pages/Register";
@@ -10,6 +11,8 @@ import InputEmailReset from "../pages/InputEmailReset";
 import AccountSetting from "../pages/AccountSetting";
 import CategoryPage from "../pages/CategoryPage";
 import ProductDetail from "../pages/ProductDetail";
+import ActiveSessionsPage from "../pages/ActiveSessionPage";
+import { ProtectedRoute } from "./Routes";
 
 const routes = [
   {
@@ -61,6 +64,12 @@ const routes = [
     path: "/product/:slug",
     component: ProductDetail,
     layout: DefaultLayout
+  },
+  {
+    path: "/session",
+    component: ActiveSessionsPage,
+    layout: SettingsLayout,
+    ProtectedRoute: true
   }
 ];
 

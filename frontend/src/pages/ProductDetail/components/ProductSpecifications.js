@@ -11,8 +11,8 @@ export default function ProductSpecifications({ specs = [] }) {
         <tbody>
           {specs.map(spec => (
             <tr key={spec.id}>
-              <td>{spec.spec_name}</td>
-              <td>{spec.spec_value}</td>
+              <td>{spec.specName}</td>
+              <td>{spec.specValue}</td>
             </tr>
           ))}
         </tbody>

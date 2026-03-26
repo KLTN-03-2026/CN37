@@ -36,7 +36,8 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var result = await _authService.LoginAsync(request);
+            var ip = GetClientIp();
+            var result = await _authService.LoginAsync(request, ip);
             return Ok(result);
         }
         catch (System.Exception ex)
@@ -81,10 +82,11 @@ public class AuthController : ControllerBase
                 "386032350723-05tas9vtbgtfqqcfqluq6375h0i3kp8s.apps.googleusercontent.com"
             }
             };
+            var ip = GetClientIp();
 
             var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
 
-            var result = await _authService.HandleGoogleLogin(payload);
+            var result = await _authService.HandleGoogleLogin(payload, request.DeviceInfo, ip);
 
             return Ok(result);
         }
@@ -120,6 +122,18 @@ public class AuthController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    string? GetClientIp()
+    {
+        var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+
+        if (!string.IsNullOrEmpty(ip))
+        {
+            return ip.Split(',').First();
+        }
+
+        return HttpContext.Connection.RemoteIpAddress?.ToString();
     }
 }
 
