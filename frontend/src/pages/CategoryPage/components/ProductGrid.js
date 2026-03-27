@@ -42,14 +42,14 @@ export default function ProductGrid({ products }) {
           {/* PRICE */}
           <div className={cx("price-box")}>
             <span className={cx("price-sale")}>
-              {p.price.toLocaleString()}đ
-            </span>
-
-            {p.discountPrice && (
-              <span className={cx("price-original")}>
-                {p.discountPrice.toLocaleString()}đ
+                {p.discountPrice?.toLocaleString() || p.price.toLocaleString()}đ
               </span>
-            )}
+
+              {p.discountPrice && (
+                <span className={cx("price-original")}>
+                  {p.price.toLocaleString()}đ
+                </span>
+              )}
           </div>
 
           {/* RATING */}

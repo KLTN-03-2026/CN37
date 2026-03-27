@@ -108,6 +108,7 @@ public class ProductController : ControllerBase
             .Where(r => r.CategoryId == product.CategoryId && r.Id != product.Id && r.IsActive)
             .Select(r => new {
                 r.Id,
+                r.Slug,
                 r.Name,
                 r.Price,
                 r.Thumbnail,
