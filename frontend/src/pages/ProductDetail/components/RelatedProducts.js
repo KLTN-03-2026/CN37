@@ -3,12 +3,12 @@ import styles from "..//ProductDetail.module.scss";
 
 const cx = classNames.bind(styles);
 
-export default function RelatedProducts({ products = [] }) {
+export default function RelatedProducts({ related = [] }) {
   return (
     <div className={cx("related")}>
       <h2>Related Products</h2>
       <div className={cx("list")}>
-        {products.map(p => (
+        {related.map(p => (
           <div key={p.id} className={cx("card")}>
             <img src={p.thumbnail} alt={p.name} />
             <p>{p.name}</p>

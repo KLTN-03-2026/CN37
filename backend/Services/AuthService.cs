@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,10 @@ public class AuthService : IAuthService
         {
             throw new Exception("Hãy nhập đầy đủ các ô đăng kí.");
         }
+        if (!IsValidEmail(request.Email))
+        {
+            throw new Exception("Email này không đúng định dạng.");
+        }       
         var existingUser = await _userRepo.GetUserByEmailAsync(request.Email);
         if (existingUser != null)
         {
@@ -224,5 +229,14 @@ public class AuthService : IAuthService
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
         matchingToken.IsUsed = true;
         await _context.SaveChangesAsync();
+    }
+
+    public bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        string pattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+        return Regex.IsMatch(email, pattern);
     }
 }

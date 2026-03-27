@@ -76,6 +76,11 @@ public class ProductController : ControllerBase
                 p.RatingAvg,
                 p.RatingCount,
                 p.Thumbnail,
+                p.CategoryId,
+                DiscountPercent = p.DiscountPrice != null
+                    ? (int)((p.Price - p.DiscountPrice) * 100 / p.Price)
+                    : 0,
+                SaleMoney = p.Price - p.DiscountPrice,
                 Images = _context.productImages
                     .Where(i => i.ProductId == p.Id)
                     .OrderByDescending(i => i.IsMain)
@@ -100,12 +105,18 @@ public class ProductController : ControllerBase
 
         // Related products: cùng category, khác sản phẩm hiện tại
         var related = await _context.Products
-            .Where(r => r.CategoryId == product.Id && r.Id != product.Id && r.IsActive)
+            .Where(r => r.CategoryId == product.CategoryId && r.Id != product.Id && r.IsActive)
             .Select(r => new {
                 r.Id,
                 r.Name,
                 r.Price,
-                r.Thumbnail
+                r.Thumbnail,
+                r.DiscountPrice,
+                r.RatingAvg,
+                r.RatingCount,
+                DiscountPercent = r.DiscountPrice != null
+                    ? (int)((r.Price - r.DiscountPrice) * 100 / r.Price)
+                    : 0
             })
             .Take(5)
             .ToListAsync();

@@ -4,6 +4,7 @@ import classNames from "classnames/bind";
 import styles from "./ActiveSessionsPage.module.scss";
 import SessionList from "./components/SessionList";
 import { getSessions, logoutSessionId } from "../../api/SessionApi";
+import { notifyError, notifySuccess } from "../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -25,8 +26,16 @@ export default function ActiveSessionsPage() {
   };
 
   const logoutSession = async (sessionId) => {
-    await logoutSessionId(sessionId);
-    fetchSessions();
+    try {
+      const res = await logoutSessionId(sessionId);
+      if (res) {
+        notifySuccess("Đăng xuất thành công");
+        fetchSessions();
+      }
+    } catch (error) {
+      const errMsg = error.response?.data || "Đăng nhập thất bại";
+      notifyError(errMsg);
+    }
   };
 
   const logoutAllSessions = async () => {
@@ -47,17 +56,15 @@ export default function ActiveSessionsPage() {
           <p>Manage devices currently signed in to your account.</p>
         </div>
 
-        <button
-          className={cx("btnDangerOutline")}
-          onClick={logoutAllSessions}
-        >
+        <button className={cx("btnDangerOutline")} onClick={logoutAllSessions}>
           Sign out all other sessions
         </button>
       </div>
 
       {/* Warning */}
       <div className={cx("warning")}>
-        ⚠️ Multiple active sessions detected. Review unrecognized devices and sign them out if needed.
+        ⚠️ Multiple active sessions detected. Review unrecognized devices and
+        sign them out if needed.
       </div>
 
       {/* Content */}

@@ -11,5 +11,5 @@ export const getSessions = (refreshToken) => {
 export const logoutSessionId = (sessionId) =>{
   console.log(sessionId);
   
-  api.post("/session/logout-session", { sessionId })
+  return api.post("/session/logout-session", { sessionId })
 }
