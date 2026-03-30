@@ -41,7 +41,7 @@ function UserButton() {
         <div className={cx("dropdown")}>
           <div
             className={cx("dropdownItem")}
-            onClick={() => navigate("/account-setting")}
+            onClick={() => navigate("/profile")}
           >
             Hồ sơ của tôi
           </div>
@@ -53,7 +53,7 @@ function UserButton() {
           </div>
           <div
             className={cx("dropdownItem")}
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/session")}
           >
             Cài đặt tài khoản
           </div>

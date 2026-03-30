@@ -13,6 +13,7 @@ import CategoryPage from "../pages/CategoryPage";
 import ProductDetail from "../pages/ProductDetail";
 import ActiveSessionsPage from "../pages/ActiveSessionPage";
 import CartPage from "../pages/CartPage";
+import ProfilePage from "../pages/ProfilePage";
 import { ProtectedRoute } from "./Routes";
 
 const routes = [
@@ -76,6 +77,12 @@ const routes = [
     path: "/cart",
     component: CartPage,
     layout: DefaultLayout,
+    ProtectedRoute: true
+  },
+  {
+    path: "/profile",
+    component: ProfilePage,
+    layout: SettingsLayout,
     ProtectedRoute: true
   }
 ];
