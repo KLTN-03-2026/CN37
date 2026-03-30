@@ -18,6 +18,9 @@ public class AppDbContext : DbContext
     public DbSet<ProductImage> productImages { get; set; }
     public DbSet<ProductSpecification> productSpecifications { get; set; }
     public DbSet<Session> Sessions { get; set; }
+    public DbSet<Cart> Carts { get; set; }
+    public DbSet<CartItem> CartItems { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -193,5 +196,29 @@ public class AppDbContext : DbContext
             // 🔗 Relation Product
             entity.HasOne(x => x.Product).WithMany(p => p.Specifications).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
         });
-    }
+
+        modelBuilder.Entity<Cart>(entity =>
+        {
+            entity.ToTable("carts");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            // 🔗 Relation User
+            entity.HasOne(x => x.User).WithMany(u => u.Carts).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+            modelBuilder.Entity<CartItem>(entity =>
+            {
+                entity.ToTable("cart_items");
+                entity.HasKey(x => x.Id);
+                entity.Property(x => x.Id).HasColumnName("id");
+                entity.Property(x => x.CartId).HasColumnName("cart_id").IsRequired();
+                entity.Property(x => x.ProductId).HasColumnName("product_id").IsRequired();
+                entity.Property(x => x.Quantity).HasColumnName("quantity").IsRequired();
+                // 🔗 Relation Cart
+                entity.HasOne(x => x.Cart).WithMany(c => c.CartItems).HasForeignKey(x => x.CartId).OnDelete(DeleteBehavior.Cascade);
+                // 🔗 Relation Product
+                entity.HasOne(x => x.Product).WithMany(p => p.CartItems).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+            });
+        }
 }

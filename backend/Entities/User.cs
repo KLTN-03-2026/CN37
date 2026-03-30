@@ -9,4 +9,5 @@ public class User
     public DateTime CreatedAt { get; set;} = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set;} = DateTime.UtcNow;
     public ICollection<Session> Sessions { get; set; } = new List<Session>();
+    public ICollection<Cart> Carts { get; set; } = new List<Cart>();
 }

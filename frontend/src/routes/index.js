@@ -12,6 +12,7 @@ import AccountSetting from "../pages/AccountSetting";
 import CategoryPage from "../pages/CategoryPage";
 import ProductDetail from "../pages/ProductDetail";
 import ActiveSessionsPage from "../pages/ActiveSessionPage";
+import CartPage from "../pages/CartPage";
 import { ProtectedRoute } from "./Routes";
 
 const routes = [
@@ -69,6 +70,12 @@ const routes = [
     path: "/session",
     component: ActiveSessionsPage,
     layout: SettingsLayout,
+    ProtectedRoute: true
+  },
+  {
+    path: "/cart",
+    component: CartPage,
+    layout: DefaultLayout,
     ProtectedRoute: true
   }
 ];

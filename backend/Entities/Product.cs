@@ -50,4 +50,5 @@ public class Product
     public ICollection<ProductImage> Images { get; set; }
 
     public ICollection<ProductSpecification> Specifications { get; set; }
+    public ICollection<CartItem> CartItems { get; set; }
 }

@@ -1,6 +1,8 @@
 import classNames from "classnames/bind";
 import styles from "../ProductDetail.module.scss";
 import { useEffect, useState } from "react";
+import { addToCart } from "../../../api/CartApi";
+import { notifyError, notifySuccess } from "../../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 const ONE_HOUR = 60 * 60;
@@ -16,6 +18,7 @@ export default function ProductInfo({ product }) {
     discountPercent,
     saleMoney,
   } = product;
+
   const [timeLeft, setTimeLeft] = useState(ONE_HOUR);
 
   useEffect(() => {
@@ -32,7 +35,6 @@ export default function ProductInfo({ product }) {
     return () => clearInterval(timer);
   }, []);
 
-
   const formatTime = (time) => {
     const hours = String(Math.floor(time / 3600)).padStart(2, "0");
     const minutes = String(Math.floor((time % 3600) / 60)).padStart(2, "0");
@@ -42,6 +44,19 @@ export default function ProductInfo({ product }) {
   };
 
   const time = formatTime(timeLeft);
+
+  const handleAddToCart = async () => {
+    try {
+      console.log(product.id);
+      // Logic to add product to cart
+      const res = await addToCart(product.id, 1);
+      if (res) {
+        notifySuccess("Thêm vào giỏ hàng thành công!");
+      }
+    } catch (error) {
+      notifyError("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng!");
+    }
+  };
 
   return (
     <div className={cx("info")}>
@@ -94,7 +109,9 @@ export default function ProductInfo({ product }) {
 
       <div className={cx("actions")}>
         <button className={cx("buy-btn")}>Mua ngay</button>
-        <button className={cx("cart-btn")}>🛒</button>
+        <button className={cx("cart-btn")} onClick={handleAddToCart}>
+          🛒
+        </button>
       </div>
     </div>
   );
