@@ -86,9 +86,10 @@ export default function ProfilePage() {
 
   return (
     <div className={cx("container")}>
+      <h2 className={cx("title")}>Thông tin cá nhân</h2>
       <div className={cx("card")}>
         {/* TITLE */}
-        <h2 className={cx("title")}>Thông tin cá nhân</h2>
+        
 
         {/* AVATAR */}
         <div className={cx("avatarSection")}>

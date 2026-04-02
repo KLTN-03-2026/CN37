@@ -14,6 +14,7 @@ import ProductDetail from "../pages/ProductDetail";
 import ActiveSessionsPage from "../pages/ActiveSessionPage";
 import CartPage from "../pages/CartPage";
 import ProfilePage from "../pages/ProfilePage";
+import AddressLisstPage from "../pages/AddressListPage";
 import { ProtectedRoute } from "./Routes";
 
 const routes = [
@@ -82,6 +83,12 @@ const routes = [
   {
     path: "/profile",
     component: ProfilePage,
+    layout: SettingsLayout,
+    ProtectedRoute: true
+  },
+  {
+    path: "/address",
+    component: AddressLisstPage,
     layout: SettingsLayout,
     ProtectedRoute: true
   }

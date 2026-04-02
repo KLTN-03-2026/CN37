@@ -1,0 +1,219 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 70vh; /* chiều cao tối đa 80% viewport */
+  overflow-y: auto; /* nếu nội dung vượt quá thì scroll */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* optional: scroll đẹp hơn trên Webkit */
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background-color: var(--primary-red);
+  border-radius: 3px;
+}
+
+.modal::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.title {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-red);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+
+  label {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #333;
+  }
+
+  select {
+    padding: 0.5rem 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: border 0.2s;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #59c241;
+      box-shadow: 0 0 5px rgba(89, 194, 65, 0.4);
+    }
+
+    &:focus {
+      border-color: #59c241;
+      box-shadow: 0 0 8px rgba(89, 194, 65, 0.6);
+    }
+
+    &:disabled {
+      background-color: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.form-label {
+  font-size: small;
+  font-weight: 600;
+  color: black;
+  margin-bottom: 0.5rem;
+  margin-top: 0px;
+}
+
+.divider {
+  border-top: 1px solid #ddd;
+  margin: 12px 0;
+}
+
+.input-group label {
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+  font-size: x-small;
+  color: #555;
+}
+
+.input-group input {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border 0.2s;
+}
+
+.input-group input:focus {
+  border-color: #59c241;
+  outline: none;
+  box-shadow: 0 0 5px rgba(89, 194, 65, 0.5);
+}
+
+/* ProfilePage.module.scss */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Ẩn checkbox thật */
+.toggle-checkbox {
+  display: none;
+}
+
+/* Label kiểu toggle viên thuốc */
+.toggle-label {
+  position: relative;
+  display: inline-block;
+  width: 50px; /* chiều dài viên thuốc */
+  height: 26px; /* chiều cao viên thuốc */
+  background-color: #ccc; /* màu khi tắt */
+  border-radius: 50px; /* bo tròn 2 đầu */
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+/* Tạo hình tròn trượt */
+.toggle-label::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px; /* đường kính tròn */
+  height: 22px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+/* Khi checkbox checked */
+.toggle-checkbox:checked + .toggle-label {
+  background-color: var(--primary-red); /* màu xanh khi bật */
+}
+
+.toggle-checkbox:checked + .toggle-label::before {
+  transform: translateX(24px); /* trượt sang phải */
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn {
+  padding: 0.6rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel {
+  background-color: #f5f5f5;
+  color: #555;
+}
+
+.cancel:hover {
+  background-color: #e0e0e0;
+}
+
+.submit {
+  background-color: var(--primary-red);
+  color: #fff;
+}
+
+.submit:hover {
+  background-color: var(--primary-red-hover);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .row {
+    flex-direction: column;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

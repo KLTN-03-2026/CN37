@@ -1,0 +1,46 @@
+.container {
+}
+
+
+/* CARD */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+
+  /* hiệu ứng giống FPT */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* TITLE */
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.pageTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* title bên trái, button bên phải */
+
+  .addButton {
+    background-color: #e53935; /* đỏ tươi FPT style */
+    color: #fff; /* chữ trắng */
+    border: none;
+    padding: 10px 20px; /* khoảng cách chữ trong button */
+    border-radius: 50px; /* viên thuốc */
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #d32f2f; /* đỏ đậm hơn khi hover */
+    }
+
+    &:active {
+      transform: scale(0.98); /* hiệu ứng nhấn */
+    }
+  }
+}

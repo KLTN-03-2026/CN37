@@ -52,26 +52,25 @@ export default function ActiveSessionsPage() {
       {/* Header */}
       <div className={cx("header")}>
         <div>
-          <h2>Active Sessions</h2>
-          <p>Manage devices currently signed in to your account.</p>
+          <h2>Quản lý phiên đăng nhập</h2>
+          <p>Quản lý các thiết bị đang đăng nhập vào tài khoản của bạn.</p>
         </div>
 
         <button className={cx("btnDangerOutline")} onClick={logoutAllSessions}>
-          Sign out all other sessions
+          Đăng xuất tất cả các phiên khác
         </button>
       </div>
 
       {/* Warning */}
       <div className={cx("warning")}>
-        ⚠️ Multiple active sessions detected. Review unrecognized devices and
-        sign them out if needed.
+        ⚠️ Nếu bạn thấy thiết bị hoặc vị trí nào không nhận ra, hãy đăng xuất khỏi phiên đó ngay lập tức.
       </div>
 
       {/* Content */}
       {loading ? (
         <div className={cx("loading")}>Loading...</div>
       ) : sessions.length === 0 ? (
-        <div className={cx("empty")}>No active sessions</div>
+        <div className={cx("empty")}>Không có phiên đăng nhập nào.</div>
       ) : (
         <SessionList
           sessions={sessions}
