@@ -37,7 +37,7 @@ export default function SessionItem({ session, onLogout }) {
             className={cx("btnLogout")}
             onClick={() => onLogout(session.id)}
           >
-            Sign out
+            Đăng xuất
           </button>
         )}
       </div>

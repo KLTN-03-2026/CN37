@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 import classNames from "classnames/bind";
 import styles from "./ProfilePage.module.scss";
-import { getProfile, updateProfile, updateProfileAvatar } from "../../api/ProfileApi";
+import {
+  getProfile,
+  updateProfile,
+  updateProfileAvatar,
+} from "../../api/ProfileApi";
 import { notifySuccess, notifyError } from "../../components/Nofitication";
+import { registerPasskey} from "../../api/PasskeyApi";
+import { getUserFromToken } from "../../helper/JwtDecodeHelper";
 
 const cx = classNames.bind(styles);
 
 export default function ProfilePage() {
+  const user = getUserFromToken();
   const [form, setForm] = useState({});
 
   useEffect(() => {
@@ -89,7 +96,6 @@ export default function ProfilePage() {
       <h2 className={cx("title")}>Thông tin cá nhân</h2>
       <div className={cx("card")}>
         {/* TITLE */}
-        
 
         {/* AVATAR */}
         <div className={cx("avatarSection")}>
@@ -217,6 +223,18 @@ export default function ProfilePage() {
 
           <button className={cx("submit")} onClick={handleSubmit}>
             Cập nhật thông tin
+          </button>
+          <button
+            className={cx("submit")}
+            onClick={() => {
+              if (!user) {
+                notifyError("User not authenticated");
+                return;
+              }
+              registerPasskey(user.userId, user.email);
+            }}
+          >
+            Tạo passkey
           </button>
         </div>
       </div>

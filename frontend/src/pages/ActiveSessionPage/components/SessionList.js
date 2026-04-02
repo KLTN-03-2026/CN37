@@ -8,9 +8,9 @@ export default function SessionList({ sessions, onLogout, onRefresh }) {
   return (
     <div className={cx("card")}>
       <div className={cx("cardHeader")}>
-        <span>{sessions.length} sessions active</span>
+        <span>{sessions.length} phiên đăng nhập</span>
         <button className={cx("refresh")} onClick={onRefresh}>
-          Refresh
+          Làm mới
         </button>
       </div>
 
