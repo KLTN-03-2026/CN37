@@ -1,5 +1,4 @@
 .container {
-  background: #f6f7fb;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -15,7 +14,6 @@
 
 /* SIDEBAR */
 .sidebar {
-  width: 260px;
   background: #fff;
   border-radius: 16px;
   padding: 20px;
@@ -30,9 +28,7 @@
 /* CONTENT */
 .content {
   flex: 1;
-  background: #fff;
+  background: transparent;
   border-radius: 16px;
-  padding: 20px;
-  border: 1px solid #eee;
   min-height: 400px;
 }

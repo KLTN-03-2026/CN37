@@ -16,6 +16,7 @@ public class UserController : ControllerBase
     return Ok(new
     {
         id = userId,
+        email = User.FindFirst(ClaimTypes.Email)?.Value
     });
 }
 }

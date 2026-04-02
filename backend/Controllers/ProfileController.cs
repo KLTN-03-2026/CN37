@@ -54,6 +54,37 @@ public class ProfileController : ControllerBase
         return Ok();
     }
 
+    [HttpPost("avatar")]
+    public async Task<IActionResult> UploadAvatar(IFormFile avatar)
+    {
+        if (avatar == null || avatar.Length == 0)
+            return BadRequest(new { success = false, message = "Chưa chọn file" });
+
+        var userId = GetUserId(); // hàm lấy user đang đăng nhập
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(avatar.FileName)}";
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatars", fileName);
+
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+
+        // Lưu file
+        var filePath = Path.Combine(path, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await avatar.CopyToAsync(stream);
+        }
+
+        // Cập nhật avatar URL vào database
+        var user = await _context.UserProfiles.FindAsync(userId);
+        user.Avatar = $"/avatars/{fileName}";
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, avatar = user.Avatar });
+    }
+
     private long GetUserId()
     {
         return long.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
