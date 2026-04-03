@@ -1,0 +1,74 @@
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 1rem;
+  background-color: #fff;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .name {
+        font-weight: bold;
+      }
+
+      .phone {
+        color: #555;
+      }
+
+      .default {
+        background-color: #dff0d8;
+        color: #3c763d;
+        font-size: 0.75rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 10px;
+      }
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+
+      button {
+        background: none;
+        border: none;
+        color: #d9534f;
+        cursor: pointer;
+        font-size: 0.9rem;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  .address {
+    margin-top: 0.5rem;
+    color: #333;
+    font-size: 0.9rem;
+  }
+
+  .oldAddress {
+    margin-top: 0.3rem;
+    color: #999;
+    font-size: 0.8rem;
+    font-style: italic;
+  }
+}

@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<Session> Sessions { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
+    public DbSet<UserAddress> UserAddresses { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -207,18 +208,36 @@ public class AppDbContext : DbContext
             // 🔗 Relation User
             entity.HasOne(x => x.User).WithMany(u => u.Carts).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
         });
-            modelBuilder.Entity<CartItem>(entity =>
-            {
-                entity.ToTable("cart_items");
-                entity.HasKey(x => x.Id);
-                entity.Property(x => x.Id).HasColumnName("id");
-                entity.Property(x => x.CartId).HasColumnName("cart_id").IsRequired();
-                entity.Property(x => x.ProductId).HasColumnName("product_id").IsRequired();
-                entity.Property(x => x.Quantity).HasColumnName("quantity").IsRequired();
-                // 🔗 Relation Cart
-                entity.HasOne(x => x.Cart).WithMany(c => c.CartItems).HasForeignKey(x => x.CartId).OnDelete(DeleteBehavior.Cascade);
-                // 🔗 Relation Product
-                entity.HasOne(x => x.Product).WithMany(p => p.CartItems).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
-            });
-        }
+        modelBuilder.Entity<CartItem>(entity =>
+        {
+            entity.ToTable("cart_items");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.CartId).HasColumnName("cart_id").IsRequired();
+            entity.Property(x => x.ProductId).HasColumnName("product_id").IsRequired();
+            entity.Property(x => x.Quantity).HasColumnName("quantity").IsRequired();
+            // 🔗 Relation Cart
+            entity.HasOne(x => x.Cart).WithMany(c => c.CartItems).HasForeignKey(x => x.CartId).OnDelete(DeleteBehavior.Cascade);
+            // 🔗 Relation Product
+            entity.HasOne(x => x.Product).WithMany(p => p.CartItems).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<UserAddress>(entity =>
+        {
+            entity.ToTable("user_addresses");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.ReceiverName).HasColumnName("receiver_name").HasMaxLength(100);
+            entity.Property(x => x.ReceiverPhone).HasColumnName("phone").HasMaxLength(20);
+            entity.Property(x => x.Province).HasColumnName("province").HasMaxLength(100);
+            entity.Property(x => x.District).HasColumnName("district").HasMaxLength(100);
+            entity.Property(x => x.Ward).HasColumnName("ward").HasMaxLength(100);
+            entity.Property(x => x.Street).HasColumnName("address_detail").HasMaxLength(255);
+            entity.Property(x => x.IsDefault).HasColumnName("is_default").HasDefaultValue(false);
+            entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            // 🔗 Relation User
+            entity.HasOne(x => x.User).WithMany(u => u.UserAddresses).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+    }
 }

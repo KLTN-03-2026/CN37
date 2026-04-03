@@ -64,6 +64,7 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IPasskeyService, PasskeyService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IUserAddressService, UserAddressService>();
 
 
 builder.Services.Configure<JwtOptions>(

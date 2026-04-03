@@ -77,7 +77,7 @@ function ResetPassword() {
             />
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="● ● ● ● ● ●"
+              placeholder="Nhập lại mật khẩu mới"
               autoComplete="off"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}

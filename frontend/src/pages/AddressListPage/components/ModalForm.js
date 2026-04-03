@@ -4,7 +4,7 @@ import styles from "./ModalForm.module.scss";
 
 const cx = classNames.bind(styles);
 
-export default function ModalForm({ isOpen, onClose, onSubmit }) {
+export default function ModalForm({ isOpen, onClose, onSubmit, initialData }) {
   const [form, setForm] = useState({
     receiver_name: "",
     phone: "",
@@ -23,7 +23,7 @@ export default function ModalForm({ isOpen, onClose, onSubmit }) {
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedWard, setSelectedWard] = useState("");
 
-  // Lấy danh sách tỉnh
+  // Load danh sách provinces khi mount
   useEffect(() => {
     fetch("https://provinces.open-api.vn/api/p/")
       .then((res) => res.json())
@@ -31,53 +31,129 @@ export default function ModalForm({ isOpen, onClose, onSubmit }) {
       .catch((err) => console.error(err));
   }, []);
 
-  // Load districts khi chọn province
+
+  // Khi provinces hoặc initialData thay đổi, fill dữ liệu nếu có
   useEffect(() => {
-    if (!selectedProvince) {
-      setDistricts([]);
-      setSelectedDistrict("");
-      setWards([]);
-      setSelectedWard("");
-      setForm((prev) => ({ ...prev, province: "", district: "", ward: "" }));
-      return;
-    }
-    fetch(`https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`)
-      .then((res) => res.json())
-      .then((data) => {
-        setDistricts(data.districts || []);
-        setForm((prev) => ({ ...prev, province: data.name, district: "", ward: "" }));
+    const fillData = async () => {
+      if (!initialData || provinces.length === 0) {
+        setForm({
+          receiver_name: "",
+          phone: "",
+          province: "",
+          district: "",
+          ward: "",
+          address_detail: "",
+          is_default: false,
+        });
+        setSelectedProvince("");
         setSelectedDistrict("");
         setSelectedWard("");
+        setDistricts([]);
         setWards([]);
-      })
-      .catch((err) => console.error(err));
-  }, [selectedProvince]);
+        return;
+      }
+      setForm({
+        receiver_name: initialData.receiverName || "",
+        phone: initialData.receiverPhone || "",
+        province: initialData.province || "",
+        district: initialData.district || "",
+        ward: initialData.ward || "",
+        address_detail: initialData.street || "",
+        is_default: initialData.isDefault || false,
+      });
 
-  // Load wards khi chọn district
-  useEffect(() => {
-    if (!selectedDistrict) {
-      setWards([]);
-      setSelectedWard("");
-      setForm((prev) => ({ ...prev, district: "", ward: "" }));
-      return;
+      // tìm province code
+      const provinceObj = provinces.find(
+        (p) => p.name === initialData.province,
+      );
+      if (!provinceObj) return;
+      setSelectedProvince(provinceObj.code);
+
+      // fetch districts
+      const districtRes = await fetch(
+        `https://provinces.open-api.vn/api/p/${provinceObj.code}?depth=2`,
+      );
+      const districtData = await districtRes.json();
+      setDistricts(districtData.districts || []);
+
+      // tìm district code
+      const districtObj = districtData.districts.find(
+        (d) => d.name === initialData.district,
+      );
+      if (!districtObj) return;
+      setSelectedDistrict(districtObj.code);
+
+      // fetch wards
+      const wardRes = await fetch(
+        `https://provinces.open-api.vn/api/d/${districtObj.code}?depth=2`,
+      );
+      const wardData = await wardRes.json();
+      setWards(wardData.wards || []);
+
+      // tìm ward code
+      const wardObj = wardData.wards.find((w) => w.name === initialData.ward);
+      if (wardObj) setSelectedWard(wardObj.code);
+    };
+
+    fillData();
+  }, [initialData, provinces]);
+
+  // Khi chọn province
+  const handleProvinceChange = async (e) => {
+    const code = Number(e.target.value);
+    setSelectedProvince(code);
+    setSelectedDistrict("");
+    setSelectedWard("");
+    setDistricts([]);
+    setWards([]);
+    const provinceObj = provinces.find((p) => p.code === code);
+    setForm((prev) => ({
+      ...prev,
+      province: provinceObj ? provinceObj.name : "",
+      district: "",
+      ward: "",
+    }));
+
+    if (code) {
+      const res = await fetch(
+        `https://provinces.open-api.vn/api/p/${code}?depth=2`,
+      );
+      const data = await res.json();
+      setDistricts(data.districts || []);
     }
-    fetch(`https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`)
-      .then((res) => res.json())
-      .then((data) => {
-        setWards(data.wards || []);
-        setForm((prev) => ({ ...prev, district: data.name, ward: "" }));
-        setSelectedWard("");
-      })
-      .catch((err) => console.error(err));
-  }, [selectedDistrict]);
-
-  const handleWardChange = (e) => {
-    const code = e.target.value;
-    const wardObj = wards.find((w) => w.code === code);
-    setSelectedWard(code);
-    setForm((prev) => ({ ...prev, ward: wardObj?.name || "" }));
   };
 
+  // Khi chọn district
+  const handleDistrictChange = async (e) => {
+    const code = Number(e.target.value);
+    setSelectedDistrict(code);
+    setSelectedWard("");
+    setWards([]);
+    const districtObj = districts.find((d) => d.code === code);
+    setForm((prev) => ({
+      ...prev,
+      district: districtObj ? districtObj.name : "",
+      ward: "",
+    }));
+
+    if (code) {
+      const res = await fetch(
+        `https://provinces.open-api.vn/api/d/${code}?depth=2`,
+      );
+      const data = await res.json();
+      setWards(data.wards || []);
+    }
+  };
+
+  // Khi chọn ward
+  const handleWardChange = (e) => {
+    const code = Number(e.target.value);
+    setSelectedWard(code);
+    const wardObj = wards.find((w) => w.code === code);
+    setForm((prev) => ({ ...prev, ward: wardObj ? wardObj.name : "" }));
+  };
+
+  // Các input khác
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -97,10 +173,9 @@ export default function ModalForm({ isOpen, onClose, onSubmit }) {
   return (
     <div className={cx("overlay")}>
       <div className={cx("modal")}>
-        <h2 className={cx("title")}>Thêm địa chỉ mới</h2>
+        <h2 className={cx("title")}>{initialData?.id ? "Cập nhật địa chỉ" : "Thêm địa chỉ mới"}</h2>
         <form className={cx("form")} onSubmit={handleSubmit}>
           <div className={cx("input-group")}>
-            <p className={cx("form-label")}>Thông tin người nhận</p>
             <label>Họ và tên</label>
             <input
               type="text"
@@ -111,6 +186,7 @@ export default function ModalForm({ isOpen, onClose, onSubmit }) {
               required
             />
           </div>
+
           <div className={cx("input-group")}>
             <label>Số điện thoại</label>
             <input
@@ -124,14 +200,11 @@ export default function ModalForm({ isOpen, onClose, onSubmit }) {
             />
           </div>
 
-          <div className={cx("divider")} />
-
           <div className={cx("input-group")}>
-            <p className={cx("form-label")}>Địa chỉ nhận hàng</p>
             <label>Tỉnh/Thành phố</label>
             <select
               value={selectedProvince}
-              onChange={(e) => setSelectedProvince(e.target.value)}
+              onChange={handleProvinceChange}
               required
             >
               <option value="">Chọn tỉnh/thành</option>
@@ -147,7 +220,7 @@ export default function ModalForm({ isOpen, onClose, onSubmit }) {
             <label>Quận/Huyện</label>
             <select
               value={selectedDistrict}
-              onChange={(e) => setSelectedDistrict(e.target.value)}
+              onChange={handleDistrictChange}
               disabled={!districts.length}
               required
             >
@@ -189,8 +262,6 @@ export default function ModalForm({ isOpen, onClose, onSubmit }) {
             />
           </div>
 
-          <div className={cx("divider")} />
-
           <div className={cx("checkbox-group")}>
             <input
               type="checkbox"
@@ -205,7 +276,11 @@ export default function ModalForm({ isOpen, onClose, onSubmit }) {
           </div>
 
           <div className={cx("buttons")}>
-            <button type="button" className={cx("btn", "cancel")} onClick={onClose}>
+            <button
+              type="button"
+              className={cx("btn", "cancel")}
+              onClick={onClose}
+            >
               Hủy
             </button>
             <button type="submit" className={cx("btn", "submit")}>
