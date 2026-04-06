@@ -34,6 +34,16 @@ function CartPage() {
     loadCart();
   };
 
+  const handleCheckOut = () => {
+    const orderRequest = {
+      items: selectedItems.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      })),
+    };
+    console.log("Order Request:", orderRequest);
+  };
+
   const handleAskRemove = (id) => {
     setSelectedId(id);
     setShowConfirm(true);
@@ -116,7 +126,7 @@ function CartPage() {
 
         {/* RIGHT */}
         <div className={cx("right")}>
-          <CartSummary items={selectedItems} />
+          <CartSummary items={selectedItems} onCheckOut={handleCheckOut} />
         </div>
       </div>
       <ConfirmDialog

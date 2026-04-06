@@ -3,6 +3,7 @@ import styles from "../ProductDetail.module.scss";
 import { useEffect, useState } from "react";
 import { addToCart } from "../../../api/CartApi";
 import { notifyError, notifySuccess } from "../../../components/Nofitication";
+import { useNavigate } from "react-router-dom";
 
 const cx = classNames.bind(styles);
 const ONE_HOUR = 60 * 60;
@@ -18,6 +19,8 @@ export default function ProductInfo({ product }) {
     discountPercent,
     saleMoney,
   } = product;
+
+  const navigate = useNavigate();
 
   const [timeLeft, setTimeLeft] = useState(ONE_HOUR);
 
@@ -44,6 +47,14 @@ export default function ProductInfo({ product }) {
   };
 
   const time = formatTime(timeLeft);
+
+  const handleBuyNow = () => {
+    if (!product?.id) return;
+
+    navigate(
+      `/checkout?type=buy-now&productId=${product.id}&quantity=${"1"}`,
+    );
+  };
 
   const handleAddToCart = async () => {
     try {
@@ -108,7 +119,9 @@ export default function ProductInfo({ product }) {
       </div>
 
       <div className={cx("actions")}>
-        <button className={cx("buy-btn")}>Mua ngay</button>
+        <button className={cx("buy-btn")} onClick={handleBuyNow}>
+          Mua ngay
+        </button>
         <button className={cx("cart-btn")} onClick={handleAddToCart}>
           🛒
         </button>

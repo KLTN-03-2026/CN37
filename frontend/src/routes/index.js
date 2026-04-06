@@ -15,6 +15,7 @@ import ActiveSessionsPage from "../pages/ActiveSessionPage";
 import CartPage from "../pages/CartPage";
 import ProfilePage from "../pages/ProfilePage";
 import AddressLisstPage from "../pages/AddressListPage";
+import CheckoutPage from "../pages/CheckoutPage";
 import { ProtectedRoute } from "./Routes";
 
 const routes = [
@@ -90,6 +91,12 @@ const routes = [
     path: "/address",
     component: AddressLisstPage,
     layout: SettingsLayout,
+    ProtectedRoute: true
+  },
+  {
+    path: "/checkout",
+    component: CheckoutPage,
+    layout: DefaultLayout,
     ProtectedRoute: true
   }
 ];

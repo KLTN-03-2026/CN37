@@ -1,0 +1,53 @@
+.card{
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e5e5e5;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.paymentList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.paymentItem {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.paymentItem:hover {
+  border-color: #ee4d2d;
+}
+
+.paymentItem.active {
+  border: 2px solid #ee4d2d;
+  background: #fff6f4;
+}
+
+.paymentInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.paymentTitle {
+  font-weight: 500;
+  color: #222;
+}
+
+.paymentDesc {
+  font-size: 12px;
+  color: #757575;
+}

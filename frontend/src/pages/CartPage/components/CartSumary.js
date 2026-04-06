@@ -3,7 +3,7 @@ import classNames from "classnames/bind";
 
 const cx = classNames.bind(styles);
 
-function CartSummary({ items }) {
+function CartSummary({ items, onCheckOut }) {
   const total = items.reduce(
     (sum, item) =>
       sum + (item.price * item.quantity),
@@ -45,7 +45,7 @@ function CartSummary({ items }) {
         <span>🪙 +{Math.floor(finalTotal / 4000)}</span>
       </div>
 
-      <button className={cx("checkout")} disabled={items.length === 0}>
+      <button className={cx("checkout")} onClick={onCheckOut} disabled={items.length === 0}>
         Xác nhận đơn
       </button>
     </div>

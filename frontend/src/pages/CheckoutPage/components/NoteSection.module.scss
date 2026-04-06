@@ -1,0 +1,50 @@
+.card{
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e5e5e5;
+}
+
+.noteWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.textarea {
+  width: auto;
+  min-height: 90px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #e5e5e5;
+  font-size: 14px;
+  resize: none;
+  transition: 0.2s;
+  margin-top: 10px;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #ee4d2d;
+  box-shadow: 0 0 0 1px rgba(238, 77, 45, 0.2);
+}
+
+.noteFooter {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.noteHint {
+  color: #757575;
+}
+
+.charCount {
+  color: #999;
+}

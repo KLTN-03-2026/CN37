@@ -65,6 +65,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IPasskeyService, PasskeyService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IUserAddressService, UserAddressService>();
+builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 
 
 builder.Services.Configure<JwtOptions>(

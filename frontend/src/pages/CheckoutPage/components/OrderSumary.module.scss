@@ -1,0 +1,96 @@
+.summary {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e5e5e5;
+  position: sticky;
+  top: 20px;
+}
+
+.summaryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #555;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.divider {
+  height: 1px;
+  background: #eee;
+  margin: 6px 0;
+}
+
+.divider-dashed {
+  border: 1px dashed #eee;
+}
+
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.totalPrice {
+  color: #ee4d2d;
+  font-size: 18px;
+}
+
+/* dòng tổng */
+.discountValue {
+  color: #ee4d2d;
+  font-weight: 600;
+}
+
+/* block chi tiết */
+.discountDetail {
+  margin-top: -4px;
+  margin-bottom: 6px;
+  padding-left: 5px;
+}
+
+/* từng dòng */
+.discountItem {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #757575;
+  margin: 4px 0;
+}
+
+.orderBtn {
+  width: 100%;
+  padding: 14px;
+  background: #ee4d2d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.orderBtn:hover {
+  opacity: 0.9;
+}
+
+.policyText {
+  font-size: 12px;
+  color: #999;
+  margin-top: 8px;
+  text-align: center;
+}
