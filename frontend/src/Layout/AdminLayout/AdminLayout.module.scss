@@ -1,0 +1,32 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* wrapper chứa sidebar + content */
+.wrapper {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+}
+
+/* SIDEBAR */
+.sidebar {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #eee;
+  height: fit-content;
+
+  /* sticky cho đẹp */
+  position: sticky;
+  top: 20px;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  background: transparent;
+  border-radius: 16px;
+  min-height: 400px;
+}

@@ -1,6 +1,7 @@
 // layouts
 import DefaultLayout from "../Layout/DefaultLayout";
 import SettingsLayout from "../Layout/SidebarLayout";
+import AdminLayout from "../Layout/AdminLayout";
 // pages
 import Home from "../pages/Home/Block_Cate_Banner";
 import Register from "../pages/Register";
@@ -16,6 +17,7 @@ import CartPage from "../pages/CartPage";
 import ProfilePage from "../pages/ProfilePage";
 import AddressLisstPage from "../pages/AddressListPage";
 import CheckoutPage from "../pages/CheckoutPage";
+import AdminPage from "../pages/AdminPage";
 import { ProtectedRoute } from "./Routes";
 
 const routes = [
@@ -98,6 +100,13 @@ const routes = [
     component: CheckoutPage,
     layout: DefaultLayout,
     ProtectedRoute: true
+  },
+  {
+    path: "/admin",
+    component: AdminPage,
+    layout: AdminLayout,
+    ProtectedRoute: true,
+    requiredRole: "Admin"
   }
 ];
 

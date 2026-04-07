@@ -131,6 +131,22 @@
   }
 }
 
+.admin-btn {
+  background: #ff4d4f;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+
+  &:hover {
+    background: #d9363e;
+  }
+}
+
 /* responsive */
 
 @media (max-width: 1024px) {

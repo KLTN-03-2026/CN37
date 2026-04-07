@@ -59,7 +59,6 @@ api.interceptors.response.use(
 
         localStorage.setItem("accessToken", newAccessToken);
         localStorage.setItem("refreshToken", newRefreshToken);
-
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         processQueue(null, newAccessToken);
@@ -69,6 +68,8 @@ api.interceptors.response.use(
         processQueue(err, null);
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        localStorage.removeItem("roles");
+
         window.location.href = "/login";
         return Promise.reject(err);
       } finally {
