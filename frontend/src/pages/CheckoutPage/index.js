@@ -9,6 +9,7 @@ import CustomerInfo from "./components/CustomerInfo";
 import AddressSection from "./components/AddressSection";
 import PaymentMethod from "./components/PaymentMethod";
 import NoteSection from "./components/NoteSection";
+import Breadcrumb from "./components/Breadcrumb";
 import { fetchCheckoutBuyNow, fetchCheckoutCart } from "../../api/CheckoutApi";
 import { getCurrentUser } from "../../api/UserApi";
 import { useLocation } from "react-router-dom";
@@ -68,25 +69,30 @@ export default function CheckoutPage({ type, productId, quantity }) {
   if (!data) return <p>Loading...</p>;
 
   return (
-    <div className={cx("checkoutContainer")}>
-      {/* LEFT */}
-      <div className={cx("checkoutLeft")}>
-        <ProductList items={data.items} />
-        <CustomerInfo user={userProfile} />
-        <AddressSection
-          selectedAddress={addressId}
-          setSelectedAddress={setAddressId}
-        />
-        <NoteSection note={note} setNote={setNote} />
-        <PaymentMethod
-          paymentMethod={paymentMethod}
-          setPaymentMethod={setPaymentMethod}
-        />
+    <div className={cx("checkoutPage")}>
+      <div className={cx("breadcrumb")}>
+        <Breadcrumb />
       </div>
-
-      {/* RIGHT */}
-      <div className={cx("checkoutRight")}>
-        <OrderSummary items={data.items} onSubmit={handleOrder} />
+      <div className={cx("checkoutContainer")}>
+        {/* LEFT */}
+        <div className={cx("checkoutLeft")}>
+          <ProductList items={data.items} />
+          <CustomerInfo user={userProfile} />
+          <AddressSection
+            selectedAddress={addressId}
+            setSelectedAddress={setAddressId}
+          />
+          <NoteSection note={note} setNote={setNote} />
+          <PaymentMethod
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+          />
+        </div>
+  
+        {/* RIGHT */}
+        <div className={cx("checkoutRight")}>
+          <OrderSummary items={data.items} onSubmit={handleOrder} />
+        </div>
       </div>
     </div>
   );

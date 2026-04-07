@@ -27,8 +27,8 @@ public class AuthService : IAuthService
         if (!IsValidEmail(request.Email))
         {
             throw new Exception("Email này không đúng định dạng.");
-        }       
-        var existingUser = await _userRepo.GetUserByEmailAsync(request.Email);
+        }
+        var existingUser = await _userRepo.GetUserWithRolesByEmailAsync(request.Email);
         if (existingUser != null)
         {
             throw new Exception("Email này đã được đăng kí.");
@@ -44,8 +44,22 @@ public class AuthService : IAuthService
         await _userRepo.AddUserAsync(user);
         await _userRepo.SaveChangesAsync();
 
+        var userRole = await _context.Roles
+        .FirstOrDefaultAsync(r => r.Name == "USER");
+        if (userRole != null)
+        {
+            var userUserRole = new UserRole
+            {
+                UserId = user.Id,
+                RoleId = userRole.Id
+            };
+            _context.UserRoles.Add(userUserRole);
+            await _context.SaveChangesAsync();
+        }
+
         await _emailVerify.SendVerificationEmailAsync(user);
-        var tokenService = _tokenService.GenerateAccessToken(user);
+        var roles = existingUser?.UserRoles.Select(ur => ur.Role.Name).ToList();
+        var tokenService = _tokenService.GenerateAccessToken(user, roles);
         return new AuthResponse
         {
             AccessToken = tokenService,
@@ -55,7 +69,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request, string ip)
     {
-        var user = await _userRepo.GetUserByEmailAsync(request.Email);
+        var user = await _userRepo.GetUserWithRolesByEmailAsync(request.Email);
         if (user == null || request.Password == null || !_passwordService.VerifyPassword(request.Password, user.PasswordHash))
         {
             throw new Exception("Email hoặc mật khẩu không chính xác");
@@ -68,8 +82,10 @@ public class AuthService : IAuthService
         {
             throw new Exception("Tài khoản của bạn đã bị vô hiệu hóa.");
         }
+        var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
+        Console.WriteLine("ROLES: " + string.Join(",", roles));
         var refreshToken = await _tokenService.GenerateRefreshToken(user, request.DeviceInfo, ip);
-        var accessToken = _tokenService.GenerateAccessToken(user);
+        var accessToken = _tokenService.GenerateAccessToken(user, roles);
         return new AuthResponse
         {
             AccessToken = accessToken,
@@ -171,6 +187,17 @@ public class AuthService : IAuthService
                     Email = payload.Email
                 };
                 await _context.ExternalLogins.AddAsync(newExternal);
+                var userRole = await _context.Roles
+                        .FirstOrDefaultAsync(r => r.Name == "USER");
+                if (userRole != null)
+                {
+                    var userUserRole = new UserRole
+                    {
+                        User = user,
+                        RoleId = userRole.Id
+                    };
+                    await _context.UserRoles.AddAsync(userUserRole);
+                }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -186,9 +213,10 @@ public class AuthService : IAuthService
         {
             throw new Exception("Tài khoản không tồn tại hoặc đã bị khóa.");
         }
-
+        var user1 = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(u => u.Id == user.Id);
+        var roles = user1?.UserRoles.Select(ur => ur.Role.Name).ToList();
         // 6. Tạo Token hệ thống
-        var accessToken = _tokenService.GenerateAccessToken(user);
+        var accessToken = _tokenService.GenerateAccessToken(user, roles);
         var refreshToken = await _tokenService.GenerateRefreshToken(user, deviceInfo, ip);
         return new AuthResponse
         {

@@ -14,26 +14,39 @@ public class TokenService : ITokenService
         _jwtOptions = jwtOptions.Value;
         _context = context;
     }
-    public string GenerateAccessToken(User user)
+
+    public string GenerateAccessToken(User user, List<string> roles)
     {
         if (string.IsNullOrEmpty(_jwtOptions.SecretKey))
             throw new Exception("JWT SecretKey is missing");
+
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email)
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+
+            // 🔥 nên thêm cái này (chuẩn .NET)
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
         };
+
+        // 🔥 add roles vào JWT
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpiryMinutes);
+
         var token = new JwtSecurityToken(
             claims: claims,
             expires: expires,
             signingCredentials: creds
         );
-        var tokenHandler = new JwtSecurityTokenHandler();
-        return tokenHandler.WriteToken(token);
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
     public async Task<string> GenerateRefreshToken(User user, string deviceInfo, string ip)
     {
         var refreshTokenValue = Guid.NewGuid().ToString();
@@ -96,8 +109,8 @@ public class TokenService : ITokenService
 
         if (session == null)
             return false;
-        
-        
+
+
 
         // 2. Lấy refresh token tương ứng
         var refresh = await _context.RefreshTokens
@@ -143,14 +156,15 @@ public class TokenService : ITokenService
             searchToken.RevokedAt = DateTime.UtcNow;
             throw new Exception("Refresh Token đã hết hạn");
         }
-        var user = await _context.Users.FirstOrDefaultAsync(X => X.Id == searchToken.UserId);
+        var user = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(x => x.Id == searchToken.UserId);
         if (user == null)
         {
             throw new Exception("user này không tồn tại");
         }
         searchToken.IsRevoked = true;
         searchToken.RevokedAt = DateTime.UtcNow;
-        var newAccessToken = GenerateAccessToken(user);
+        var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
+        var newAccessToken = GenerateAccessToken(user, roles);
         var newRefreshTokenValue = Guid.NewGuid().ToString();
         var newRefreshToken = new RefreshToken
         {

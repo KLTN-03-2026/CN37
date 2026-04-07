@@ -1,7 +1,13 @@
+.breadcrumb {
+  padding-top: 20px;
+  padding-left: 50px;
+  margin-bottom: 0px;
+  
+}
 .checkoutContainer {
   display: flex;
   gap: 20px;
-  padding: 20px 40px;
+  padding: 10px 40px 20px 40px;
   background: var(--bg);
 }
 

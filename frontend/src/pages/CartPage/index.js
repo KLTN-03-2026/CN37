@@ -8,6 +8,7 @@ import styles from "./Cart.module.scss";
 import classNames from "classnames/bind";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
+import { notifySuccess } from "../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -62,6 +63,7 @@ function CartPage() {
   const handleRemove = async (productId) => {
     await removeItem(productId);
     setShowConfirm(false);
+    notifySuccess("Đã xóa sản phẩm khỏi giỏ hàng");
     loadCart();
   };
 

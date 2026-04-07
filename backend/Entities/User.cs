@@ -11,4 +11,5 @@ public class User
     public ICollection<Session> Sessions { get; set; } = new List<Session>();
     public ICollection<Cart> Carts { get; set; } = new List<Cart>();
     public ICollection<UserAddress> UserAddresses { get; set; } = new List<UserAddress>();
+    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }
