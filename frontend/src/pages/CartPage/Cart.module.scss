@@ -283,7 +283,7 @@
     width: 36;
     height: auto;
     border: none;
-    background: #f9fafb;
+    background: transparent;
     cursor: pointer;
     font-size: 18px;
     font-weight: bold;
@@ -293,8 +293,7 @@
     justify-content: center;
 
     &:hover {
-      background: #59c241;
-      color: #fff;
+      transform: scale(1.2);
     }
 
     &:active {
@@ -302,7 +301,6 @@
     }
 
     &:disabled {
-      background: #f1f1f1;
       color: #aaa;
       cursor: not-allowed;
     }
@@ -319,9 +317,7 @@
   transition: 0.25s;
 
   &:hover {
-    color: #fff;
-    transform: scale(1);
-    background-color: var(--primary-red-hover);
+    transform: scale(1.2);
   }
 }
 

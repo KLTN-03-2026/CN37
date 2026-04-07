@@ -59,7 +59,9 @@ export default function CustomerInfo({ user }) {
               setForm({ ...form, phone: e.target.value })
             }
           />
-          <button onClick={handleSubmit}>Lưu</button>
+          <button onClick={handleSubmit} className={cx("button")}>
+            LƯU
+          </button>
         </div>
       ) : (
         <div className={cx("customerInfo")}>
