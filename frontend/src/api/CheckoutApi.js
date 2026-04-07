@@ -5,7 +5,7 @@ export const fetchCheckoutBuyNow = async (productId, quantity) => {
     return res.data;
 };
 
-export const fetchCheckoutCart = async (orderRequest) => {
-    const res = await api.get(`/checkout/cart?productId=${ orderRequest.items.map(item => item.productId).join(',')}&quantity=${orderRequest.items.map(item => item.quantity).join(',')}`);
+export const fetchCheckoutCart = async (items) => {
+    const res = await api.post(`/checkout/from-cart-items`, { items });
     return res.data;
 };

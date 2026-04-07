@@ -7,6 +7,7 @@ import CartSummary from "./components/CartSumary";
 import styles from "./Cart.module.scss";
 import classNames from "classnames/bind";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import { useNavigate } from "react-router-dom";
 
 const cx = classNames.bind(styles);
 
@@ -16,6 +17,7 @@ function CartPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
+  const navigate = useNavigate();
   const checkAllRef = useRef();
 
   useEffect(() => {
@@ -41,7 +43,15 @@ function CartPage() {
         quantity: item.quantity,
       })),
     };
+
     console.log("Order Request:", orderRequest);
+
+    navigate("/checkout", {
+      state: {
+        type: "cart",
+        items: orderRequest.items,
+      },
+    });
   };
 
   const handleAskRemove = (id) => {

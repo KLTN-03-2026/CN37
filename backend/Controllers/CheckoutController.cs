@@ -26,14 +26,10 @@ public class CheckoutController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("cart")]
-    public async Task<IActionResult> Cart([FromBody] CartDto request)
+    [HttpPost("from-cart-items")]
+    public async Task<IActionResult> GetFromCartItems([FromBody] CheckoutFromCartRequest request)
     {
-        Console.WriteLine($"Number of items in cart: {request.Items.Count}");
-        // var userId = GetUserId();
-
-        // var result = await _checkoutService.FromCart(userId, request.Items);
-
-        return Ok();
+        var result = await _checkoutService.GetCheckoutFromItems(request.Items);
+        return Ok(result);
     }
 }

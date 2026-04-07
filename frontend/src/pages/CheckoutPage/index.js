@@ -11,9 +11,9 @@ import PaymentMethod from "./components/PaymentMethod";
 import NoteSection from "./components/NoteSection";
 import { fetchCheckoutBuyNow, fetchCheckoutCart } from "../../api/CheckoutApi";
 import { getCurrentUser } from "../../api/UserApi";
+import { useLocation } from "react-router-dom";
 
 export default function CheckoutPage({ type, productId, quantity }) {
-
   const useParam = new URLSearchParams(window.location.search);
   const typeProduct = useParam.get("type");
   const product_id = useParam.get("productId");
@@ -26,21 +26,27 @@ export default function CheckoutPage({ type, productId, quantity }) {
 
   const cx = classNames.bind(styles);
 
+  const location = useLocation();
+  const state = location.state;
+
   useEffect(() => {
-    getCurrentUser().then(res => {
+    getCurrentUser().then((res) => {
       setUserProfile(res.data);
     });
 
     type = type || typeProduct;
     productId = productId || product_id;
     quantity = quantity || quantity_product;
+
     const fetchData = async () => {
-      if (type === "buy-now") {
+      if (state?.type === "cart") {
+        const res = await fetchCheckoutCart(state.items);
+        setData(res);
+      } else if (type === "buy-now") {
         setData(await fetchCheckoutBuyNow(productId, quantity));
-      } else {
-        setData(await fetchCheckoutCart());
       }
     };
+
     fetchData();
   }, []);
 

@@ -37,28 +37,43 @@ public class CheckoutService : ICheckoutService
     }
 
     // 👉 CART
-    public async Task<CheckoutResponseDto> FromCart(long userId)
+    public async Task<CheckoutResponseDto> GetCheckoutFromItems(List<CheckoutItemRequest> items)
     {
-        var cart = await _context.Carts
-            .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
-            .FirstOrDefaultAsync(c => c.UserId == userId);
+        if (items == null || !items.Any())
+            throw new Exception("Danh sách sản phẩm trống");
 
-        if (cart == null) throw new Exception("Cart not found");
+        var productIds = items.Select(x => x.ProductId).ToList();
 
-        var items = cart.CartItems.Select(ci => new CartItemDto
+        var products = await _context.Products
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync();
+
+        var resultItems = new List<CartItemDto>();
+
+        foreach (var item in items)
         {
-            ProductId = ci.ProductId,
-            Name = ci.Product.Name,
-            Thumbnail = ci.Product.Thumbnail,
-            Price = ci.Product.DiscountPrice ?? ci.Product.Price,
-            Quantity = ci.Quantity
-        }).ToList();
+            var product = products.FirstOrDefault(p => p.Id == item.ProductId);
+
+            if (product == null)
+                throw new Exception($"Sản phẩm {item.ProductId} không tồn tại");
+
+            // if (item.Quantity > product.Stock)
+            //     throw new Exception($"Sản phẩm {product.Name} không đủ hàng");
+
+            resultItems.Add(new CartItemDto
+            {
+                ProductId = product.Id,
+                Name = product.Name,
+                Thumbnail = product.Thumbnail,
+                Price = product.Price,
+                DiscountPrice = product.DiscountPrice,
+                Quantity = item.Quantity
+            });
+        }
 
         return new CheckoutResponseDto
         {
-            Items = items,
-            TotalAmount = items.Sum(x => x.Price * x.Quantity)
+            Items = resultItems
         };
     }
 

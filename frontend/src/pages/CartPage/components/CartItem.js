@@ -2,8 +2,7 @@ import { removeItem } from "../../../api/CartApi";
 import styles from "../Cart.module.scss";
 import classNames from "classnames/bind";
 import { useState } from "react";
-import { FaTrashCan } from "react-icons/fa6";
-
+import { FaTrashCan, FaPlus, FaMinus } from "react-icons/fa6";
 
 const cx = classNames.bind(styles);
 
@@ -11,7 +10,6 @@ function CartItem({ item, onUpdate, onRemove, checked, onCheck }) {
   const price = item.discountPrice || item.price;
 
   return (
-    
     <div className={cx("cart-item")}>
       <input
         type="checkbox"
@@ -33,20 +31,34 @@ function CartItem({ item, onUpdate, onRemove, checked, onCheck }) {
       </div>
 
       <div className={cx("quantity")}>
-        <button onClick={() => onUpdate(item.productId, item.quantity - 1)}>
-          -
+        <button
+          className={cx("btn")}
+          onClick={() => onUpdate(item.productId, item.quantity - 1)}
+          disabled={item.quantity <= 1}
+        >
+          −
         </button>
-        <input value={item.quantity} readOnly />
-        <button onClick={() => onUpdate(item.productId, item.quantity + 1)}>
+
+        <input
+          type="number"
+          value={item.quantity}
+          min={1}
+          onChange={(e) =>
+            onUpdate(item.productId, Math.max(1, Number(e.target.value)))
+          }
+        />
+
+        <button
+          className={cx("btn")}
+          onClick={() => onUpdate(item.productId, item.quantity + 1)}
+        >
           +
         </button>
       </div>
-
       <button className={cx("remove")} onClick={() => onRemove(item.productId)}>
         <FaTrashCan />
       </button>
-      
-    </div>   
+    </div>
   );
 }
 

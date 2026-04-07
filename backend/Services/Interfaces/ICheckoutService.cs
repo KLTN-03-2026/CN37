@@ -1,5 +1,5 @@
 public interface ICheckoutService
 {
     Task<CheckoutResponseDto> BuyNow(long productId, int quantity);
-    Task<CheckoutResponseDto> FromCart(long userId);
+    Task<CheckoutResponseDto> GetCheckoutFromItems(List<CheckoutItemRequest> items);
 }

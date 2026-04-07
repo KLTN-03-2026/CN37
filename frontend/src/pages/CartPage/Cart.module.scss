@@ -262,34 +262,50 @@
 
 /* QUANTITY */
 .quantity {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  border: 1px solid #eee;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
   overflow: hidden;
-
-  button {
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: #fafafa;
-    cursor: pointer;
-    font-size: 18px;
-    transition: 0.2s;
-
-    &:hover {
-      background: #e53935;
-      color: white;
-    }
-  }
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
   input {
-    width: 40px;
-    height: 32px;
+    width: 50px;
     text-align: center;
     border: none;
     outline: none;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .btn {
+    width: 36;
+    height: auto;
+    border: none;
+    background: #f9fafb;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    display: flex; // 🔥 QUAN TRỌNG
+    align-items: center; // căn giữa dọc
+    justify-content: center;
+
+    &:hover {
+      background: #59c241;
+      color: #fff;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    &:disabled {
+      background: #f1f1f1;
+      color: #aaa;
+      cursor: not-allowed;
+    }
   }
 }
 
@@ -303,8 +319,9 @@
   transition: 0.25s;
 
   &:hover {
-    color: #e53935;
-    transform: scale(1.2);
+    color: #fff;
+    transform: scale(1);
+    background-color: var(--primary-red-hover);
   }
 }
 
@@ -314,7 +331,7 @@
   border-radius: 16px;
   padding: 20px;
   border: 1px solid #eee;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 
   h3 {
     font-size: 18px;
