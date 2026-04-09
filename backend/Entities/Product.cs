@@ -51,4 +51,6 @@ public class Product
 
     public ICollection<ProductSpecification> Specifications { get; set; }
     public ICollection<CartItem> CartItems { get; set; }
+    public Inventory Inventory { get; set; }
+    public ICollection<InventoryLog> InventoryLogs { get; set; }
 }

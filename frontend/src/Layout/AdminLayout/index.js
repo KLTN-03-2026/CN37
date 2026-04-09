@@ -9,7 +9,6 @@ const cx = classNames.bind(styles);
 export default function AdminLayout({ children }) {
   return (
     <div className={cx("container")}>
-      <Header></Header>
       <div className={cx("wrapper")}>
           <aside className={cx("sidebar")}>
             <SidebarAdmin />
@@ -17,7 +16,6 @@ export default function AdminLayout({ children }) {
     
           <main className={cx("content")}>{children}</main>
       </div>
-      <Footer></Footer>
     </div>
   );
 }

@@ -18,6 +18,7 @@ import ProfilePage from "../pages/ProfilePage";
 import AddressLisstPage from "../pages/AddressListPage";
 import CheckoutPage from "../pages/CheckoutPage";
 import AdminPage from "../pages/AdminPage";
+import InventoryPage from "../pages/InventoryPage";
 import { ProtectedRoute } from "./Routes";
 
 const routes = [
@@ -107,7 +108,15 @@ const routes = [
     layout: AdminLayout,
     ProtectedRoute: true,
     requiredRole: "Admin"
+  },
+  {
+    path: "/admin/inventory",
+    component: InventoryPage,
+    layout: AdminLayout,
+    ProtectedRoute: true,
+    requiredRole: "Admin"
   }
+
 ];
 
 export default routes;

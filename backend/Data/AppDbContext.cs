@@ -1,3 +1,4 @@
+using System.Reflection.Emit;
 using Microsoft.EntityFrameworkCore;
 
 public class AppDbContext : DbContext
@@ -23,6 +24,9 @@ public class AppDbContext : DbContext
     public DbSet<UserAddress> UserAddresses { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
+    public DbSet<Inventory> Inventories { get; set; }
+    public DbSet<InventoryLog> InventoryLogs { get; set; }
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -259,6 +263,39 @@ public class AppDbContext : DbContext
            entity.HasOne(x => x.User).WithMany(u => u.UserRoles).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
            entity.HasOne(x => x.Role).WithMany(r => r.UserRoles).HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Cascade);
        });
+
+        modelBuilder.Entity<Inventory>(entity =>
+        {
+            entity.ToTable("inventory");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.ProductId).HasColumnName("product_id").IsRequired();
+            entity.HasIndex(x => x.ProductId).IsUnique();
+            entity.Property(x => x.Quantity).HasColumnName("quantity").IsRequired().HasDefaultValue(0);
+            entity.Property(x => x.LastUpdated).HasColumnName("last_updated").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            // 🔗 Relation Product
+            entity.HasOne(x => x.Product).WithOne(p => p.Inventory).HasForeignKey<Inventory>(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<InventoryLog>(entity =>
+        {
+            entity.ToTable("inventory_logs");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.ProductId).HasColumnName("product_id").IsRequired();
+            entity.Property(x => x.QuantityChanged).HasColumnName("quantity_change").IsRequired();
+            entity.Property(x => x.QuantityBefore).HasColumnName("quantity_before").IsRequired();
+            entity.Property(x => x.QuantityAfter).HasColumnName("quantity_after").IsRequired();
+            entity.Property(x => x.ChangeType).HasColumnName("change_type").HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Note).HasColumnName("note").HasMaxLength(255);
+            entity.Property(x => x.CreateAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasIndex(x => x.ProductId);
+            entity.HasIndex(x => x.CreateAt);
+
+            // 🔗 Relation Product
+            entity.HasOne(x => x.Product).WithMany(p => p.InventoryLogs).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+        });
 
     }
 }
