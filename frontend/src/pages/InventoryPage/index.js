@@ -4,6 +4,7 @@ import classNames from "classnames/bind";
 import StockTable from "./components/StockTable";
 import StockModal from "./components/StockModal";
 import FilterBar from "./components/FilterBar";
+import HistoryAllModal from "./components/HistoryModal";
 import { getProductInventory } from "../../api/InventoryApi";
 import { getCategories } from "../../api/CategoryApi";
 
@@ -17,6 +18,7 @@ function InventoryPage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalType, setModalType] = useState(null); // import / export
   const [search, setSearch] = useState("");
+  const [showHistoryAll, setShowHistoryAll] = useState(false);
 
   const fetchCategories = async () => {
     const res = await getCategories();
@@ -55,20 +57,25 @@ function InventoryPage() {
           status={status}
           setStatus={setStatus}
           categories={categories}
-          onSearch={fetchData} // 👈 QUAN TRỌNG
+          onSearch={fetchData}
+          onOpenHistoryAll={() => setShowHistoryAll(true)}
         />
       </div>
-
-      <StockTable data={filteredData} onAction={handleAction} />
-
-      {modalType && (
-        <StockModal
-          product={selectedProduct}
-          type={modalType}
-          onClose={() => setModalType(null)}
-          onSuccess={fetchData}
-        />
-      )}
+      <div className={cx("data")}>
+        <StockTable data={filteredData} onAction={handleAction} />
+  
+        {modalType && (
+          <StockModal
+            product={selectedProduct}
+            type={modalType}
+            onClose={() => setModalType(null)}
+            onSuccess={fetchData}
+          />
+        )}
+        {showHistoryAll && (
+          <HistoryAllModal onClose={() => setShowHistoryAll(false)} />
+        )}
+      </div>
     </div>
   );
 }

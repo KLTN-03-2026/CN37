@@ -113,6 +113,28 @@ public class InventoryController : ControllerBase
         return Ok(products);
     }
 
+    [HttpGet("logs")]
+    public async Task<IActionResult> GetAllInventoryLogs()
+    {
+        var logs = await _context.InventoryLogs
+            .Include(x => x.Product)
+            .OrderByDescending(x => x.CreateAt)
+            .Select(x => new
+            {
+                x.Id,
+                x.ProductId,
+                ProductName = x.Product.Name,
+                x.ChangeType,
+                x.QuantityChanged,
+                x.QuantityBefore,
+                x.QuantityAfter,
+                x.CreateAt
+            })
+            .ToListAsync();
+
+        return Ok(logs);
+    }
+
     // [HttpPost("order")]
     // public async Task<IActionResult> Order([FromBody] OrderStockRequest request)
     // {

@@ -1,18 +1,36 @@
 .wrapper {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  min-height: 0; /* 🔥 bắt buộc */
+
+  /* chống bị global padding phá */
+  padding: 0;
 }
 
 .header {
+  position: sticky; /* 🔥 thay fixed */
+  top: 0;
+  z-index: 100;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  flex-wrap: wrap;
 
-  .actions {
-    display: flex;
-    gap: 10px;
-  }
+  background: #f8f9fb;
+
+  padding: 16px 20px 0px 20px;
+  margin-bottom: 20px;
 }
+
+.data {
+  padding: 0px 20px 20px 20px;
+  flex: 1;
+  min-height: 0;
+}
+
 
 .title {
   font-size: 24px;
@@ -114,14 +132,28 @@ select {
   }
 }
 
+.tableWrapper {
+  max-height: 100vh; /* hoặc 100% tùy layout */
+  overflow-y: auto;
+  border-radius: 12px;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
 
-  th, td {
+  th {
+    position: sticky;
+    top: 0;
+    background: #f8f9fb;
+    z-index: 2;
+  }
+
+  th,
+  td {
     padding: 12px;
     border-bottom: 1px solid #eee;
-    text-align: left;
+    text-align: center;
   }
 }
 

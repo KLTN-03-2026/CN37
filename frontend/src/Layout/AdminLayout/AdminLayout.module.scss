@@ -1,16 +1,11 @@
-/* ❌ Ngăn body scroll */
-body {
-  margin: 0 !important;
-  overflow: hidden;
-  padding: 0 !important;
-  padding-top: 0px !important;
-}
+
 
 /* container full màn hình */
 .container {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  margin-top: -100px;
 }
 
 /* wrapper chứa sidebar + content */
@@ -39,8 +34,5 @@ body {
   flex: 1;
   background: transparent;
   border-radius: 16px;
-
-  /* 🔥 FIX SCROLL */
-  overflow-y: auto;
   min-height: 0;
 }

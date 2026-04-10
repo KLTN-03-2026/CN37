@@ -1,0 +1,116 @@
+/* ===== MODAL OVERLAY ===== */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* ===== MODAL ===== */
+.modalLarge {
+  width: 900px;
+  max-height: 85vh;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== TITLE ===== */
+.modalLarge h3 {
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ===== TABLE WRAPPER SCROLL ===== */
+.modalLarge table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modalLarge thead {
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;
+  z-index: 1;
+}
+
+/* ===== TABLE HEADER ===== */
+.table th {
+  padding: 12px;
+  font-size: 14px;
+  text-align: left;
+  border-bottom: 2px solid #eee;
+  color: #555;
+}
+
+/* ===== TABLE BODY ===== */
+.table td {
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* ===== ROW HOVER ===== */
+.table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+/* ===== IMPORT / EXPORT ===== */
+.import {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.export {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* ===== QUANTITY STYLE ===== */
+.table td:nth-child(4) {
+  font-weight: 500;
+}
+
+/* ===== SCROLL BODY ===== */
+.modalLarge {
+  overflow: hidden;
+}
+
+.table-wrapper {
+  max-height: 50vh;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+
+/* ===== BUTTON CLOSE ===== */
+.btnClose {
+  margin-top: 15px;
+  align-self: flex-end;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #dc3545;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btnClose:hover {
+  background: #c82333;
+}

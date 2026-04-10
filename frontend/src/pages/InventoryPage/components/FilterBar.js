@@ -1,4 +1,4 @@
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaHistory } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
 import styles from "../InventoryPage.module.scss";
 import classNames from "classnames/bind";
@@ -13,7 +13,8 @@ function FilterBar({
   status,
   setStatus,
   categories = [],
-  onSearch, // 👈 thêm
+  onSearch,
+  onOpenHistoryAll,
 }) {
   const handleReset = () => {
     setSearch("");
@@ -70,6 +71,10 @@ function FilterBar({
 
       <button className={cx("btnFilter", "reset")} onClick={handleReset}>
         <GrPowerReset />
+      </button>
+
+      <button className={cx("btnFilter", "reset")} onClick={onOpenHistoryAll}>
+        <FaHistory />
       </button>
     </div>
   );

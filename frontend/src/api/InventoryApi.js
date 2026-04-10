@@ -17,5 +17,9 @@ export const importInventory = async (productId, quantity) => {
 };
 
 export const exportInventory = async (productId, quantity) => {
-  await api.post("/inventory/export", { productId, quantity });
+  return await api.post("/inventory/export", { productId, quantity });
+};
+
+export const getAllInventoryLogs = () => {
+  return api.get("/inventory/logs");
 };
