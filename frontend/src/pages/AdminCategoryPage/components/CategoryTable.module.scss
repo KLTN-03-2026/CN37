@@ -1,0 +1,190 @@
+.wrapper {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.tableWrapper {
+  max-height: 100vh; /* hoặc 100% tùy layout */
+  overflow-y: auto;
+  border-radius: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    position: sticky;
+    top: 0;
+    background: #f8f9fb;
+    z-index: 2;
+  }
+
+  th,
+  td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+  }
+}
+
+.header{
+  position: sticky; /* 🔥 thay fixed */
+  top: 0;
+  z-index: 100;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+
+  background: #fff;
+
+  padding: 10px;
+}
+
+.action{
+  display: flex;
+  gap: 5px;
+}
+.btnFilter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg {
+    font-size: 16px;
+  }
+}
+
+/* add button */
+.add {
+  background: #59c241;
+  color: white;
+
+  &:hover {
+    background: #4caf38;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: #f8f9fa;
+
+    th {
+      text-align: center;
+      padding: 12px;
+      font-size: 14px;
+      color: #555;
+      font-weight: 600;
+    }
+  }
+
+  tbody {
+    tr {
+      border-top: 1px solid #eee;
+      transition: 0.2s;
+
+      &:hover {
+        background: #f9fff7;
+      }
+    }
+
+    td {
+      padding: 12px;
+      font-size: 14px;
+      color: #333;
+    }
+  }
+}
+
+.name {
+  font-weight: 500;
+}
+
+.slug {
+  color: #888;
+  font-style: italic;
+}
+
+.parent {
+  background: #e8f5e9;
+  color: #59c241;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.noParent {
+  color: #aaa;
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.row {
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+}
+
+.active {
+  background: #e8f7e9; // nền xanh nhạt
+  border-left: 4px solid #59c241; // màu chủ đạo
+  font-weight: 600;
+}
+
+.btnEdit {
+  padding: 6px 10px;
+  background: #ffc107;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    background: #e0a800;
+  }
+}
+
+.btnDelete {
+  padding: 6px 10px;
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    background: #c82333;
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+}

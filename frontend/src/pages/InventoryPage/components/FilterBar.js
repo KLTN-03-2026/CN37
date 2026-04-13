@@ -1,6 +1,7 @@
 import { FaSearch, FaHistory } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
 import styles from "../InventoryPage.module.scss";
+import SearchFilter from "../../../components/SearchFilter";
 import classNames from "classnames/bind";
 
 const cx = classNames.bind(styles);
@@ -29,22 +30,15 @@ function FilterBar({
 
   return (
     <div className={cx("filterBar")}>
-      {/* 🔍 Search */}
-      <div className={cx("inputGroup")}>
-        <FaSearch className={cx("icon")} />
-        <input
-          placeholder="Tìm sản phẩm..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        />
-      </div>
+      <SearchFilter
+        value={search}
+        onChange={setSearch}
+        onSearch={handleSearch}
+        placeholder="tìm kiếm sản phẩm..."
+      />
 
       {/* 📂 Category */}
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      >
+      <select value={category} onChange={(e) => setCategory(e.target.value)}>
         <option value="">Tất cả danh mục</option>
         {categories.map((c) => (
           <option key={c.id} value={c.slug}>
@@ -54,10 +48,7 @@ function FilterBar({
       </select>
 
       {/* 📦 Status */}
-      <select
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-      >
+      <select value={status} onChange={(e) => setStatus(e.target.value)}>
         <option value="">Tất cả trạng thái</option>
         <option value="ok">Còn hàng</option>
         <option value="low">Sắp hết</option>

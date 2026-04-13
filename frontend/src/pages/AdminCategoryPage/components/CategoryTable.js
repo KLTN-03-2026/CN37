@@ -1,0 +1,106 @@
+import styles from "./CategoryTable.module.scss";
+import classNames from "classnames/bind";
+import SearchFilter from "../../../components/SearchFilter";
+import { IoMdAdd } from "react-icons/io";
+import { FaSearch } from "react-icons/fa";
+import { GrPowerReset } from "react-icons/gr";
+
+const cx = classNames.bind(styles);
+
+function CategoryTable({
+  data,
+  title,
+  search,
+  setSearch,
+  onSearch,
+  onEdit,
+  onDelete,
+  onSelect,
+  selectedId,
+}) {
+  const handleSearch = () => {
+    onSearch?.();
+  };
+
+  return (
+    <div className={cx("wrapper")}>
+      <div className={cx("header")}>
+        <h3 className={cx("title")}>{title}</h3>
+
+        <div className={cx("action")}>
+          <SearchFilter
+            value={search}
+            onChange={setSearch}
+            onSearch={handleSearch}
+            placeholder="tìm kiếm danh mục..."
+          />
+
+          <button className={cx("btnFilter", "add")}>
+            <IoMdAdd />
+          </button>
+        </div>
+      </div>
+
+      <div className={cx("tableWrapper")}>
+        <table className={cx("table")}>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Tên danh mục</th>
+              <th>Slug</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan="4" className={cx("empty")}>
+                  Không có dữ liệu
+                </td>
+              </tr>
+            ) : (
+              data.map((c, index) => (
+                <tr
+                  key={c.id}
+                  onClick={() => onSelect?.(c)}
+                  className={cx("row", { active: selectedId === c.id })}
+                >
+                  <td>{index + 1}</td>
+                  <td className={cx("name")}>{c.name}</td>
+                  <td className={cx("slug")}>{c.slug}</td>
+
+                  <td>
+                    <div className={cx("actions")}>
+                      <button
+                        className={cx("btnEdit")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(c);
+                        }}
+                      >
+                        Sửa
+                      </button>
+
+                      <button
+                        className={cx("btnDelete")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(c.id);
+                        }}
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export default CategoryTable;

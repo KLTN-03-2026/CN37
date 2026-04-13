@@ -1,0 +1,48 @@
+.filterBar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Input có icon */
+.inputGroup {
+  position: relative;
+
+  input {
+    padding: 10px 12px 10px 36px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    width: auto;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #59c241;
+      box-shadow: 0 0 0 2px rgba(89, 194, 65, 0.2);
+    }
+  }
+
+  .icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    font-size: 14px;
+  }
+}
+
+/* Select */
+select {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  min-width: 180px;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #59c241;
+  }
+}

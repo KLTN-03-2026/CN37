@@ -1,9 +1,28 @@
-import api from "./AxiosClient"
+import api from "./AxiosClient";
 
-export const getCategories = () =>
-  api.get("/categories");
+export const getCategories = () => api.get("/categories");
 
-export const getCategory = (slug) =>{
-  return api.get(`/categories/${slug}`)
-}
+export const getCategory = (slug) => {
+  return api.get(`/categories/${slug}`);
+};
 
+export const getAdminCategory = async({search}) => {
+  const res = await api.get("/categories/admin", {
+    params: {
+      search,
+    },
+  });
+  return res.data;
+};
+
+export const createCategory = (data) => {
+  api.post("/categories/admin", data);
+};
+
+export const updateCategory = (id, data) => {
+  api.put(`/categories/${id}`, data);
+};
+
+export const deleteCategory = (id) => {
+  api.delete(`/categories/${id}`);
+};

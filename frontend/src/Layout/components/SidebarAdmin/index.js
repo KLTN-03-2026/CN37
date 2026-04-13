@@ -19,7 +19,7 @@ export default function SidebarAdmin() {
   const [collapsed, setCollapsed] = useState(false);
 
   const menu = [
-    { name: "Quản lý danh mục", path: "/admin/categories", icon: <FaList /> },
+    { name: "Quản lý danh mục", path: "/admin/category", icon: <FaList /> },
     { name: "Quản lý sản phẩm", path: "/admin/products", icon: <FaBox /> },
     { name: "Quản lý đơn hàng", path: "/admin/orders", icon: <FaShoppingCart /> },
     { name: "Quản lý kho", path: "/admin/inventory", icon: <FaWarehouse /> },

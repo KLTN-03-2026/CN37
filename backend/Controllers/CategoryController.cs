@@ -7,9 +7,11 @@ using Microsoft.EntityFrameworkCore;
 public class CategoryController : ControllerBase
 {
     private readonly AppDbContext _context;
-    public CategoryController(AppDbContext context)
+    private readonly ICategoryService _service;
+    public CategoryController(AppDbContext context, ICategoryService service)
     {
         _context = context;
+        _service = service;
     }
     [Authorize]
     [HttpGet]
@@ -27,6 +29,7 @@ public class CategoryController : ControllerBase
 
         return Ok(categories);
     }
+
     [Authorize]
     [HttpGet("{slug}")]
     public async Task<IActionResult> GetCategory(string slug)
@@ -52,6 +55,29 @@ public class CategoryController : ControllerBase
         if (category == null) return NotFound();
 
         return Ok(category);
+    }
+
+    [Authorize]
+    [HttpGet("admin")]
+    public async Task<IActionResult> GetAll()
+        => Ok(await _service.GetAllAsync());
+
+    [Authorize]
+    [HttpPost("admin")]
+    public async Task<IActionResult> Create(CreateCategoryRequest req)
+        => Ok(await _service.CreateAsync(req));
+
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(long id, UpdateCategoryRequest req)
+        => Ok(await _service.UpdateAsync(id, req));
+
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(long id)
+    {
+        await _service.DeleteAsync(id);
+        return Ok();
     }
 }
 
