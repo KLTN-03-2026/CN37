@@ -18,18 +18,24 @@ function AdminCategoryPage() {
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [searchChildren, setSearchChildren] = useState("");
   const [selectedParent, setSelectedParent] = useState(null);
-  const parentCategories = categories.filter((c) => !c.parentId);
+
+  const parentCategories = categories.filter(
+    (c) => !c.parentId && c.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   const childCategories = categories.filter(
-    (c) => c.parentId === selectedParent?.id,
+    (c) =>
+      c.parentId === selectedParent?.id &&
+      c.name.toLowerCase().includes(searchChildren.toLowerCase()),
   );
 
   // ===== FETCH =====
   const fetch = async () => {
     try {
       setLoading(true);
-      const res = await getAdminCategory({search});
+      const res = await getAdminCategory({ search });
       setCategories(res);
     } catch (err) {
       console.error("Lỗi load danh mục:", err);
@@ -37,6 +43,10 @@ function AdminCategoryPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    setSearchChildren("")
+  }, [selectedParent]);
 
   useEffect(() => {
     fetch();
@@ -105,6 +115,9 @@ function AdminCategoryPage() {
             <CategoryTable
               data={childCategories}
               title={`Danh mục ${selectedParent ? `${selectedParent.name}` : ""}`}
+              search={searchChildren}
+              setSearch={setSearchChildren}
+              onSearch={fetch}
               onEdit={setEditing}
               onDelete={handleDelete}
             />

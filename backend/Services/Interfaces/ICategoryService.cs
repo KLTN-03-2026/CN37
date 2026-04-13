@@ -1,6 +1,6 @@
 public interface ICategoryService
 {
-    Task<List<CategoryDto>> GetAllAsync();
+    Task<List<CategoryDto>> GetAllAsync(string? search = null);
     Task<CategoryDto?> GetByIdAsync(long id);
     Task<CategoryDto> CreateAsync(CreateCategoryRequest request);
     Task<CategoryDto> UpdateAsync(long id, UpdateCategoryRequest request);

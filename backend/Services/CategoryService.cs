@@ -68,7 +68,7 @@ public class CategoryService : ICategoryService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<CategoryDto>> GetAllAsync(string? search)
+    public async Task<List<CategoryDto>> GetAllAsync(string? search = null)
     {
         if (!string.IsNullOrEmpty(search))
         {
