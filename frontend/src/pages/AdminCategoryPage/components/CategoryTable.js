@@ -13,6 +13,7 @@ function CategoryTable({
   search,
   setSearch,
   onSearch,
+  onAdd,
   onEdit,
   onDelete,
   onSelect,
@@ -32,10 +33,10 @@ function CategoryTable({
             value={search}
             onChange={setSearch}
             onSearch={handleSearch}
-            placeholder="tìm kiếm danh mục..."
+            placeholder="Tìm kiếm..."
           />
 
-          <button className={cx("btnFilter", "add")}>
+          <button className={cx("btnFilter", "add")} onClick={onAdd}>
             <IoMdAdd />
           </button>
         </div>
@@ -47,7 +48,7 @@ function CategoryTable({
             <tr>
               <th>STT</th>
               <th>Tên danh mục</th>
-              <th>Slug</th>
+              <th>Mô tả</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -68,7 +69,7 @@ function CategoryTable({
                 >
                   <td>{index + 1}</td>
                   <td className={cx("name")}>{c.name}</td>
-                  <td className={cx("slug")}>{c.slug}</td>
+                  <td className={cx("slug")}>{c.description}</td>
 
                   <td>
                     <div className={cx("actions")}>

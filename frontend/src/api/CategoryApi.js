@@ -16,13 +16,13 @@ export const getAdminCategory = async({search}) => {
 };
 
 export const createCategory = (data) => {
-  api.post("/categories/admin", data);
+  return api.post("/categories/admin", data);
 };
 
 export const updateCategory = (id, data) => {
-  api.put(`/categories/${id}`, data);
+  return api.put(`/categories/${id}`, data);
 };
 
 export const deleteCategory = (id) => {
-  api.delete(`/categories/${id}`);
+  return api.delete(`/categories/${id}`);
 };

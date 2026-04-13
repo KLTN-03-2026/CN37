@@ -1,0 +1,134 @@
+/* ===== OVERLAY ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 1000;
+
+  animation: fadeIn 0.2s ease;
+}
+
+/* ===== MODAL ===== */
+.modal {
+  width: 420px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 14px;
+  padding: 22px 20px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+
+  animation: slideUp 0.25s ease;
+}
+
+/* ===== TITLE ===== */
+.modal h2 {
+  margin-bottom: 18px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ===== FORM ===== */
+.formGroup {
+  margin-bottom: 14px;
+
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #444;
+  }
+
+  input,
+  textarea {
+    width: 95%;
+    padding: 9px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    font-size: 14px;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: #59c241;
+      box-shadow: 0 0 0 2px rgba(89, 194, 65, 0.15);
+      outline: none;
+    }
+  }
+
+  textarea {
+    resize: none;
+    min-height: 80px;
+  }
+}
+
+/* ===== ACTION BUTTONS ===== */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* ===== BUTTON BASE ===== */
+.actions button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+/* ===== CANCEL ===== */
+.cancel {
+  background: #f1f1f1;
+  color: #333;
+
+  &:hover {
+    background: #e0e0e0;
+  }
+}
+
+/* ===== SUBMIT ===== */
+.submit {
+  background: #59c241;
+  color: white;
+  font-weight: 500;
+
+  &:hover {
+    background: #4caf36;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+/* ===== ANIMATION ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

@@ -3,13 +3,15 @@ import styles from "./AdminCategoryPage.module.scss";
 import classNames from "classnames/bind";
 
 import CategoryTable from "./components/CategoryTable";
-import CategoryForm from "./components/CategoryForm";
+import CategoryModal from "./components/CategoryModal";
 import {
   getAdminCategory,
   createCategory,
   updateCategory,
   deleteCategory,
 } from "../../api/CategoryApi";
+import { notifyError, notifySuccess } from "../../components/Nofitication";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 const cx = classNames.bind(styles);
 
@@ -20,6 +22,10 @@ function AdminCategoryPage() {
   const [search, setSearch] = useState("");
   const [searchChildren, setSearchChildren] = useState("");
   const [selectedParent, setSelectedParent] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [createType, setCreateType] = useState("parent");
 
   const parentCategories = categories.filter(
     (c) => !c.parentId && c.name.toLowerCase().includes(search.toLowerCase()),
@@ -45,40 +51,53 @@ function AdminCategoryPage() {
   };
 
   useEffect(() => {
-    setSearchChildren("")
+    setSearchChildren("");
   }, [selectedParent]);
 
   useEffect(() => {
     fetch();
   }, []);
 
-  // ===== CRUD =====
-  const handleCreate = async (data) => {
-    try {
-      await createCategory(data);
-      fetch();
-    } catch (err) {
-      alert("Tạo danh mục thất bại");
-    }
+  const handleCreate = () => {
+    setEditing(null);
+    setOpenModal(true);
   };
 
-  const handleUpdate = async (id, data) => {
+  const handleAskDelete = (id) => {
+    setDeleteId(id);
+    setShowConfirm(true);
+  };
+
+  const handleEdit = (category) => {
+    setEditing(category); // Lưu địa chỉ đang sửa
+    setOpenModal(true);
+  };
+
+  const handleSubmit = async (data) => {
     try {
-      await updateCategory(id, data);
-      fetch();
+      if (editing) {
+        await updateCategory(editing.id, data);
+        notifySuccess("Cập nhật thành công");
+      } else {
+        await createCategory(data);
+        notifySuccess("Thêm thành công");
+      }
+      setEditing(null);
+      await fetch();
+      setOpenModal(false);    
     } catch (err) {
-      alert("Cập nhật thất bại");
+      notifyError(editing ? "Cập nhật thất bại" : "Tạo danh mục thất bại");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn xóa danh mục này?")) return;
-
     try {
       await deleteCategory(id);
+      notifySuccess("Xóa thành công");
+      setShowConfirm(false);
       fetch();
     } catch (err) {
-      alert("Xóa thất bại");
+      notifyError("Xóa thất bại");
     }
   };
 
@@ -101,8 +120,12 @@ function AdminCategoryPage() {
               onSelect={setSelectedParent}
               selectedId={selectedParent?.id}
               onSearch={fetch}
-              onEdit={setEditing}
-              onDelete={handleDelete}
+              onAdd={() => {
+                setCreateType("parent");
+                handleCreate();
+              }}
+              onEdit={handleEdit}
+              onDelete={handleAskDelete}
             />
           )}
         </div>
@@ -118,12 +141,42 @@ function AdminCategoryPage() {
               search={searchChildren}
               setSearch={setSearchChildren}
               onSearch={fetch}
-              onEdit={setEditing}
-              onDelete={handleDelete}
+              onAdd={() => {
+                if (!selectedParent) {
+                  alert("Vui lòng chọn danh mục cha trước");
+                  return;
+                }
+                setCreateType("child");
+                handleCreate();
+              }}
+              onEdit={handleEdit}
+              onDelete={handleAskDelete}
             />
           )}
         </div>
       </div>
+      <CategoryModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        editing={editing}
+        parentId={
+          editing
+            ? editing.parentId
+            : createType === "parent"
+              ? null
+              : selectedParent?.id
+        }
+        onSubmit={handleSubmit}
+      />
+      <ConfirmDialog
+        open={showConfirm}
+        title="Xóa danh mục"
+        message="Bạn có chắc muốn xóa danh mục này?"
+        confirmText="Xóa"
+        cancelText="Hủy"
+        onConfirm={() => handleDelete(deleteId)}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   );
 }
