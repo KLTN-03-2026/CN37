@@ -1,0 +1,95 @@
+import { useEffect, useState } from "react";
+import classNames from "classnames/bind";
+import styles from "./AdminProductPage.module.scss";
+
+import ProductFilter from "./components/ProductFilter";
+import ProductTable from "./components/ProductTable";
+import ProductModal from "./components/ProductModal";
+
+import {
+  getAdminProduct,
+  createProduct,
+  updateProduct,
+  toggleProduct,
+} from "../../api/ProductApi";
+
+const cx = classNames.bind(styles);
+
+function AdminProductPage() {
+  const [products, setProducts] = useState([]);
+  const [filter, setFilter] = useState({
+    search: "",
+    parentCategoryId: "",
+    categoryId: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [selected, setSelected] = useState(null);
+  
+
+  // ===== FETCH =====
+  const fetchProducts = async () => {
+    setLoading(true);
+    const res = await getAdminProduct(filter.search, filter.parentCategoryId, filter.categoryId);
+    setProducts(res.data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [filter]);
+
+  // ===== ACTION =====
+  const handleToggle = async (id) => {
+    await toggleProduct(id);
+    fetchProducts();
+  };
+
+  const handleSubmit = async (data) => {
+    if (selected) {
+      await updateProduct({ ...data, id: selected.id });
+    } else {
+      await createProduct(data);
+    }
+    setOpenModal(false);
+    fetchProducts();
+  };
+
+  return (
+    <div className={cx("wrapper")}>
+      <div className={cx("header")}>
+          <h2 className={cx("title")}>Quản lý sản phẩm</h2>
+    
+          <ProductFilter
+            filter={filter}
+            setFilter={setFilter}
+            onAdd={() => {
+              setSelected(null);
+              setOpenModal(true);
+            }}
+          />
+      </div>
+
+      <ProductTable
+        data={products}
+        loading={loading}
+        onEdit={(p) => {
+          setSelected(p);
+          setOpenModal(true);
+        }}
+        onToggle={handleToggle}
+      />
+
+      {openModal && (
+        <ProductModal
+          product={selected}
+          onClose={() => setOpenModal(false)}
+          onSubmit={handleSubmit}
+        />
+      )}
+    </div>
+  );
+}
+
+export default AdminProductPage;

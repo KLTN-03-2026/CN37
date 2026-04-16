@@ -6,7 +6,7 @@ export const getCategory = (slug) => {
   return api.get(`/categories/${slug}`);
 };
 
-export const getAdminCategory = async({search}) => {
+export const getAdminCategory = async(search) => {
   const res = await api.get("/categories/admin", {
     params: {
       search,

@@ -65,7 +65,8 @@ public class InventoryController : ControllerBase
         // 🔍 Search theo tên
         if (!string.IsNullOrEmpty(search))
         {
-            query = query.Where(p => p.Name.Contains(search));
+            query = query.Where(p =>
+                EF.Functions.Like(p.Name, $"%{search}%"));
         }
 
         // 📂 Filter theo danh mục

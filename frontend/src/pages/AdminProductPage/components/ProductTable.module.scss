@@ -1,0 +1,81 @@
+.tableWrapper {
+  max-height: 100vh; /* hoặc 100% tùy layout */
+  overflow-y: auto;
+  border-radius: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    position: sticky;
+    top: 0;
+    background: #f8f9fb;
+    z-index: 2;
+  }
+
+  th,
+  td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+  }
+}
+
+
+.btn {
+  padding: 6px 12px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 50px;
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+/* ON */
+.switch input:checked + .slider {
+  background-color: #59c241;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(22px);
+}
+
+/* Hover nhẹ */
+.slider:hover {
+  box-shadow: 0 0 4px rgba(0,0,0,0.2);
+}

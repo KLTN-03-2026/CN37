@@ -68,6 +68,8 @@ builder.Services.AddScoped<IUserAddressService, UserAddressService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 
 builder.Services.Configure<JwtOptions>(

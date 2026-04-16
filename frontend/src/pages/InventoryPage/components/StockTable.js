@@ -1,4 +1,4 @@
-import styles from "../InventoryPage.module.scss";
+import styles from "./StockTable.module.scss";
 import classNames from "classnames/bind";
 
 const cx = classNames.bind(styles);

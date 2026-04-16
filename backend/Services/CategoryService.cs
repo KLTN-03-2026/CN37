@@ -70,9 +70,10 @@ public class CategoryService : ICategoryService
 
     public async Task<List<CategoryDto>> GetAllAsync(string? search = null)
     {
+        Console.WriteLine($"search: {search}");
         if (!string.IsNullOrEmpty(search))
         {
-            return await _context.Categories.Where(x => x.Name.Contains(search))
+            return await _context.Categories.Where(p => EF.Functions.Like(p.Name.ToLower().Trim(),$"%{search.ToLower().Trim()}%"))
             .Select(x => new CategoryDto
             {
                 Id = x.Id,

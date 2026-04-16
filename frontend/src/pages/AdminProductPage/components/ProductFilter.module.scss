@@ -1,0 +1,61 @@
+.wrap{
+    padding: 20px;
+}
+
+.title {
+  margin-bottom: 16px;
+}
+
+.filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.input, .select {
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg {
+    font-size: 16px;
+  }
+}
+
+.reset {
+  background: #f1f1f1;
+  color: #333;
+
+  &:hover {
+    background: #ddd;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.add {
+  background: #59c241;
+  color: white;
+
+  &:hover {
+    background: #4caf38;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+

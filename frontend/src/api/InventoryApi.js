@@ -1,7 +1,7 @@
 import api from "./AxiosClient";
 import { getProduct } from "./ProductApi";
 
-export const getProductInventory = async ({ search, category, status }) => {
+export const getProductInventory = async (search, category, status ) => {
   const res = await api.get("/inventory", {
     params: {
       search,

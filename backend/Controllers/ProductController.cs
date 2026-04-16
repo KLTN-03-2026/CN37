@@ -7,12 +7,15 @@ using Microsoft.EntityFrameworkCore;
 public class ProductController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IProductService _service;
 
-    public ProductController(AppDbContext context)
+
+    public ProductController(AppDbContext context, IProductService service)
     {
         _context = context;
+        _service = service;
     }
-    
+
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetProducts(string categorySlug)
@@ -66,7 +69,8 @@ public class ProductController : ControllerBase
     {
         var product = await _context.Products
             .Where(p => p.Slug == slug && p.IsActive)
-            .Select(p => new {
+            .Select(p => new
+            {
                 p.Id,
                 p.Name,
                 p.Brand,
@@ -85,14 +89,16 @@ public class ProductController : ControllerBase
                     .Where(i => i.ProductId == p.Id)
                     .OrderByDescending(i => i.IsMain)
                     .ThenBy(i => i.SortOrder)
-                    .Select(i => new {
+                    .Select(i => new
+                    {
                         i.Id,
                         i.ImageUrl,
                         i.IsMain
                     }).ToList(),
                 Specifications = _context.productSpecifications
                     .Where(s => s.ProductId == p.Id)
-                    .Select(s => new {
+                    .Select(s => new
+                    {
                         s.Id,
                         s.SpecName,
                         s.SpecValue
@@ -106,7 +112,8 @@ public class ProductController : ControllerBase
         // Related products: cùng category, khác sản phẩm hiện tại
         var related = await _context.Products
             .Where(r => r.CategoryId == product.CategoryId && r.Id != product.Id && r.IsActive)
-            .Select(r => new {
+            .Select(r => new
+            {
                 r.Id,
                 r.Slug,
                 r.Name,
@@ -123,5 +130,39 @@ public class ProductController : ControllerBase
             .ToListAsync();
 
         return Ok(new { product, related });
+    }
+
+    [HttpGet("admin")]
+    public async Task<IActionResult> GetAll([FromQuery] ProductFilterRequest filter)
+    {
+        var result = await _service.GetAllAsync(filter);
+        return Ok(result);
+    }
+
+    [HttpGet("admin/{id}")]
+    public async Task<IActionResult> Get(long id)
+    {
+        return Ok(await _service.GetByIdAsync(id));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(ProductCreateRequest req)
+    {
+        await _service.CreateAsync(req);
+        return Ok();
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> Update(ProductUpdateRequest req)
+    {
+        await _service.UpdateAsync(req);
+        return Ok();
+    }
+
+    [HttpPatch("{id}/toggle-active")]
+    public async Task<IActionResult> ToggleActive(long id)
+    {
+        await _service.ToggleActiveAsync(id);
+        return Ok();
     }
 }

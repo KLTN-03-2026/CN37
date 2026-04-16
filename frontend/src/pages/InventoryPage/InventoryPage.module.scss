@@ -132,69 +132,16 @@ select {
   }
 }
 
-.tableWrapper {
-  max-height: 100vh; /* hoặc 100% tùy layout */
-  overflow-y: auto;
-  border-radius: 12px;
-}
-
 .table {
   width: 100%;
   border-collapse: collapse;
-
-  th {
-    position: sticky;
-    top: 0;
-    background: #f8f9fb;
-    z-index: 2;
-  }
-
-  th,
-  td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-    text-align: center;
-  }
 }
 
-.status {
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 13px;
-
-  &.ok {
-    background: #e6f7e6;
-    color: green;
-  }
-
-  &.low {
-    background: #fff4e5;
-    color: orange;
-  }
-
-  &.out {
-    background: #ffe6e6;
-    color: red;
-  }
+.table th, .table td {
+  border: 1px solid #eee;
+  padding: 10px;
 }
 
-.btn {
-  padding: 6px 12px;
-  margin-right: 5px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-
-  &.import {
-    background: #59c241;
-    color: white;
-  }
-
-  &.export {
-    background: #ff4d4f;
-    color: white;
-  }
-}
 
 /* Overlay */
 .modalOverlay {

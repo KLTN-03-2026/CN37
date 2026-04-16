@@ -1,0 +1,85 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  max-height: 720px;
+  flex: 1;
+  min-height: 0; /* 🔥 bắt buộc */
+
+  /* chống bị global padding phá */
+  padding: 0;
+}
+
+.header {
+  position: sticky; /* 🔥 thay fixed */
+  top: 0;
+  z-index: 100;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+
+  background: #f8f9fb;
+
+  padding: 16px 20px 0px 20px;
+  margin-bottom: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  border: 1px solid #eee;
+  padding: 10px;
+}
+
+.active {
+  color: green;
+}
+
+.inactive {
+  color: red;
+}
+
+.btn {
+  background: #ccc;
+  padding: 6px 10px;
+}
+
+.btnAdd {
+  background: #59c241;
+  color: #fff;
+}
+
+.btnEdit {
+  background: orange;
+}
+
+.btnToggle {
+  background: red;
+  color: #fff;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.3);
+}
+
+.modalContent {
+  background: #fff;
+  padding: 20px;
+  width: 400px;
+  margin: 100px auto;
+}
+
+.actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}

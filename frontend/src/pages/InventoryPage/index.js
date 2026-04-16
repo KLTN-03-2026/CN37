@@ -35,6 +35,7 @@ function InventoryPage() {
     setData(res);
   };
 
+
   const handleAction = (product, type) => {
     setSelectedProduct(product);
     setModalType(type);

@@ -20,6 +20,7 @@ import CheckoutPage from "../pages/CheckoutPage";
 import AdminPage from "../pages/AdminPage";
 import InventoryPage from "../pages/InventoryPage";
 import AdminCategoryPage from "../pages/AdminCategoryPage";
+import AdminProductPage from "../pages/AdminProductPage";
 import { ProtectedRoute } from "./Routes";
 
 const routes = [
@@ -120,6 +121,13 @@ const routes = [
   {
     path: "/admin/category",
     component: AdminCategoryPage,
+    layout: AdminLayout,
+    ProtectedRoute: true,
+    requiredRole: "Admin"
+  },
+  {
+    path: "/admin/products",
+    component: AdminProductPage,
     layout: AdminLayout,
     ProtectedRoute: true,
     requiredRole: "Admin"
