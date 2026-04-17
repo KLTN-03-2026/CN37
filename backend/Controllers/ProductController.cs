@@ -142,7 +142,12 @@ public class ProductController : ControllerBase
     [HttpGet("admin/{id}")]
     public async Task<IActionResult> Get(long id)
     {
-        return Ok(await _service.GetByIdAsync(id));
+        var product = await _service.GetByIdAsync(id);
+
+        if (product == null)
+            return NotFound(new { message = "Product not found" });
+
+        return Ok(new { product });
     }
 
     [HttpPost]
@@ -152,7 +157,7 @@ public class ProductController : ControllerBase
         return Ok(new { id });
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("admin/{id}")]
     public async Task<IActionResult> Update(long id, [FromForm] ProductCreateUpdateDto dto)
     {
         var result = await _service.UpdateAsync(id, dto);

@@ -6,6 +6,7 @@ import ProductFilter from "./components/ProductFilter";
 import ProductTable from "./components/ProductTable";
 import ProductModal from "./components/ProductModal";
 import ProductPreviewModal from "./components/ProductPreviewModal";
+import { notifyError, notifySuccess } from "../../components/Nofitication";
 
 import {
   getProduct,
@@ -13,6 +14,7 @@ import {
   createProduct,
   updateProduct,
   toggleProduct,
+  getAdminProductId,
 } from "../../api/ProductApi";
 
 const cx = classNames.bind(styles);
@@ -30,13 +32,14 @@ function AdminProductPage() {
   const [selected, setSelected] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [slug, setSlug] = useState(false);
   const [product, setProduct] = useState(null);
 
   const handleView = async (slug) => {
     try {
       const { data } = await getProduct(slug);
       setSelectedProduct(data.product);
+      setSlug(slug);
       setShowModal(true);
     } catch (error) {
       console.error(error);
@@ -64,19 +67,18 @@ function AdminProductPage() {
     fetchProducts();
   }, [filter]);
 
-  const handelEdit = async (id) => {
-    // try {
-    //   const { data } = await getProduct(id);
-    //   setProduct(data.product);
-    //   setIsEditMode(true);
-    //   setOpenModal(true);
-    // } catch (error) {
-    //   console.error(error);
-    // } finally {
-    //   setIsEditMode(false);
-    // }
-    console.log(id);  
-  }; 
+  const handelEdit = async (id, form) => {
+    console.log(slug);
+    const res = await updateProduct(id, form);
+    if (res.status === 200) {
+      setShowModal(false);
+      notifySuccess("Cập nhật sản phẩm thành công");
+      await fetchProducts();
+      const res = await getAdminProductId(id);
+      setSelectedProduct(res.data.product);
+      setShowModal(true);
+    }
+  };
 
   // ===== ACTION =====
   const handleToggle = async (id) => {
@@ -130,7 +132,7 @@ function AdminProductPage() {
       {showModal && (
         <ProductPreviewModal
           product={selectedProduct}
-          onEdit={() => handelEdit(selectedProduct.id)}
+          onEdit={handelEdit}
           onClose={() => setShowModal(false)}
         />
       )}

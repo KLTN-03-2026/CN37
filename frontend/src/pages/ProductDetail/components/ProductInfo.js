@@ -84,11 +84,11 @@ export default function ProductInfo({ product }) {
       <div className={cx("price-box")}>
         <div className={cx("price-main")}>
           <span className={cx("current-price")}>
-            {discountPrice.toLocaleString()}đ
+            {(discountPrice || 0).toLocaleString()}đ
           </span>
 
           <div className={cx("old-price-row")}>
-            <span className={cx("old-price")}>{price.toLocaleString()}đ</span>
+            <span className={cx("old-price")}>{(price || 0).toLocaleString()}đ</span>
             <span className={cx("discount-percent")}>- {discountPercent}%</span>
           </div>
 
@@ -107,7 +107,7 @@ export default function ProductInfo({ product }) {
           <div className={cx("flash-body")}>
             <div>
               <p>Giảm ngay</p>
-              <strong>{saleMoney.toLocaleString()}đ ⚡</strong>
+              <strong>{(saleMoney || 0).toLocaleString()}đ ⚡</strong>
             </div>
 
             <div className={cx("countdown")}>

@@ -10,9 +10,6 @@ public class ProductCreateUpdateDto
 
     public List<SpecDto> Specifications { get; set; }
 
-    // ảnh mới upload
-    public List<IFormFile> Images { get; set; }
-
-    // xóa ảnh cũ
-    public List<long> DeletedImageIds { get; set; }
+    public List<IFormFile>? NewImages { get; set; }
+    public List<long>? DeletedImageIds { get; set; }
 }

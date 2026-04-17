@@ -7,7 +7,7 @@ import ProductGallery from "../../ProductDetail/components/ProductGallery";
 import ProductInfo from "../../ProductDetail/components/ProductInfo";
 import ProductDescription from "../../ProductDetail/components/ProductDescription";
 import ProductSpecifications from "../../ProductDetail/components/ProductSpecifications";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EditProductInfo from "./EditProductForm/EditProductInfo";
 import EditProductDescription from "./EditProductForm/EditProductDescription";
 import EditProductSpec from "./EditProductForm/EditProductSpec";
@@ -17,13 +17,83 @@ const cx = classNames.bind(styles);
 
 export default function ProductPreviewModal({ product, onEdit, onClose }) {
   const [isEditMode, setIsEditMode] = useState(false);
-  if (!product) return null;
+  const [formData, setFormData] = useState(null);
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        ...product,
+        newImages: [],
+        deletedImageIds: [],
+      });
+    }
+  }, [product]);
+
+  useEffect(() => {
+    return () => {
+      formData?.newImages?.forEach((img) => {
+        URL.revokeObjectURL(img.preview);
+      });
+    };
+  }, [formData?.newImages]);
+
+  if (!product || !formData) return null;
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const handleEditClick = () => {
-    setIsEditMode(!isEditMode); // Pass the product ID to the parent component
+    if (isEditMode) {
+      // reset lại dữ liệu gốc
+      setFormData({
+        ...product,
+        newImages: [],
+        deletedImageIds: [],
+      });
+    }
+    setIsEditMode(!isEditMode);
   };
-  const handleSaveClick = () => {
-    onEdit(product.id);
+
+  const handleSaveClick = async () => {
+    const form = new FormData();
+
+    form.append("Id", formData.id);
+    form.append("Name", formData.name);
+    form.append("Slug", formData.slug);
+    form.append("CategoryId", formData.categoryId);
+    form.append("Brand", formData.brand || "");
+    form.append("Description", formData.description || "");
+    form.append("Price", formData.price);
+    form.append("DiscountPrice", formData.discountPrice || 0);
+    form.append("IsActive", formData.isActive);
+
+    // specs
+    formData.specifications?.forEach((s, i) => {
+      form.append(`Specifications[${i}].SpecName`, s.specName);
+      form.append(`Specifications[${i}].SpecValue`, s.specValue);
+    });
+
+    // ảnh mới
+    formData.newImages?.forEach((img) => {
+      form.append("NewImages", img.file);
+    });
+
+    // ảnh xóa
+    formData.deletedImageIds?.forEach((id) => {
+      form.append("DeletedImageIds", id);
+    });
+
+    onEdit(formData.id, form);
+    for (let pair of form.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+    console.log(formData);
+    
+
+    setIsEditMode(false);
   };
 
   return (
@@ -59,17 +129,17 @@ export default function ProductPreviewModal({ product, onEdit, onClose }) {
           <div className={cx("row")}>
             {isEditMode ? (
               <EditProductGallery
-                images={product.images}
-                newImages={product.newImages}
-                deletedImageIds={product.deletedImageIds}
-                // setFormData={setFormData}
+                images={formData.images}
+                newImages={formData.newImages}
+                deletedImageIds={formData.deletedImageIds}
+                setFormData={setFormData}
               />
             ) : (
               <ProductGallery images={product.images} />
             )}
 
             {isEditMode ? (
-              <EditProductInfo data={product} onChange={handleEditClick} />
+              <EditProductInfo data={formData} onChange={handleChange} />
             ) : (
               <ProductInfo product={product} isAdminPreview />
             )}
@@ -78,17 +148,14 @@ export default function ProductPreviewModal({ product, onEdit, onClose }) {
           {/* ROW 2 */}
           <div className={cx("row")}>
             {isEditMode ? (
-              <EditProductDescription
-                data={product}
-                onChange={handleEditClick}
-              />
+              <EditProductDescription data={formData} onChange={handleChange} />
             ) : (
               <ProductDescription description={product.description} />
             )}
             {isEditMode ? (
               <EditProductSpec
-                specs={product.specifications}
-                // setFormData={setFormData}
+                specs={formData.specifications}
+                setFormData={setFormData}
               />
             ) : (
               <ProductSpecifications specs={product.specifications} />

@@ -55,22 +55,55 @@ public class ProductService : IProductService
         ).ToListAsync();
     }
 
-    public async Task<ProductDto> GetByIdAsync(long id)
+    public async Task<object> GetByIdAsync(long id)
     {
-        var p = await _repo.GetByIdAsync(id);
+        var product = await _context.Products
+            .Where(p => p.Id == id && p.IsActive)
+            .Select(p => new
+            {
+                p.Id,
+                p.Name,
+                p.Slug,
+                p.Brand,
+                p.Price,
+                p.DiscountPrice,
+                p.Description,
+                p.RatingAvg,
+                p.RatingCount,
+                p.Thumbnail,
+                p.CategoryId,
 
-        if (p == null)
-            throw new Exception("không tìm thấy sản phẩm");
+                DiscountPercent = p.DiscountPrice != null
+                    ? (int)((p.Price - p.DiscountPrice) * 100 / p.Price)
+                    : 0,
 
-        return new ProductDto
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Price = p.Price,
-            DiscountPrice = p.DiscountPrice,
-            CategoryName = p.Category.Name,
-            IsActive = p.IsActive
-        };
+                SaleMoney = p.DiscountPrice != null
+                    ? p.Price - p.DiscountPrice
+                    : 0,
+
+                Images = _context.productImages
+                    .Where(i => i.ProductId == p.Id)
+                    .OrderByDescending(i => i.IsMain)
+                    .ThenBy(i => i.SortOrder)
+                    .Select(i => new
+                    {
+                        i.Id,
+                        i.ImageUrl,
+                        i.IsMain
+                    }).ToList(),
+
+                Specifications = _context.productSpecifications
+                    .Where(s => s.ProductId == p.Id)
+                    .Select(s => new
+                    {
+                        s.Id,
+                        s.SpecName,
+                        s.SpecValue
+                    }).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        return product; // null nếu không có
     }
 
     public async Task<long> CreateAsync(ProductCreateUpdateDto dto)
@@ -92,12 +125,12 @@ public class ProductService : IProductService
         await _context.SaveChangesAsync();
 
         // ====== IMAGES ======
-        if (dto.Images != null && dto.Images.Any())
+        if (dto.NewImages != null && dto.NewImages.Any())
         {
             var images = new List<ProductImage>();
 
             int index = 0;
-            foreach (var file in dto.Images)
+            foreach (var file in dto.NewImages)
             {
                 var url = await SaveFile(file);
 
@@ -163,11 +196,11 @@ public class ProductService : IProductService
         }
 
         // ====== ADD NEW IMAGES ======
-        if (dto.Images != null && dto.Images.Any())
+        if (dto.NewImages != null && dto.NewImages.Any())
         {
             int index = product.Images.Count;
 
-            foreach (var file in dto.Images)
+            foreach (var file in dto.NewImages)
             {
                 var url = await SaveFile(file);
 
@@ -229,15 +262,24 @@ public class ProductService : IProductService
     // ================= HELPER =================
     private async Task<string> SaveFile(IFormFile file)
     {
-        var folder = Path.Combine(_env.WebRootPath, "uploads");
+        if (file == null || file.Length == 0)
+            throw new Exception("File is empty");
+
+        // fallback nếu null
+        var rootPath = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+        var folder = Path.Combine(rootPath, "uploads");
+
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
         var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-        var path = Path.Combine(folder, fileName);
+        var filePath = Path.Combine(folder, fileName);
 
-        using var stream = new FileStream(path, FileMode.Create);
-        await file.CopyToAsync(stream);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
 
         return "/uploads/" + fileName;
     }
