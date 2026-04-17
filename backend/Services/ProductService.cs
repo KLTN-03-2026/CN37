@@ -42,11 +42,13 @@ public class ProductService : IProductService
         {
             Id = p.Id,
             Name = p.Name,
+            Slug = p.Slug,
             Price = p.Price,
             DiscountPrice = p.DiscountPrice,
             CategoryName = p.Category.Name,
-            IsActive = p.IsActive
-        }).ToListAsync();
+            IsActive = p.IsActive,
+        }
+        ).ToListAsync();
     }
 
     public async Task<ProductDto> GetByIdAsync(long id)

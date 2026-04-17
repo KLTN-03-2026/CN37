@@ -5,8 +5,10 @@ import styles from "./AdminProductPage.module.scss";
 import ProductFilter from "./components/ProductFilter";
 import ProductTable from "./components/ProductTable";
 import ProductModal from "./components/ProductModal";
+import ProductPreviewModal from "./components/ProductPreviewModal";
 
 import {
+  getProduct,
   getAdminProduct,
   createProduct,
   updateProduct,
@@ -26,14 +28,36 @@ function AdminProductPage() {
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selected, setSelected] = useState(null);
-  
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [product, setProduct] = useState(null);
+
+  const handleView = async (slug) => {
+    try {
+      const { data } = await getProduct(slug);
+      setSelectedProduct(data.product);
+      setShowModal(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // ===== FETCH =====
   const fetchProducts = async () => {
-    setLoading(true);
-    const res = await getAdminProduct(filter.search, filter.parentCategoryId, filter.categoryId);
-    setProducts(res.data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const res = await getAdminProduct(
+        filter.search,
+        filter.parentCategoryId,
+        filter.categoryId,
+      );
+      setProducts(res.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -59,16 +83,16 @@ function AdminProductPage() {
   return (
     <div className={cx("wrapper")}>
       <div className={cx("header")}>
-          <h2 className={cx("title")}>Quản lý sản phẩm</h2>
-    
-          <ProductFilter
-            filter={filter}
-            setFilter={setFilter}
-            onAdd={() => {
-              setSelected(null);
-              setOpenModal(true);
-            }}
-          />
+        <h2 className={cx("title")}>Quản lý sản phẩm</h2>
+
+        <ProductFilter
+          filter={filter}
+          setFilter={setFilter}
+          onAdd={() => {
+            setSelected(null);
+            setOpenModal(true);
+          }}
+        />
       </div>
 
       <ProductTable
@@ -78,6 +102,7 @@ function AdminProductPage() {
           setSelected(p);
           setOpenModal(true);
         }}
+        onView={handleView}
         onToggle={handleToggle}
       />
 
@@ -86,6 +111,12 @@ function AdminProductPage() {
           product={selected}
           onClose={() => setOpenModal(false)}
           onSubmit={handleSubmit}
+        />
+      )}
+      {showModal && (
+        <ProductPreviewModal
+          product={selectedProduct}
+          onClose={() => setShowModal(false)}
         />
       )}
     </div>

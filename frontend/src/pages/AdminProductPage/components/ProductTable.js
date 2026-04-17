@@ -5,7 +5,7 @@ import { BiDetail } from "react-icons/bi";
 
 const cx = classNames.bind(styles);
 
-function ProductTable({ data, loading, onEdit, onToggle }) {
+function ProductTable({ data, loading, onEdit, onView, onToggle }) {
   return (
     <div className={cx("tableWrapper")}>
       <table className={cx("table")}>
@@ -54,7 +54,9 @@ function ProductTable({ data, loading, onEdit, onToggle }) {
 
                   <button
                     className={cx("btn", "btnEdit")}
-                    onClick={() => onEdit(p)}
+                    value={p.slug}
+                    onClick={() => onView(p.slug)
+                    }
                   >
                     <BiDetail />
                   </button>
