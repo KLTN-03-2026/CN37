@@ -146,16 +146,18 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(ProductCreateRequest req)
+    public async Task<IActionResult> Create([FromForm] ProductCreateUpdateDto dto)
     {
-        await _service.CreateAsync(req);
-        return Ok();
+        var id = await _service.CreateAsync(dto);
+        return Ok(new { id });
     }
 
-    [HttpPut]
-    public async Task<IActionResult> Update(ProductUpdateRequest req)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(long id, [FromForm] ProductCreateUpdateDto dto)
     {
-        await _service.UpdateAsync(req);
+        var result = await _service.UpdateAsync(id, dto);
+        if (!result) return NotFound();
+
         return Ok();
     }
 

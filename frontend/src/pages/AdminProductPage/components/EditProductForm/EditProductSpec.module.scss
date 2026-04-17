@@ -1,0 +1,35 @@
+.specs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.row input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.row button {
+  background: #ff4d4f;
+  border: none;
+  color: #fff;
+  padding: 0 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.addBtn {
+  background: #59c241;
+  color: #fff;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}

@@ -28,9 +28,9 @@ function AdminProductPage() {
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selected, setSelected] = useState(null);
-
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [product, setProduct] = useState(null);
 
   const handleView = async (slug) => {
@@ -63,6 +63,20 @@ function AdminProductPage() {
   useEffect(() => {
     fetchProducts();
   }, [filter]);
+
+  const handelEdit = async (id) => {
+    // try {
+    //   const { data } = await getProduct(id);
+    //   setProduct(data.product);
+    //   setIsEditMode(true);
+    //   setOpenModal(true);
+    // } catch (error) {
+    //   console.error(error);
+    // } finally {
+    //   setIsEditMode(false);
+    // }
+    console.log(id);  
+  }; 
 
   // ===== ACTION =====
   const handleToggle = async (id) => {
@@ -116,6 +130,7 @@ function AdminProductPage() {
       {showModal && (
         <ProductPreviewModal
           product={selectedProduct}
+          onEdit={() => handelEdit(selectedProduct.id)}
           onClose={() => setShowModal(false)}
         />
       )}

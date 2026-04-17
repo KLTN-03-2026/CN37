@@ -1,0 +1,38 @@
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  textarea {
+    height: 85%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+
+    &:focus {
+      border-color: #59c241;
+      box-shadow: 0 0 0 2px rgba(89, 194, 65, 0.2);
+    }
+
+    &:hover {
+      border-color: #59c241;
+    }
+
+    &::placeholder {
+      color: #aaa;
+      font-style: italic;
+    }
+  }
+}
