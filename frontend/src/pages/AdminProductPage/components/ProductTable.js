@@ -5,13 +5,21 @@ import { BiDetail } from "react-icons/bi";
 
 const cx = classNames.bind(styles);
 
-function ProductTable({ data, loading, onEdit, onView, onToggle }) {
+function ProductTable({ data, loading, onEdit, onView, onToggleOn, onToggleOff }) {
+  const handleToggleOn = (id) => {
+      onToggleOn(id);
+  };
+  const handleToggleOff = (id) => {
+      onToggleOff(id);
+  };
+
+
   return (
     <div className={cx("tableWrapper")}>
       <table className={cx("table")}>
         <thead>
           <tr>
-            <th>#</th>
+            <th>STT</th>
             <th>Tên</th>
             <th>Danh mục</th>
             <th>Giá</th>
@@ -38,7 +46,7 @@ function ProductTable({ data, loading, onEdit, onView, onToggle }) {
                     <input
                       type="checkbox"
                       checked={p.isActive}
-                      onChange={() => onToggle(p.id)}
+                      onChange={() => {p.isActive? handleToggleOff(p.id): handleToggleOn(p.id)}}
                     />
                     <span className={cx("slider")}></span>
                   </label>
@@ -46,16 +54,10 @@ function ProductTable({ data, loading, onEdit, onView, onToggle }) {
 
                 <td>
                   <button
-                    className={cx("btn", "btnEdit")}
-                    onClick={() => onEdit(p)}
-                  >
-                    <AiFillEdit />
-                  </button>
-
-                  <button
+                    title="xem chi tiết"
                     className={cx("btn", "btnEdit")}
                     value={p.slug}
-                    onClick={() => onView(p.slug)
+                    onClick={() => onView(p.id)
                     }
                   >
                     <BiDetail />

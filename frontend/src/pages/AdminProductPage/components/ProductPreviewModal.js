@@ -3,8 +3,10 @@ import styles from "./ProductPreviewModal.module.scss";
 import { AiFillEdit } from "react-icons/ai";
 import { TiCancel } from "react-icons/ti";
 import { FaSave } from "react-icons/fa";
+import { notifyError } from "../../../components/Nofitication";
 import ProductGallery from "../../ProductDetail/components/ProductGallery";
-import ProductInfo from "../../ProductDetail/components/ProductInfo";
+// import ProductInfo from "../../ProductDetail/components/ProductInfo";
+import ProductInfo from "./EditProductForm/ProductInfo";
 import ProductDescription from "../../ProductDetail/components/ProductDescription";
 import ProductSpecifications from "../../ProductDetail/components/ProductSpecifications";
 import { useEffect, useState } from "react";
@@ -15,18 +17,44 @@ import EditProductGallery from "./EditProductForm/EditProductGallery";
 
 const cx = classNames.bind(styles);
 
-export default function ProductPreviewModal({ product, onEdit, onClose }) {
+export default function ProductPreviewModal({
+  product,
+  onCreate,
+  onEdit,
+  onClose,
+  mode = "view",
+}) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState(null);
+  const defaultProduct = {
+    id: "",
+    name: "",
+    slug: "",
+    parentcategoryId: "",
+    categoryId: "",
+    brand: "",
+    description: "",
+    price: 0,
+    discountPrice: 0,
+    isActive: true,
+    images: [],
+    specifications: [],
+    newImages: [],
+    deletedImageIds: [],
+  };
+
   useEffect(() => {
-    if (product) {
+    if (mode === "create") {
+      setFormData(defaultProduct);
+      setIsEditMode(true);
+    } else if (product) {
       setFormData({
         ...product,
         newImages: [],
         deletedImageIds: [],
       });
     }
-  }, [product]);
+  }, [product, mode]);
 
   useEffect(() => {
     return () => {
@@ -57,7 +85,72 @@ export default function ProductPreviewModal({ product, onEdit, onClose }) {
     setIsEditMode(!isEditMode);
   };
 
+  const validate = () => {
+    if (formData.parentcategoryId === "") {
+      notifyError("Vui lòng chọn danh mục cha");
+      return false;
+    }
+
+    if (formData.categoryId === "") {
+      notifyError("Vui lòng chọn danh mục con");
+      return false;
+    }
+
+    if (!formData.name?.trim()) {
+      notifyError("Vui lòng nhập tên sản phẩm");
+      return false;
+    }
+
+    if (!formData.price) {
+      notifyError("Vui lòng nhập giá");
+      return false;
+    }
+
+    if (formData.discountPrice === null || formData.discountPrice === "") {
+      notifyError("Vui lòng nhập giá giảm");
+      return false;
+    }
+
+    if (formData.discountPrice > formData.price) {
+      notifyError("Giá giảm phải nhỏ hơn hoặc bằng giá gốc");
+      return false;
+    }
+
+    if (formData.price <= 0) {
+      notifyError("Giá phải lớn hơn 0");
+      return false;
+    }
+
+    if (formData.discountPrice < 0) {
+      notifyError("Giá giảm không được âm");
+      return false;
+    }
+
+    if (!formData.description?.trim()) {
+      notifyError("Vui lòng nhập mô tả sản phẩm");
+      return false;
+    }
+
+    if (formData.newImages.length === 0 && formData.images.length === 0) {
+      notifyError("Vui lòng thêm ít nhất 1 ảnh");
+      return false;
+    }
+
+    if (!formData.specifications?.length) {
+      notifyError("Vui lòng thêm ít nhất 1 thông số kỹ thuật");
+      return false;
+    }
+
+    if (formData.specifications.some((s) => !s.specName || !s.specValue)) {
+      notifyError("Vui lòng điền đầy đủ thông số kỹ thuật");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSaveClick = async () => {
+    if (!validate()) return;
     const form = new FormData();
 
     form.append("Id", formData.id);
@@ -69,6 +162,8 @@ export default function ProductPreviewModal({ product, onEdit, onClose }) {
     form.append("Price", formData.price);
     form.append("DiscountPrice", formData.discountPrice || 0);
     form.append("IsActive", formData.isActive);
+    form.append("ParentCategoryId", formData.parentcategoryId);
+    form.append("CategoryId", formData.categoryId);
 
     // specs
     formData.specifications?.forEach((s, i) => {
@@ -91,7 +186,6 @@ export default function ProductPreviewModal({ product, onEdit, onClose }) {
       console.log(pair[0], pair[1]);
     }
     console.log(formData);
-    
 
     setIsEditMode(false);
   };

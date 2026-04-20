@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import styles from "./EditProductInfo.module.scss";
 import classNames from "classnames/bind";
+import styles from "./ProductInfo.module.scss";
 import { getAdminCategory } from "../../../../api/CategoryApi";
 
 const cx = classNames.bind(styles);
 
-export default function EditProductInfo({ data, onChange }) {
+function ProductInfo({ product }) {
   const [categories, setCategories] = useState([]);
   const [selectedParent, setSelectedParent] = useState(null);
   const [selectedChild, setSelectedChild] = useState(null);
@@ -22,30 +22,31 @@ export default function EditProductInfo({ data, onChange }) {
     setCategories(resCategory);
   };
 
-
   useEffect(() => {
     fetch();
   }, []);
 
   useEffect(() => {
-    if (data) {
-      setSelectedParent(data.parentcategoryId);
-      setSelectedChild(data.categoryId);
+    if (product) {
+      setSelectedParent(product.parentcategoryId);
+      setSelectedChild(product.categoryId);
     }
-  }, [data]);
-
+  }, [product]);
 
   return (
-    <div className={cx("wrapper")}>
+    <div className={cx("info")}>
+      <p className={cx("name")}>{product.name}</p>
+
+      {/* ===== CATEGORY ===== */}
       <div className={cx("category-box")}>
         <div className={cx("category-row")}>
           {/* Parent */}
           <select
             value={selectedParent || ""}
+            disabled={true}
             onChange={(e) => {
               setSelectedParent(e.target.value);
-              setSelectedChild("");
-              onChange("parentcategoryId", e.target.value);
+              setSelectedChild(null);
             }}
           >
             <option value="">-- Danh mục cha --</option>
@@ -59,10 +60,8 @@ export default function EditProductInfo({ data, onChange }) {
           {/* Child */}
           <select
             value={selectedChild || ""}
-            onChange={(e) => {
-              setSelectedChild(e.target.value);
-              onChange("categoryId", e.target.value);
-            }}
+            disabled={true}
+            onChange={(e) => setSelectedChild(e.target.value)}
           >
             <option value="">-- Danh mục con --</option>
             {childCategories.map((c) => (
@@ -74,33 +73,33 @@ export default function EditProductInfo({ data, onChange }) {
         </div>
       </div>
 
-      <div className={cx("formGroup")}>
-        <p>Tên sản phẩm:</p>
-        <input
-          value={data.name}
-          onChange={(e) => onChange("name", e.target.value)}
-        />
+      <div className={cx("rating-brand")}>
+        <div className={cx("rating")}>
+          <span>{`⭐ ${product.ratingAvg} (${product.ratingCount} reviews)`}</span>
+        </div>
+        <p className={cx("brand")}>{product.brand}</p>
       </div>
 
-      <div className={cx("grid")}>
-        <div className={cx("formGroup")}>
-          <p>Giá tiền gốc:</p>
-          <input
-            type="number"
-            value={data.price}
-            onChange={(e) => onChange("price", e.target.value)}
-          />
-        </div>
+      <div className={cx("price-box")}>
+        <div className={cx("price-main")}>
+          <span className={cx("current-price")}>
+            {(product.discountPrice || 0).toLocaleString()}đ
+          </span>
 
-        <div className={cx("formGroup")}>
-          <p>Giá tiền sau giảm giá:</p>
-          <input
-            type="number"
-            value={data.discountPrice}
-            onChange={(e) => onChange("discountPrice", e.target.value)}
-          />
+          <div className={cx("old-price-row")}>
+            <span className={cx("old-price")}>
+              {(product.price || 0).toLocaleString()}đ
+            </span>
+            <span className={cx("discount-percent")}>
+              - {product.discountPercent}%
+            </span>
+          </div>
         </div>
       </div>
+
+      <div className={cx("actions")}></div>
     </div>
   );
 }
+
+export default ProductInfo;

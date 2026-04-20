@@ -31,6 +31,19 @@
   border-radius: 6px;
   cursor: pointer;
 }
+.btnEdit {
+  background: #4caf50;
+  color: white;
+
+  &:hover {
+    background: #45a049;
+    text-emphasis: ;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
 
 .switch {
   position: relative;
@@ -68,7 +81,7 @@
 
 /* ON */
 .switch input:checked + .slider {
-  background-color: #59c241;
+  background-color: var(--primary-red);
 }
 
 .switch input:checked + .slider::before {

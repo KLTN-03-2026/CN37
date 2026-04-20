@@ -10,6 +10,7 @@ const cx = classNames.bind(styles);
 function ProductFilter({ filter, setFilter, onAdd }) {
   const [categories, setCategories] = useState([]);
   const [selectedParent, setSelectedParent] = useState(null);
+  const [active, setActive] = useState(false);
   const [search, setSearch] = useState("");
 
   const parentCategories = categories.filter(
@@ -74,13 +75,21 @@ function ProductFilter({ filter, setFilter, onAdd }) {
         ))}
       </select>
 
+      <select value={filter.status} onChange={(e) => setFilter({ ...filter, status: e.target.value })}>
+        <option value="">Tất cả hoạt động</option>
+        <option value="active">Hoạt động</option>
+        <option value="disabled">Không hoạt động</option>
+      </select>
+
       <button
+        title="Làm mới bộ lọc"
         className={cx("btn", "reset")}
         onClick={() =>
           setFilter({
             search: "",
             parentCategoryId: "",
             categoryId: "",
+            status: "",
           })
           
         }
@@ -88,8 +97,8 @@ function ProductFilter({ filter, setFilter, onAdd }) {
         <GrPowerReset />
       </button>
 
-      <button className={cx("btn", "add")} onClick={onAdd}>
-        <IoMdAdd />
+      <button title="Thêm sản phẩm" className={cx("btn", "add")} onClick={onAdd}>
+        <IoMdAdd /> Thêm sản phẩm
       </button>
     </div>
   );

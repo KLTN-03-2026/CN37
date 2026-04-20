@@ -35,6 +35,15 @@ public class ProductService : IProductService
                 p.Category.ParentId == filter.ParentCategoryId);
         }
 
+        // FILTER STATUS
+        if (!string.IsNullOrEmpty(filter.Status))
+        {
+            if (filter.Status == "active")
+                query = query.Where(p => p.IsActive);
+            else if (filter.Status == "disabled")
+                query = query.Where(p => !p.IsActive);
+        }
+
         // SORT
         query = query.OrderByDescending(p => p.CreateAt);
 
@@ -58,6 +67,7 @@ public class ProductService : IProductService
     public async Task<object> GetByIdAsync(long id)
     {
         var product = await _context.Products
+            .Include(p => p.Category) // để lấy tên category
             .Where(p => p.Id == id && p.IsActive)
             .Select(p => new
             {
@@ -72,6 +82,13 @@ public class ProductService : IProductService
                 p.RatingCount,
                 p.Thumbnail,
                 p.CategoryId,
+                CategoryName = p.Category.Name,
+                ParentcategoryId = p.Category.ParentId,
+
+                ParentCategoryName = _context.Categories
+                    .Where(c => c.Id == p.Category.ParentId)
+                    .Select(c => c.Name)
+                    .FirstOrDefault(),
 
                 DiscountPercent = p.DiscountPrice != null
                     ? (int)((p.Price - p.DiscountPrice) * 100 / p.Price)
@@ -184,6 +201,7 @@ public class ProductService : IProductService
         product.Price = dto.Price;
         product.DiscountPrice = dto.DiscountPrice;
         product.UpdateAt = DateTime.Now;
+        product.CategoryId = dto.CategoryId;
 
         // ====== DELETE IMAGES ======
         if (dto.DeletedImageIds != null && dto.DeletedImageIds.Any())

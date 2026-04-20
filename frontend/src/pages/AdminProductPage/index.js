@@ -7,9 +7,9 @@ import ProductTable from "./components/ProductTable";
 import ProductModal from "./components/ProductModal";
 import ProductPreviewModal from "./components/ProductPreviewModal";
 import { notifyError, notifySuccess } from "../../components/Nofitication";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 import {
-  getProduct,
   getAdminProduct,
   createProduct,
   updateProduct,
@@ -25,6 +25,7 @@ function AdminProductPage() {
     search: "",
     parentCategoryId: "",
     categoryId: "",
+    status: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -33,13 +34,15 @@ function AdminProductPage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [slug, setSlug] = useState(false);
-  const [product, setProduct] = useState(null);
+  const [disabledProduct, setDisabledProduct] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
 
-  const handleView = async (slug) => {
+  const handleView = async (id) => {
     try {
-      const { data } = await getProduct(slug);
+      const { data } = await getAdminProductId(id);
       setSelectedProduct(data.product);
-      setSlug(slug);
+      setSlug(id);
       setShowModal(true);
     } catch (error) {
       console.error(error);
@@ -54,6 +57,7 @@ function AdminProductPage() {
         filter.search,
         filter.parentCategoryId,
         filter.categoryId,
+        filter.status,
       );
       setProducts(res.data);
     } catch (error) {
@@ -80,10 +84,22 @@ function AdminProductPage() {
     }
   };
 
+  const handleAskToggleOn = async (id) => {
+    setIsDisabled(false);
+    setDisabledProduct(id);
+    setShowConfirm(true);
+  };
+  const handleAskToggleOff = async (id) => {
+    setIsDisabled(true);
+    setDisabledProduct(id);
+    setShowConfirm(true);
+  };
+
   // ===== ACTION =====
   const handleToggle = async (id) => {
     await toggleProduct(id);
     fetchProducts();
+    setShowConfirm(false);
   };
 
   const handleSubmit = async (data) => {
@@ -98,18 +114,16 @@ function AdminProductPage() {
 
   return (
     <div className={cx("wrapper")}>
-      <div className={cx("header")}>
-        <h2 className={cx("title")}>Quản lý sản phẩm</h2>
+      <h2 className={cx("title")}>Quản lý sản phẩm</h2>
 
-        <ProductFilter
-          filter={filter}
-          setFilter={setFilter}
-          onAdd={() => {
-            setSelected(null);
-            setOpenModal(true);
-          }}
-        />
-      </div>
+      <ProductFilter
+        filter={filter}
+        setFilter={setFilter}
+        onAdd={() => {
+          setSelected(null);
+          setOpenModal(true);
+        }}
+      />
 
       <ProductTable
         data={products}
@@ -119,7 +133,8 @@ function AdminProductPage() {
           setOpenModal(true);
         }}
         onView={handleView}
-        onToggle={handleToggle}
+        onToggleOn={handleAskToggleOn}
+        onToggleOff={handleAskToggleOff}
       />
 
       {openModal && (
@@ -136,6 +151,19 @@ function AdminProductPage() {
           onClose={() => setShowModal(false)}
         />
       )}
+      <ConfirmDialog
+        open={showConfirm}
+        title={isDisabled ? "Vô hiệu hóa sản phẩm" : "Kích hoạt sản phẩm"}
+        message={
+          isDisabled
+            ? "Bạn có chắc muốn vô hiệu hóa sản phẩm này?"
+            : "Bạn có chắc muốn kích hoạt sản phẩm này?"
+        }
+        confirmText={isDisabled ? "Vô hiệu hóa" : "Kích hoạt"}
+        cancelText="Hủy"
+        onConfirm={() => handleToggle(disabledProduct)}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   );
 }

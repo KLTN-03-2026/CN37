@@ -12,12 +12,13 @@ export const createProduct = (data) => {
   return api.post("/products/admin", data);
 };
 
-export const getAdminProduct = (search, parentCategoryId, categoryId) => {
+export const getAdminProduct = (search, parentCategoryId, categoryId, status) => {
   const res =  api.get("/products/admin" , {
     params: {
       search,
       parentCategoryId,
       categoryId,
+      status,
     },
   })
   return res
@@ -32,5 +33,5 @@ export const updateProduct = (id, form) => {
 };
 
 export const toggleProduct = (id) => {
-  return api.get(`/products/admin/${id}`)
+  return api.patch(`/products/admin/toggle-active/${id}`)
 }

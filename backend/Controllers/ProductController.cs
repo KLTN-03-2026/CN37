@@ -166,7 +166,7 @@ public class ProductController : ControllerBase
         return Ok();
     }
 
-    [HttpPatch("{id}/toggle-active")]
+    [HttpPatch("admin/toggle-active/{id}")]
     public async Task<IActionResult> ToggleActive(long id)
     {
         await _service.ToggleActiveAsync(id);

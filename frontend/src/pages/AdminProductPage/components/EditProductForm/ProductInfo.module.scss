@@ -1,0 +1,169 @@
+.info {
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-box {
+  margin-top: 16px;
+
+  label {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: inline-block;
+    color: #333;
+  }
+
+  // 👉 hàng chứa 2 select + button
+  .category-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 6px;
+  }
+
+  select {
+    flex: 1;
+    min-width: 180px;
+
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+
+    font-size: 14px;
+    background: #fff;
+
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: #59c241;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(89, 194, 65, 0.15);
+    }
+
+    &:disabled {
+      background: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+  }
+
+  button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+
+    background: #59c241;
+    color: #fff;
+    font-weight: 500;
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: #4caf50;
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+}
+
+/* ===== Title ===== */
+.name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.4;
+  margin: 0px;
+}
+.rating-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* khoảng cách giữa rating và brand */
+  margin-top: 0px;
+}
+
+/* ===== Rating ===== */
+.rating {
+  font-size: 14px;
+  color: #f59e0b; /* màu sao vàng */
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+/* ===== Divider (vạch ngăn) ===== */
+.rating::after {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  background: #ddd;
+  margin-left: 12px;
+}
+
+/* ===== Brand ===== */
+.brand {
+  font-size: 14px;
+  color: var(--text-gray);
+  font-weight: 500;
+}
+
+/* ===== Banner image (ảnh bạn thêm) ===== */
+.info img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  margin: 8px 0;
+}
+
+/* ===== Price ===== */
+.price-box {
+  background: #f5f1e6;
+  border: 1px solid #e0c97f;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+/* ===== PRICE ===== */
+.price-main {
+  margin-bottom: 10px;
+}
+
+.current-price {
+  font-size: 28px;
+  font-weight: 700;
+  color: #000;
+}
+
+.old-price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.discount-percent {
+  color: #e53935;
+  font-weight: 600;
+}
+
+
+
+
+/* ===== BUTTON GROUP ===== */
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
