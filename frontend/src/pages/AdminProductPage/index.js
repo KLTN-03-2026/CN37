@@ -4,10 +4,10 @@ import styles from "./AdminProductPage.module.scss";
 
 import ProductFilter from "./components/ProductFilter";
 import ProductTable from "./components/ProductTable";
-import ProductModal from "./components/ProductModal";
 import ProductPreviewModal from "./components/ProductPreviewModal";
-import { notifyError, notifySuccess } from "../../components/Nofitication";
 import ConfirmDialog from "../../components/ConfirmDialog";
+
+import { notifySuccess } from "../../components/Nofitication";
 
 import {
   getAdminProduct,
@@ -20,7 +20,10 @@ import {
 const cx = classNames.bind(styles);
 
 function AdminProductPage() {
+  // ===== STATE =====
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [filter, setFilter] = useState({
     search: "",
     parentCategoryId: "",
@@ -28,27 +31,16 @@ function AdminProductPage() {
     status: "",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-  const [selected, setSelected] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [slug, setSlug] = useState(false);
-  const [disabledProduct, setDisabledProduct] = useState(null);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [isDisabled, setIsDisabled] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [previewProduct, setPreviewProduct] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const handleView = async (id) => {
-    try {
-      const { data } = await getAdminProductId(id);
-      setSelectedProduct(data.product);
-      setSlug(id);
-      setShowModal(true);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const [confirmState, setConfirmState] = useState({
+    open: false,
+    productId: null,
+    isDisableAction: false,
+  });
 
   // ===== FETCH =====
   const fetchProducts = async () => {
@@ -58,11 +50,9 @@ function AdminProductPage() {
         filter.search,
         filter.parentCategoryId,
         filter.categoryId,
-        filter.status,
+        filter.status
       );
       setProducts(res.data);
-    } catch (error) {
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -72,45 +62,58 @@ function AdminProductPage() {
     fetchProducts();
   }, [filter]);
 
+  // ===== VIEW =====
+  const handleView = async (id) => {
+    const { data } = await getAdminProductId(id);
+    setPreviewProduct(data.product);
+    setIsPreviewOpen(true);
+  };
+
+  // ===== CREATE =====
+  const handleCreate = async (form) => {
+    const res = await createProduct(form);
+    if (res.status === 200) {
+      notifySuccess("Thêm sản phẩm thành công");
+      setIsCreateOpen(false);
+      fetchProducts();
+    }
+  };
+
+  // ===== EDIT =====
   const handleEdit = async (id, form) => {
-    console.log(slug);
+    setIsPreviewOpen(false);
     const res = await updateProduct(id, form);
     if (res.status === 200) {
-      setShowModal(false);
-      notifySuccess("Cập nhật sản phẩm thành công");
+      notifySuccess("Cập nhật thành công");
+
+      // reload list
       await fetchProducts();
-      const res = await getAdminProductId(id);
-      setSelectedProduct(res.data.product);
-      setShowModal(true);
+
+      // reload preview
+      const { data } = await getAdminProductId(id);
+      setPreviewProduct(data.product);
+      setIsPreviewOpen(true);
     }
   };
 
-  const handleAskToggleOn = async (id) => {
-    setIsDisabled(false);
-    setDisabledProduct(id);
-    setShowConfirm(true);
-  };
-  const handleAskToggleOff = async (id) => {
-    setIsDisabled(true);
-    setDisabledProduct(id);
-    setShowConfirm(true);
+  // ===== TOGGLE =====
+  const openConfirm = (id, isDisable) => {
+    setConfirmState({
+      open: true,
+      productId: id,
+      isDisableAction: isDisable,
+    });
   };
 
-  // ===== ACTION =====
-  const handleToggle = async (id) => {
-    await toggleProduct(id);
+  const handleToggle = async () => {
+    await toggleProduct(confirmState.productId);
     fetchProducts();
-    setShowConfirm(false);
-  };
 
-  const handleSubmit = async (data) => {
-    if (selected) {
-      await updateProduct({ ...data, id: selected.id });
-    } else {
-      await createProduct(data);
-    }
-    setOpenModal(false);
-    fetchProducts();
+    setConfirmState({
+      open: false,
+      productId: null,
+      isDisableAction: false,
+    });
   };
 
   return (
@@ -120,58 +123,56 @@ function AdminProductPage() {
       <ProductFilter
         filter={filter}
         setFilter={setFilter}
-        onAdd={() => {
-          setShowCreateModal(true);
-        }}
+        onAdd={() => setIsCreateOpen(true)}
       />
 
       <ProductTable
         data={products}
         loading={loading}
-        onEdit={(p) => {
-          setSelected(p);
-          setOpenModal(true);
-        }}
         onView={handleView}
-        onToggleOn={handleAskToggleOn}
-        onToggleOff={handleAskToggleOff}
+        onToggleOn={(id) => openConfirm(id, false)}
+        onToggleOff={(id) => openConfirm(id, true)}
       />
 
-      {showModal && (
+      {/* PREVIEW */}
+      {isPreviewOpen && (
         <ProductPreviewModal
-          product={selectedProduct}
+          product={previewProduct}
           onEdit={handleEdit}
-          onClose={() => setShowModal(false)}
+          onClose={() => setIsPreviewOpen(false)}
         />
       )}
 
-      {showCreateModal && (
+      {/* CREATE */}
+      {isCreateOpen && (
         <ProductPreviewModal
           mode="create"
-          onCreate={async (form) => {
-            const res = await createProduct(form);
-            if (res.status === 200) {
-              notifySuccess("Thêm sản phẩm thành công");
-              setShowCreateModal(false);
-              fetchProducts();
-            }
-          }}
-          onClose={() => setShowCreateModal(false)}
+          onCreate={handleCreate}
+          onClose={() => setIsCreateOpen(false)}
         />
       )}
 
+      {/* CONFIRM */}
       <ConfirmDialog
-        open={showConfirm}
-        title={isDisabled ? "Vô hiệu hóa sản phẩm" : "Kích hoạt sản phẩm"}
+        open={confirmState.open}
+        title={
+          confirmState.isDisableAction
+            ? "Vô hiệu hóa sản phẩm"
+            : "Kích hoạt sản phẩm"
+        }
         message={
-          isDisabled
+          confirmState.isDisableAction
             ? "Bạn có chắc muốn vô hiệu hóa sản phẩm này?"
             : "Bạn có chắc muốn kích hoạt sản phẩm này?"
         }
-        confirmText={isDisabled ? "Vô hiệu hóa" : "Kích hoạt"}
+        confirmText={
+          confirmState.isDisableAction ? "Vô hiệu hóa" : "Kích hoạt"
+        }
         cancelText="Hủy"
-        onConfirm={() => handleToggle(disabledProduct)}
-        onCancel={() => setShowConfirm(false)}
+        onConfirm={handleToggle}
+        onCancel={() =>
+          setConfirmState({ open: false, productId: null })
+        }
       />
     </div>
   );

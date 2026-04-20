@@ -3,17 +3,18 @@ import styles from "./ProductPreviewModal.module.scss";
 import { AiFillEdit } from "react-icons/ai";
 import { TiCancel } from "react-icons/ti";
 import { FaSave } from "react-icons/fa";
-import { notifyError } from "../../../components/Nofitication";
+
 import ProductGallery from "../../ProductDetail/components/ProductGallery";
-// import ProductInfo from "../../ProductDetail/components/ProductInfo";
 import ProductInfo from "./EditProductForm/ProductInfo";
 import ProductDescription from "../../ProductDetail/components/ProductDescription";
 import ProductSpecifications from "../../ProductDetail/components/ProductSpecifications";
-import { useEffect, useState } from "react";
+
 import EditProductInfo from "./EditProductForm/EditProductInfo";
 import EditProductDescription from "./EditProductForm/EditProductDescription";
 import EditProductSpec from "./EditProductForm/EditProductSpec";
 import EditProductGallery from "./EditProductForm/EditProductGallery";
+
+import { useProductForm } from "../../../hooks/useProductForm";
 
 const cx = classNames.bind(styles);
 
@@ -24,212 +25,57 @@ export default function ProductPreviewModal({
   onClose,
   mode = "view",
 }) {
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [formData, setFormData] = useState(null);
-  const defaultProduct = {
-    id: "",
-    name: "",
-    slug: "",
-    parentcategoryId: "",
-    categoryId: "",
-    brand: "",
-    description: "",
-    price: 0,
-    discountPrice: 0,
-    isActive: true,
-    images: [],
-    specifications: [],
-    newImages: [],
-    deletedImageIds: [],
-  };
+  const {
+    formData,
+    setFormData,
+    isEditMode,
+    handleChange,
+    toggleEdit,
+    handleSubmit,
+  } = useProductForm(product, mode, onCreate, onEdit);
 
-  useEffect(() => {
-    if (mode === "create") {
-      setFormData(defaultProduct);
-      setIsEditMode(true);
-    } else if (product) {
-      setFormData({
-        ...product,
-        newImages: [],
-        deletedImageIds: [],
-      });
-    }
-  }, [product, mode]);
-
-  useEffect(() => {
-    return () => {
-      formData?.newImages?.forEach((img) => {
-        URL.revokeObjectURL(img.preview);
-      });
-    };
-  }, [formData?.newImages]);
-
+  // cleanup preview images
   if (!formData) return null;
-
-  const handleChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleEditClick = () => {
-    if (isEditMode) {
-      setFormData(
-        mode === "create"
-          ? defaultProduct
-          : {
-              ...product,
-              newImages: [],
-              deletedImageIds: [],
-            },
-      );
-    }
-    setIsEditMode(!isEditMode);
-  };
-
-  const validate = () => {
-    if (formData.parentcategoryId === "") {
-      notifyError("Vui lòng chọn danh mục cha");
-      return false;
-    }
-
-    if (formData.categoryId === "") {
-      notifyError("Vui lòng chọn danh mục con");
-      return false;
-    }
-
-    if (!formData.name?.trim()) {
-      notifyError("Vui lòng nhập tên sản phẩm");
-      return false;
-    }
-
-    if (!formData.price) {
-      notifyError("Vui lòng nhập giá");
-      return false;
-    }
-
-    if (formData.discountPrice === null || formData.discountPrice === "") {
-      notifyError("Vui lòng nhập giá giảm");
-      return false;
-    }
-
-    if (formData.discountPrice > formData.price) {
-      notifyError("Giá giảm phải nhỏ hơn hoặc bằng giá gốc");
-      return false;
-    }
-
-    if (formData.price <= 0) {
-      notifyError("Giá phải lớn hơn 0");
-      return false;
-    }
-
-    if (formData.discountPrice < 0) {
-      notifyError("Giá giảm không được âm");
-      return false;
-    }
-
-    if (!formData.description?.trim()) {
-      notifyError("Vui lòng nhập mô tả sản phẩm");
-      return false;
-    }
-
-    if (formData.newImages.length === 0 && formData.images.length === 0) {
-      notifyError("Vui lòng thêm ít nhất 1 ảnh");
-      return false;
-    }
-
-    if (!formData.specifications?.length) {
-      notifyError("Vui lòng thêm ít nhất 1 thông số kỹ thuật");
-      return false;
-    }
-
-    if (formData.specifications.some((s) => !s.specName || !s.specValue)) {
-      notifyError("Vui lòng điền đầy đủ thông số kỹ thuật");
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSaveClick = async () => {
-    if (!validate()) return;
-
-    const form = new FormData();
-
-    form.append("Name", formData.name);
-    form.append("Slug", formData.slug);
-    form.append("CategoryId", formData.categoryId);
-    form.append("Brand", formData.brand || "");
-    form.append("Description", formData.description || "");
-    form.append("Price", formData.price);
-    form.append("DiscountPrice", formData.discountPrice || 0);
-    form.append("IsActive", formData.isActive);
-    form.append("ParentCategoryId", formData.parentcategoryId);
-
-    // specs
-    formData.specifications?.forEach((s, i) => {
-      form.append(`Specifications[${i}].SpecName`, s.specName);
-      form.append(`Specifications[${i}].SpecValue`, s.specValue);
-    });
-
-    // ảnh mới
-    formData.newImages?.forEach((img) => {
-      form.append("NewImages", img.file);
-    });
-
-    // ===== QUAN TRỌNG =====
-    if (mode === "create") {
-      onCreate(form);
-    } else {
-      form.append("Id", formData.id);
-
-      formData.deletedImageIds?.forEach((id) => {
-        form.append("DeletedImageIds", id);
-      });
-
-      onEdit(formData.id, form);
-    }
-
-    setIsEditMode(false);
-  };
 
   return (
     <div className={cx("overlay")} onClick={onClose}>
       <div className={cx("modal")} onClick={(e) => e.stopPropagation()}>
-        {/* HEADER */}
+        
+        {/* ===== HEADER ===== */}
         <div className={cx("header")}>
           <h3>
             {mode === "create"
               ? "Thêm sản phẩm"
               : isEditMode
-                ? "Chỉnh sửa sản phẩm"
-                : "Chi tiết sản phẩm"}
+              ? "Chỉnh sửa sản phẩm"
+              : "Chi tiết sản phẩm"}
           </h3>
 
           <div className={cx("btnActions")}>
             {isEditMode ? (
-              <div className={cx("btnActions")}>
-                <button className={cx("btnEdit")} onClick={handleEditClick}>
+              <>
+                <button className={cx("btnEdit")} onClick={toggleEdit}>
                   <TiCancel />
                 </button>
-                <button className={cx("btnEdit")} onClick={handleSaveClick}>
+                <button className={cx("btnEdit")} onClick={handleSubmit}>
                   <FaSave />
                 </button>
-              </div>
+              </>
             ) : (
-              <button className={cx("btnEdit")} onClick={handleEditClick}>
+              <button className={cx("btnEdit")} onClick={toggleEdit}>
                 <AiFillEdit />
               </button>
             )}
+
             <button className={cx("btnClose")} onClick={onClose}>
               ✕
             </button>
           </div>
         </div>
 
-        {/* BODY */}
+        {/* ===== BODY ===== */}
         <div className={cx("body")}>
+
           {/* ROW 1 */}
           <div className={cx("row")}>
             {isEditMode ? (
@@ -253,10 +99,14 @@ export default function ProductPreviewModal({
           {/* ROW 2 */}
           <div className={cx("row")}>
             {isEditMode ? (
-              <EditProductDescription data={formData} onChange={handleChange} />
+              <EditProductDescription
+                data={formData}
+                onChange={handleChange}
+              />
             ) : (
               <ProductDescription description={formData.description} />
             )}
+
             {isEditMode ? (
               <EditProductSpec
                 specs={formData.specifications}

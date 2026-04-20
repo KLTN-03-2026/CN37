@@ -19,7 +19,7 @@ export default function ProductGallery({ images = [] }) {
             key={img.id}
             src={img.imageUrl}
             alt="thumbnail"
-            className={cx({ selected: img.id === selectedImage.id })}
+            className={cx({ selected: img.id === selectedImage?.id })}
             onClick={() => setSelectedImage(img)}
           />
         ))}
