@@ -37,6 +37,7 @@ function AdminProductPage() {
   const [disabledProduct, setDisabledProduct] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleView = async (id) => {
     try {
@@ -71,7 +72,7 @@ function AdminProductPage() {
     fetchProducts();
   }, [filter]);
 
-  const handelEdit = async (id, form) => {
+  const handleEdit = async (id, form) => {
     console.log(slug);
     const res = await updateProduct(id, form);
     if (res.status === 200) {
@@ -120,8 +121,7 @@ function AdminProductPage() {
         filter={filter}
         setFilter={setFilter}
         onAdd={() => {
-          setSelected(null);
-          setOpenModal(true);
+          setShowCreateModal(true);
         }}
       />
 
@@ -137,20 +137,29 @@ function AdminProductPage() {
         onToggleOff={handleAskToggleOff}
       />
 
-      {openModal && (
-        <ProductModal
-          product={selected}
-          onClose={() => setOpenModal(false)}
-          onSubmit={handleSubmit}
-        />
-      )}
       {showModal && (
         <ProductPreviewModal
           product={selectedProduct}
-          onEdit={handelEdit}
+          onEdit={handleEdit}
           onClose={() => setShowModal(false)}
         />
       )}
+
+      {showCreateModal && (
+        <ProductPreviewModal
+          mode="create"
+          onCreate={async (form) => {
+            const res = await createProduct(form);
+            if (res.status === 200) {
+              notifySuccess("Thêm sản phẩm thành công");
+              setShowCreateModal(false);
+              fetchProducts();
+            }
+          }}
+          onClose={() => setShowCreateModal(false)}
+        />
+      )}
+
       <ConfirmDialog
         open={showConfirm}
         title={isDisabled ? "Vô hiệu hóa sản phẩm" : "Kích hoạt sản phẩm"}

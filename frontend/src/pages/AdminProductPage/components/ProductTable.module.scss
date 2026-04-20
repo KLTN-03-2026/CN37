@@ -31,19 +31,6 @@
   border-radius: 6px;
   cursor: pointer;
 }
-.btnEdit {
-  background: #4caf50;
-  color: white;
-
-  &:hover {
-    background: #45a049;
-    text-emphasis: ;
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-}
 
 .switch {
   position: relative;

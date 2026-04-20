@@ -80,6 +80,12 @@ export default function EditProductInfo({ data, onChange }) {
           value={data.name}
           onChange={(e) => onChange("name", e.target.value)}
         />
+
+        <p>Thương hiệu:</p>
+        <input
+          value={data.brand}
+          onChange={(e) => onChange("brand", e.target.value)}
+        />
       </div>
 
       <div className={cx("grid")}>

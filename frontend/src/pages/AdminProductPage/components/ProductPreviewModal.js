@@ -64,7 +64,7 @@ export default function ProductPreviewModal({
     };
   }, [formData?.newImages]);
 
-  if (!product || !formData) return null;
+  if (!formData) return null;
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -75,12 +75,15 @@ export default function ProductPreviewModal({
 
   const handleEditClick = () => {
     if (isEditMode) {
-      // reset lại dữ liệu gốc
-      setFormData({
-        ...product,
-        newImages: [],
-        deletedImageIds: [],
-      });
+      setFormData(
+        mode === "create"
+          ? defaultProduct
+          : {
+              ...product,
+              newImages: [],
+              deletedImageIds: [],
+            },
+      );
     }
     setIsEditMode(!isEditMode);
   };
@@ -151,9 +154,9 @@ export default function ProductPreviewModal({
 
   const handleSaveClick = async () => {
     if (!validate()) return;
+
     const form = new FormData();
 
-    form.append("Id", formData.id);
     form.append("Name", formData.name);
     form.append("Slug", formData.slug);
     form.append("CategoryId", formData.categoryId);
@@ -163,7 +166,6 @@ export default function ProductPreviewModal({
     form.append("DiscountPrice", formData.discountPrice || 0);
     form.append("IsActive", formData.isActive);
     form.append("ParentCategoryId", formData.parentcategoryId);
-    form.append("CategoryId", formData.categoryId);
 
     // specs
     formData.specifications?.forEach((s, i) => {
@@ -176,16 +178,18 @@ export default function ProductPreviewModal({
       form.append("NewImages", img.file);
     });
 
-    // ảnh xóa
-    formData.deletedImageIds?.forEach((id) => {
-      form.append("DeletedImageIds", id);
-    });
+    // ===== QUAN TRỌNG =====
+    if (mode === "create") {
+      onCreate(form);
+    } else {
+      form.append("Id", formData.id);
 
-    onEdit(formData.id, form);
-    for (let pair of form.entries()) {
-      console.log(pair[0], pair[1]);
+      formData.deletedImageIds?.forEach((id) => {
+        form.append("DeletedImageIds", id);
+      });
+
+      onEdit(formData.id, form);
     }
-    console.log(formData);
 
     setIsEditMode(false);
   };
@@ -195,7 +199,14 @@ export default function ProductPreviewModal({
       <div className={cx("modal")} onClick={(e) => e.stopPropagation()}>
         {/* HEADER */}
         <div className={cx("header")}>
-          <h3>Chi tiết sản phẩm</h3>
+          <h3>
+            {mode === "create"
+              ? "Thêm sản phẩm"
+              : isEditMode
+                ? "Chỉnh sửa sản phẩm"
+                : "Chi tiết sản phẩm"}
+          </h3>
+
           <div className={cx("btnActions")}>
             {isEditMode ? (
               <div className={cx("btnActions")}>
@@ -229,13 +240,13 @@ export default function ProductPreviewModal({
                 setFormData={setFormData}
               />
             ) : (
-              <ProductGallery images={product.images} />
+              <ProductGallery images={formData.images || []} />
             )}
 
             {isEditMode ? (
               <EditProductInfo data={formData} onChange={handleChange} />
             ) : (
-              <ProductInfo product={product} isAdminPreview />
+              <ProductInfo product={formData} isAdminPreview />
             )}
           </div>
 
@@ -244,7 +255,7 @@ export default function ProductPreviewModal({
             {isEditMode ? (
               <EditProductDescription data={formData} onChange={handleChange} />
             ) : (
-              <ProductDescription description={product.description} />
+              <ProductDescription description={formData.description} />
             )}
             {isEditMode ? (
               <EditProductSpec
@@ -252,7 +263,7 @@ export default function ProductPreviewModal({
                 setFormData={setFormData}
               />
             ) : (
-              <ProductSpecifications specs={product.specifications} />
+              <ProductSpecifications specs={formData.specifications} />
             )}
           </div>
         </div>

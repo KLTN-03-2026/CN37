@@ -150,17 +150,19 @@ public class ProductController : ControllerBase
         return Ok(new { product });
     }
 
-    [HttpPost]
+    [HttpPost("admin")]
     public async Task<IActionResult> Create([FromForm] ProductCreateUpdateDto dto)
     {
-        var id = await _service.CreateAsync(dto);
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var id = await _service.CreateAsync(dto, baseUrl);
         return Ok(new { id });
     }
 
     [HttpPut("admin/{id}")]
     public async Task<IActionResult> Update(long id, [FromForm] ProductCreateUpdateDto dto)
     {
-        var result = await _service.UpdateAsync(id, dto);
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var result = await _service.UpdateAsync(id, dto, baseUrl);
         if (!result) return NotFound();
 
         return Ok();

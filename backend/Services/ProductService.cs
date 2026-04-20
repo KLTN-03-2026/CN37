@@ -123,7 +123,7 @@ public class ProductService : IProductService
         return product; // null nếu không có
     }
 
-    public async Task<long> CreateAsync(ProductCreateUpdateDto dto)
+    public async Task<long> CreateAsync(ProductCreateUpdateDto dto, string baseUrl)
     {
         var product = new Product
         {
@@ -149,7 +149,7 @@ public class ProductService : IProductService
             int index = 0;
             foreach (var file in dto.NewImages)
             {
-                var url = await SaveFile(file);
+                var url = await SaveFile(file, baseUrl);
 
                 images.Add(new ProductImage
                 {
@@ -183,7 +183,7 @@ public class ProductService : IProductService
         return product.Id;
     }
 
-    public async Task<bool> UpdateAsync(long id, ProductCreateUpdateDto dto)
+    public async Task<bool> UpdateAsync(long id, ProductCreateUpdateDto dto, string baseUrl)
     {
         var product = await _context.Products
             .Include(p => p.Images)
@@ -220,7 +220,7 @@ public class ProductService : IProductService
 
             foreach (var file in dto.NewImages)
             {
-                var url = await SaveFile(file);
+                var url = await SaveFile(file, baseUrl);
 
                 _context.productImages.Add(new ProductImage
                 {
@@ -278,7 +278,7 @@ public class ProductService : IProductService
     }
 
     // ================= HELPER =================
-    private async Task<string> SaveFile(IFormFile file)
+    private async Task<string> SaveFile(IFormFile file, string baseUrl)
     {
         if (file == null || file.Length == 0)
             throw new Exception("File is empty");
@@ -299,6 +299,6 @@ public class ProductService : IProductService
             await file.CopyToAsync(stream);
         }
 
-        return "/uploads/" + fileName;
+        return $"{baseUrl}/uploads/{fileName}";
     }
 }
