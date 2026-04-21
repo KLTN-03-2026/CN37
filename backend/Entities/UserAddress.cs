@@ -12,4 +12,5 @@ public class UserAddress
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     // Navigation property
     public User? User { get; set; }
+    public ICollection<Order> Orders { get; set; } = new List<Order>();
 }

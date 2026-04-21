@@ -26,8 +26,9 @@ public class AppDbContext : DbContext
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
     public DbSet<InventoryLog> InventoryLogs { get; set; }
-
-
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<Payment> Payments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +49,9 @@ public class AppDbContext : DbContext
             entity.Property(x => x.EmailVerifiedAt).HasColumnName("email_verified_at");
             entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(x => x.UpdatedAt).HasColumnName("update_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasMany(x => x.UserRoles).WithOne(ur => ur.User).HasForeignKey(ur => ur.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.Orders).WithOne(o => o.User).HasForeignKey(o => o.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.UserAddresses).WithOne(ua => ua.User).HasForeignKey(ua => ua.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<EmailVerificationToken>(entity =>
@@ -177,6 +181,12 @@ public class AppDbContext : DbContext
             entity.Property(x => x.UpdateAt).HasColumnName("update_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
             // 🔗 Relation Category
             entity.HasOne(x => x.Category).WithMany(c => c.Products).HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(x => x.Images).WithOne(i => i.Product).HasForeignKey(i => i.ProductId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.Specifications).WithOne(s => s.Product).HasForeignKey(s => s.ProductId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.CartItems).WithOne(ci => ci.Product).HasForeignKey(ci => ci.ProductId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.Inventory).WithOne(i => i.Product).HasForeignKey<Inventory>(i => i.ProductId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.InventoryLogs).WithOne(il => il.Product).HasForeignKey(il => il.ProductId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(x => x.OrderItems).WithOne(oi => oi.Product).HasForeignKey(oi => oi.ProductId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ProductImage>(entity =>
@@ -244,6 +254,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
             // 🔗 Relation User
             entity.HasOne(x => x.User).WithMany(u => u.UserAddresses).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.Orders).WithOne(o => o.Address).HasForeignKey(o => o.AddressId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -297,5 +308,56 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Product).WithMany(p => p.InventoryLogs).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.ToTable("orders");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.AddressId).HasColumnName("address_id").IsRequired();
+            entity.Property(x => x.TotalAmount).HasColumnName("total_amount").HasColumnType("decimal(12,2)").IsRequired();
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+            entity.Property(x => x.PaymentMethod).HasColumnName("payment_method").HasMaxLength(50);
+            entity.Property(x => x.PaymentStatus).HasColumnName("payment_status").HasMaxLength(50);
+            entity.Property(x => x.CreateAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // 🔗 Relation Orders
+            entity.HasOne(x => x.User).WithMany(u => u.Orders).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Address).WithMany(ua => ua.Orders).HasForeignKey(x => x.AddressId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(x => x.OrderItems).WithOne(oi => oi.Order).HasForeignKey(oi => oi.OrderId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.Payments).WithOne(p => p.Order).HasForeignKey(p => p.OrderId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OrderItem>(entity =>
+        {
+            entity.ToTable("order_items");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.OrderId).HasColumnName("order_id").IsRequired();
+            entity.Property(x => x.ProductId).HasColumnName("product_id").IsRequired();
+            entity.Property(x => x.Price).HasColumnName("price").HasColumnType("decimal(12,2)").IsRequired();
+            entity.Property(x => x.Quantity).HasColumnName("quantity").IsRequired();
+
+            // 🔗 Relation Order
+            entity.HasOne(x => x.Order).WithMany(o => o.OrderItems).HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
+            // 🔗 Relation Product
+            entity.HasOne(x => x.Product).WithMany(p => p.OrderItems).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.ToTable("payments");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.OrderId).HasColumnName("order_id").IsRequired();
+            entity.Property(x => x.PaymentMethod).HasColumnName("payment_method").HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Amount).HasColumnName("amount").HasColumnType("decimal(12,2)").IsRequired();
+            entity.Property(x => x.TransactionId).HasColumnName("transaction_id").HasMaxLength(255);
+            entity.Property(x => x.CreateAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // 🔗 Relation Order
+            entity.HasOne(x => x.Order).WithMany(o => o.Payments).HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

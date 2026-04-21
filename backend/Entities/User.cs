@@ -12,4 +12,5 @@ public class User
     public ICollection<Cart> Carts { get; set; } = new List<Cart>();
     public ICollection<UserAddress> UserAddresses { get; set; } = new List<UserAddress>();
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public ICollection<Order> Orders { get; set; } = new List<Order>();
 }

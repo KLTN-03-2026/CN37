@@ -53,4 +53,5 @@ public class Product
     public ICollection<CartItem> CartItems { get; set; }
     public Inventory Inventory { get; set; }
     public ICollection<InventoryLog> InventoryLogs { get; set; }
+    public ICollection<OrderItem> OrderItems { get; set; }
 }

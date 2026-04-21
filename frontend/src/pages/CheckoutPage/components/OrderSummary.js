@@ -68,7 +68,7 @@ export default function OrderSummary({ items, onSubmit }) {
           </span>
         </div>
 
-        <button className={cx("orderBtn")} onClick={onSubmit}>
+        <button className={cx("orderBtn")} onClick={() => onSubmit(finalTotal)}>
           Đặt hàng
         </button>
 

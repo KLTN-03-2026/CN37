@@ -10,9 +10,12 @@ import AddressSection from "./components/AddressSection";
 import PaymentMethod from "./components/PaymentMethod";
 import NoteSection from "./components/NoteSection";
 import Breadcrumb from "./components/Breadcrumb";
+
 import { fetchCheckoutBuyNow, fetchCheckoutCart } from "../../api/CheckoutApi";
 import { getCurrentUser } from "../../api/UserApi";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { createOrder } from "../../api/OrderApi";
+import { notifyError, notifySuccess } from "../../components/Nofitication";
 
 export default function CheckoutPage({ type, productId, quantity }) {
   const useParam = new URLSearchParams(window.location.search);
@@ -24,11 +27,13 @@ export default function CheckoutPage({ type, productId, quantity }) {
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [note, setNote] = useState("");
   const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const cx = classNames.bind(styles);
 
   const location = useLocation();
   const state = location.state;
+  const navigate = useNavigate();
 
   useEffect(() => {
     getCurrentUser().then((res) => {
@@ -47,23 +52,52 @@ export default function CheckoutPage({ type, productId, quantity }) {
         setData(await fetchCheckoutBuyNow(productId, quantity));
       }
     };
+    console.log(userProfile);
 
     fetchData();
   }, []);
 
-  const handleOrder = async () => {
-    const body = {
-      addressId,
-      paymentMethod,
-      note,
-      items: data.items.map((i) => ({
-        productId: i.productId,
-        quantity: i.quantity,
-      })),
-    };
+  const handleOrder = async (finalTotal) => {
+    if (!addressId) {
+      notifyError("Vui lòng chọn địa chỉ");
+      return;
+    }
 
-    const res = await axios.post("/api/orders", body);
-    alert("Đặt hàng thành công! ID: " + res.data.orderId);
+    if (!userProfile?.id) {
+      notifyError("Bạn chưa đăng nhập");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const body = {
+        userId: userProfile.id,
+        addressId,
+        paymentMethod,
+        note,
+        items: data.items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+        })),
+      };
+
+      const res = await createOrder(body);
+
+      notifySuccess("Đặt hàng thành công!");
+
+      // clear cart nếu có
+      if (state?.type === "cart") {
+        localStorage.removeItem("cart");
+      }
+
+      navigate("/order-success", { state: { ...res.data } }, { replace: true });
+    } catch (err) {
+      console.error(err);
+      notifyError(err.response?.data?.message || "Đặt hàng thất bại");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!data) return <p>Loading...</p>;
@@ -88,7 +122,7 @@ export default function CheckoutPage({ type, productId, quantity }) {
             setPaymentMethod={setPaymentMethod}
           />
         </div>
-  
+
         {/* RIGHT */}
         <div className={cx("checkoutRight")}>
           <OrderSummary items={data.items} onSubmit={handleOrder} />

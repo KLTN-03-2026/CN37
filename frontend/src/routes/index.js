@@ -21,6 +21,9 @@ import AdminPage from "../pages/AdminPage";
 import InventoryPage from "../pages/InventoryPage";
 import AdminCategoryPage from "../pages/AdminCategoryPage";
 import AdminProductPage from "../pages/AdminProductPage";
+import OrderSuccess from "../pages/OrderSuccess";
+
+
 import { ProtectedRoute } from "./Routes";
 
 const routes = [
@@ -101,6 +104,11 @@ const routes = [
   {
     path: "/checkout",
     component: CheckoutPage,
+    layout: DefaultLayout,
+    ProtectedRoute: true
+  },{
+    path: "/order-success",
+    component: OrderSuccess,
     layout: DefaultLayout,
     ProtectedRoute: true
   },

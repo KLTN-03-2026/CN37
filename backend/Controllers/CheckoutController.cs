@@ -32,4 +32,5 @@ public class CheckoutController : ControllerBase
         var result = await _checkoutService.GetCheckoutFromItems(request.Items);
         return Ok(result);
     }
+
 }
