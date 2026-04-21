@@ -5,6 +5,7 @@ public class Order
     public long AddressId { get; set; }
 
     public decimal TotalAmount { get; set; }
+    public string Note { get; set; }
 
     public string Status { get; set; }
     public string PaymentMethod { get; set; }

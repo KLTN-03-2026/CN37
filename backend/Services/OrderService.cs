@@ -69,6 +69,7 @@ public class OrderService : IOrderService
                 UserId = request.UserId,
                 AddressId = request.AddressId,
                 TotalAmount = totalAmount,
+                Note = request.Note,
                 Status = "Pending",
                 PaymentMethod = request.PaymentMethod,
                 PaymentStatus = "Pending",
@@ -90,6 +91,24 @@ public class OrderService : IOrderService
             };
 
             _context.Payments.Add(payment);
+
+            if (request.Type == "cart")
+            {
+                var cartItems = await _context.CartItems
+                    .Where(c => c.Cart.UserId == request.UserId
+                        && productIds.Contains(c.ProductId))
+                    .ToListAsync();
+
+                foreach (var item in request.Items)
+                {
+                    var cartItem = cartItems.FirstOrDefault(c => c.ProductId == item.ProductId);
+
+                    if (cartItem != null)
+                    {
+                        _context.CartItems.Remove(cartItem);
+                    }
+                }
+            }
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();

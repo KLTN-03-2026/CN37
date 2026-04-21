@@ -316,6 +316,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
             entity.Property(x => x.AddressId).HasColumnName("address_id").IsRequired();
             entity.Property(x => x.TotalAmount).HasColumnName("total_amount").HasColumnType("decimal(12,2)").IsRequired();
+            entity.Property(x => x.Note).HasColumnName("note").HasMaxLength(255);
             entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
             entity.Property(x => x.PaymentMethod).HasColumnName("payment_method").HasMaxLength(50);
             entity.Property(x => x.PaymentStatus).HasColumnName("payment_status").HasMaxLength(50);

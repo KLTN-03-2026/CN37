@@ -80,6 +80,7 @@ export default function CheckoutPage({ type, productId, quantity }) {
           productId: i.productId,
           quantity: i.quantity,
         })),
+        type: typeProduct === "buy-now" ? "buy-now" : "cart"
       };
 
       const res = await createOrder(body);
