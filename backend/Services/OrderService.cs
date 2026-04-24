@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 
 public class OrderService : IOrderService
@@ -70,10 +71,11 @@ public class OrderService : IOrderService
                 AddressId = request.AddressId,
                 TotalAmount = totalAmount,
                 Note = request.Note,
-                Status = "Pending",
+                Status = "Đang xử lý",
                 PaymentMethod = request.PaymentMethod,
-                PaymentStatus = "Pending",
-                CreateAt = DateTime.Now
+                PaymentStatus = "Đang xử lí",
+                CreateAt = DateTime.Now,
+                UpdateAt = DateTime.Now
             };
 
             _context.Orders.Add(order);
@@ -120,5 +122,88 @@ public class OrderService : IOrderService
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<List<OrderDto>> GetOrdersAsync(long userId, OrderQueryRequest? query)
+    {
+        var orders = _context.Orders
+            .Where(o => o.UserId == userId);
+
+        if (!string.IsNullOrEmpty(query.Status))
+        {
+            orders = orders.Where(o => o.Status == query.Status);
+        }
+
+        if (!string.IsNullOrEmpty(query.Keyword))
+        {
+            var keyword = Regex.Replace(query.Keyword.Trim(), @"\s+", " ");
+            Console.WriteLine($"[GetOrdersAsync] Searching for keyword: '{keyword}'");
+            orders = orders.Where(o =>
+                o.OrderItems.Any(i =>
+                    i.Product.Name.ToLower().Contains(keyword.ToLower())
+                )
+            );
+        }
+
+        var result = await orders
+            .Select(o => new OrderDto
+            {
+                Id = o.Id,
+                UpdateAt = o.CreateAt,
+                Status = o.Status,
+                TotalAmount = o.TotalAmount,
+                Items = o.OrderItems.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product.Name,
+                    Thumbnail = i.Product.Thumbnail,
+                    Price = i.Price,
+                    Quantity = i.Quantity
+                }).ToList()
+            })
+            .ToListAsync();
+
+        // 🔍 SEARCH theo tên sản phẩm
+        // if (!string.IsNullOrEmpty(query.Keyword))
+        // {
+        //     result = result.Where(o =>
+        //         o.Items.Any(i => i.ProductName.Contains(query.Keyword))
+        //     ).ToList();
+        // }
+        // Console.WriteLine($"[GetOrdersAsync] UserId: {userId}, Status: {query.Status}, Keyword: {query.Keyword}, ResultCount: {result.Count}");
+
+        return result;
+    }
+
+    public async Task CancelOrderAsync(long userId, long orderId)
+    {
+        var order = await _context.Orders
+            .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+        if (order == null)
+            throw new Exception("Đơn hàng không tồn tại");
+
+        if (order.Status != OrderStatus.Pending)
+            throw new Exception("Chỉ có thể hủy đơn hàng đang xử lý");
+
+        order.Status = OrderStatus.Cancelled;
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAddressAsync(long userId, long orderId, long newAddressId)
+    {
+        var order = await _context.Orders
+            .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+        if (order == null)
+            throw new Exception("Đơn hàng không tồn tại");
+
+        if (order.Status != OrderStatus.Pending)
+            throw new Exception("Chỉ có thể cập nhật địa chỉ cho đơn hàng đang xử lý");
+
+        order.AddressId = newAddressId;
+
+        await _context.SaveChangesAsync();
     }
 }

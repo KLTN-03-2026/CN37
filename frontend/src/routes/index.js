@@ -22,6 +22,7 @@ import InventoryPage from "../pages/InventoryPage";
 import AdminCategoryPage from "../pages/AdminCategoryPage";
 import AdminProductPage from "../pages/AdminProductPage";
 import OrderSuccess from "../pages/OrderSuccess";
+import MyOrderPage from "../pages/MyOrderPage";
 
 
 import { ProtectedRoute } from "./Routes";
@@ -106,10 +107,17 @@ const routes = [
     component: CheckoutPage,
     layout: DefaultLayout,
     ProtectedRoute: true
-  },{
+  },
+  {
     path: "/order-success",
     component: OrderSuccess,
     layout: DefaultLayout,
+    ProtectedRoute: true
+  },
+  {
+    path: "/my-orders",
+    component: MyOrderPage,
+    layout: SettingsLayout,
     ProtectedRoute: true
   },
   {

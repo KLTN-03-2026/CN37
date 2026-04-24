@@ -60,7 +60,7 @@ export default function SidebarSettings() {
           Tổng quan
         </NavLink>
 
-        <NavLink to="/orders" className={({ isActive }) => cx("item", { active: isActive })}>
+        <NavLink to="/my-orders" className={({ isActive }) => cx("item", { active: isActive })}>
           Đơn hàng của tôi
         </NavLink>
 

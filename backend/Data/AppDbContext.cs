@@ -321,6 +321,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.PaymentMethod).HasColumnName("payment_method").HasMaxLength(50);
             entity.Property(x => x.PaymentStatus).HasColumnName("payment_status").HasMaxLength(50);
             entity.Property(x => x.CreateAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.UpdateAt).HasColumnName("update_at").HasColumnType("timestamp");
 
             // 🔗 Relation Orders
             entity.HasOne(x => x.User).WithMany(u => u.Orders).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);

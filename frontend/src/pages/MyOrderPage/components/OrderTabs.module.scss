@@ -1,0 +1,42 @@
+.tabs {
+  display: flex;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* mỗi tab */
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 14px 0; // 👉 tăng chiều cao (vertical)
+  font-size: 14px;
+  cursor: pointer;
+  color: #555;
+  position: relative;
+  transition: all 0.25s ease;
+
+  /* hover */
+  &:hover {
+    background: #fff;
+    color: red;
+  }
+}
+
+/* active */
+.active {
+  background: #fff;
+  color: red;
+  font-weight: 600;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    width: 60%;
+    height: 3px;
+    background: red;
+    border-radius: 2px;
+  }
+}

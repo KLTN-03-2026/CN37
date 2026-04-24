@@ -1,0 +1,103 @@
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: 0.3s;
+  
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* dấu chấm */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ===== STATUS COLORS ===== */
+
+.pending {
+  color: #fa8c16;
+
+  .dot {
+    background: #fa8c16;
+  }
+}
+
+.shipping {
+  color: #1677ff;
+
+  .dot {
+    background: #1677ff;
+  }
+}
+
+.completed {
+  color: #52c41a;
+
+  .dot {
+    background: #52c41a;
+  }
+}
+
+.cancelled {
+  color: #ff4d4f;
+
+  .dot {
+    background: #ff4d4f;
+  }
+}
+
+.item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+}
+
+.info {
+  flex: 1;
+}
+
+.price {
+  font-weight: 600;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .item {
+    flex-direction: column;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

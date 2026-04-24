@@ -12,6 +12,7 @@ public class Order
     public string PaymentStatus { get; set; }
 
     public DateTime CreateAt { get; set; }
+    public DateTime? UpdateAt { get; set; }
 
     public User User { get; set; }
     public UserAddress Address { get; set; }
