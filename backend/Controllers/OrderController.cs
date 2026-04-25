@@ -64,4 +64,25 @@ public class OrderController : ControllerBase
     {
         return long.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
     }
+
+    [HttpGet("admin")]
+    public async Task<IActionResult> GetOrders([FromQuery] AdminOrderQueryRequest query)
+    {
+        return Ok(await _orderService.GetAllOrdersAsync(query));
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetDetail(long id)
+    {
+        return Ok(await _orderService.GetOrderDetailAsync(id));
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(long id, [FromBody] string status)
+    {
+        await _orderService.UpdateOrderStatusAsync(id, status);
+        return Ok();
+    }
 }

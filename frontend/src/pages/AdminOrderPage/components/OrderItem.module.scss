@@ -1,0 +1,215 @@
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 16px;
+
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  transition: all 0.25s ease;
+
+  &:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 13px;
+  color: #888;
+
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #eee;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* dấu chấm */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ===== STATUS COLORS ===== */
+
+.pending {
+  color: #fa8c16;
+
+  .dot {
+    background: #fa8c16;
+  }
+}
+
+.shipping {
+  color: #1677ff;
+
+  .dot {
+    background: #1677ff;
+  }
+}
+
+.completed {
+  color: #52c41a;
+
+  .dot {
+    background: #52c41a;
+  }
+}
+
+.cancelled {
+  color: #ff4d4f;
+
+  .dot {
+    background: #ff4d4f;
+  }
+}
+
+.data {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fafafa;
+
+  transition: 0.2s;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+}
+
+.customer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  margin-bottom: 12px;
+
+  font-size: 14px;
+
+  span:first-child {
+    font-weight: 500;
+    color: #333;
+  }
+
+  span:last-child {
+    font-size: 13px;
+    color: #777;
+  }
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  h4 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  p {
+    font-size: 12px;
+    color: #888;
+  }
+}
+
+.price {
+  font-weight: 600;
+  color: #ee4d2d;
+  font-size: 14px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+
+  flex-wrap: wrap;
+
+  span {
+    font-size: 14px;
+  }
+
+  b {
+    color: #ee4d2d;
+    font-size: 16px;
+  }
+}
+
+.action {
+  display: flex;
+  gap: 10px;
+}
+
+/* base button */
+.btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+/* ❌ Hủy */
+.btnCancel {
+  background: #fff1f0;
+  color: #ff4d4f;
+  border: 1px solid #ffccc7;
+
+  &:hover {
+    background: #ff4d4f;
+    color: #fff;
+  }
+}
+
+/* 📞 Contact */
+.btnContact {
+  background: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
+
+  &:hover {
+    background: #52c41a;
+    color: #fff;
+  }
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .item {
+    flex-direction: column;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

@@ -15,3 +15,7 @@ export const cancelOrder = (id) =>{
 export const updateAddress = (id, addressId) => {
   return api.put(`/orders/${id}/address`, { addressId });
 };
+
+export const getAdminOrders = (params) => {
+  return api.get("/orders/admin", { params });
+};

@@ -42,7 +42,7 @@ public class OrderService : IOrderService
 
                 var inventory = inventories.FirstOrDefault(i => i.ProductId == item.ProductId);
                 if (inventory == null || inventory.Quantity < item.Quantity)
-                    throw new Exception($"Sản phẩm {product.Name} không đủ hàng");
+                    throw new Exception($"Sản phẩm này hiện tại không đủ hàng");
 
                 inventory.Quantity -= item.Quantity;
 
@@ -127,6 +127,8 @@ public class OrderService : IOrderService
     public async Task<List<OrderDto>> GetOrdersAsync(long userId, OrderQueryRequest? query)
     {
         var orders = _context.Orders
+            .Include(o => o.User)
+            .Include(o => o.Address)
             .Where(o => o.UserId == userId);
 
         if (!string.IsNullOrEmpty(query.Status))
@@ -146,12 +148,15 @@ public class OrderService : IOrderService
         }
 
         var result = await orders
+            .OrderByDescending(o => o.UpdateAt)
             .Select(o => new OrderDto
             {
                 Id = o.Id,
-                UpdateAt = o.CreateAt,
-                Status = o.Status,
+                CustomerName = o.Address.ReceiverName,
+                Phone = o.Address.ReceiverPhone,
                 TotalAmount = o.TotalAmount,
+                Status = o.Status,
+                UpdateAt = o.UpdateAt,
                 Items = o.OrderItems.Select(i => new OrderItemDto
                 {
                     ProductId = i.ProductId,
@@ -162,15 +167,6 @@ public class OrderService : IOrderService
                 }).ToList()
             })
             .ToListAsync();
-
-        // 🔍 SEARCH theo tên sản phẩm
-        // if (!string.IsNullOrEmpty(query.Keyword))
-        // {
-        //     result = result.Where(o =>
-        //         o.Items.Any(i => i.ProductName.Contains(query.Keyword))
-        //     ).ToList();
-        // }
-        // Console.WriteLine($"[GetOrdersAsync] UserId: {userId}, Status: {query.Status}, Keyword: {query.Keyword}, ResultCount: {result.Count}");
 
         return result;
     }
@@ -187,6 +183,7 @@ public class OrderService : IOrderService
             throw new Exception("Chỉ có thể hủy đơn hàng đang xử lý");
 
         order.Status = OrderStatus.Cancelled;
+        order.UpdateAt = DateTime.Now;
 
         await _context.SaveChangesAsync();
     }
@@ -203,7 +200,128 @@ public class OrderService : IOrderService
             throw new Exception("Chỉ có thể cập nhật địa chỉ cho đơn hàng đang xử lý");
 
         order.AddressId = newAddressId;
+        order.UpdateAt = DateTime.Now;
+        await _context.SaveChangesAsync();
+    }
+
+    //ADMIN
+    public async Task<List<OrderDto>> GetAllOrdersAsync(AdminOrderQueryRequest query)
+    {
+        var orders = _context.Orders
+            .Include(o => o.User)
+            .Include(o => o.Address)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(query.Status))
+        {
+            orders = orders.Where(o => o.Status == query.Status);
+        }
+
+        if (!string.IsNullOrEmpty(query.Search))
+        {
+            orders = orders.Where(o =>
+                o.User.Email.Contains(query.Search));
+        }
+
+        return await _context.Orders
+    .Where(o => string.IsNullOrEmpty(query.Status) || o.Status == query.Status)
+    .Where(o => string.IsNullOrEmpty(query.Search) || o.User.Email.Contains(query.Search))
+    .OrderByDescending(o => o.CreateAt)
+    .Select(o => new OrderDto
+    {
+        Id = o.Id,
+        CustomerName = o.Address.ReceiverName,
+        Phone = o.Address.ReceiverPhone,
+        Address = o.Address == null
+            ? ""
+            : o.Address.Street + ", " + o.Address.Ward + ", " + o.Address.District + ", " + o.Address.Province,
+
+        TotalAmount = o.TotalAmount,
+        Status = o.Status,
+        UpdateAt = o.UpdateAt,
+
+        Items = o.OrderItems.Select(i => new OrderItemDto
+        {
+            ProductId = i.ProductId,
+            ProductName = i.Product.Name,
+            Thumbnail = i.Product.Thumbnail,
+            Price = i.Price,
+            Quantity = i.Quantity
+        }).ToList()
+    })
+    .ToListAsync();
+    }
+
+    public async Task<OrderDetailDto> GetOrderDetailAsync(long orderId)
+    {
+        var order = await _context.Orders
+            .Include(o => o.Address)
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+
+        if (order == null)
+            throw new Exception("Order not found");
+
+        return new OrderDetailDto
+        {
+            Id = order.Id,
+            CustomerName = order.Address.ReceiverName,
+            Phone = order.Address.ReceiverPhone,
+            Address = $"{order.Address.Street}, {order.Address.Ward}, {order.Address.District}, {order.Address.Province}",
+            TotalAmount = order.TotalAmount,
+            Status = order.Status,
+
+            Items = order.OrderItems.Select(i => new OrderItemDto
+            {
+                ProductName = i.Product.Name,
+                Thumbnail = i.Product.Thumbnail,
+                Price = i.Price,
+                Quantity = i.Quantity
+            }).ToList()
+        };
+    }
+
+    public async Task UpdateOrderStatusAsync(long orderId, string newStatus)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        var order = await _context.Orders.FindAsync(orderId);
+        if (order == null)
+            throw new Exception("Order not found");
+
+        var current = order.Status;
+
+        // ❌ validate flow
+        if (current == OrderStatus.Pending && newStatus == OrderStatus.Shipping)
+        {
+            order.Status = newStatus;
+        }
+        else if (current == OrderStatus.Shipping && newStatus == OrderStatus.Completed)
+        {
+            order.Status = newStatus;
+
+            // 💰 cộng doanh thu
+            // _context.Revenues.Add(new Revenue
+            // {
+            //     OrderId = order.Id,
+            //     Amount = order.TotalAmount
+            // });
+        }
+        else
+        {
+            throw new Exception("Invalid status transition");
+        }
+
+        // 📝 log
+        // _context.OrderLogs.Add(new OrderLog
+        // {
+        //     OrderId = order.Id,
+        //     Status = newStatus,
+        //     Note = $"Changed from {current} to {newStatus}"
+        // });
 
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
     }
 }

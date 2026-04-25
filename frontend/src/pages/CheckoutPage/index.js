@@ -58,19 +58,19 @@ export default function CheckoutPage({ type, productId, quantity }) {
   }, []);
 
   const handleOrder = async (finalTotal) => {
-    if (!addressId) {
-      notifyError("Vui lòng chọn địa chỉ");
-      return;
-    }
-
-    if (!userProfile?.id) {
-      notifyError("Bạn chưa đăng nhập");
-      return;
-    }
-
-    setLoading(true);
-
     try {
+      if (!addressId) {
+        notifyError("Vui lòng chọn địa chỉ");
+        return;
+      }
+
+      if (!userProfile?.id) {
+        notifyError("Bạn chưa đăng nhập");
+        return;
+      }
+
+      setLoading(true);
+
       const body = {
         userId: userProfile.id,
         addressId,
@@ -80,7 +80,7 @@ export default function CheckoutPage({ type, productId, quantity }) {
           productId: i.productId,
           quantity: i.quantity,
         })),
-        type: typeProduct === "buy-now" ? "buy-now" : "cart"
+        type: typeProduct === "buy-now" ? "buy-now" : "cart",
       };
 
       const res = await createOrder(body);
@@ -94,8 +94,10 @@ export default function CheckoutPage({ type, productId, quantity }) {
 
       navigate("/order-success", { state: { ...res.data } }, { replace: true });
     } catch (err) {
-      console.error(err);
-      notifyError(err.response?.data?.message || "Đặt hàng thất bại");
+      console.log(err.response?.data?.message);
+      
+      const message = err.response?.data?.message || "Đặt hàng thất bại";
+      notifyError(message);
     } finally {
       setLoading(false);
     }

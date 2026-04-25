@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import classNames from "classnames/bind";
-import styles from "./MyOrderPage.module.scss";
-import { getOrders, cancelOrder } from "../../api/OrderApi";
+import styles from "./AdminOrderPage.module.scss";
+import { getOrders, cancelOrder, getAdminOrders } from "../../api/OrderApi";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { notifyError, notifySuccess } from "../../components/Nofitication";
 
-import OrderTabs from "./components/OrderTabs";
-import OrderSearch from "./components/OrderSearch";
+import OrderTabs from "../MyOrderPage/components/OrderTabs";
+import OrderSearch from "../MyOrderPage/components/OrderSearch";
 import OrderList from "./components/OrderList";
-import EmptyState from "./components/EmptyState";
+import EmptyState from "../MyOrderPage/components/EmptyState";
 
 const cx = classNames.bind(styles);
 
@@ -20,7 +20,7 @@ export default function MyOrderPage() {
   const [deleteId, setDeleteId] = useState(null);
 
   const fetchOrders = async () => {
-    const res = await getOrders({ status, keyword });
+    const res = await getAdminOrders({ status, keyword });
     setOrders(res.data);
   };
 

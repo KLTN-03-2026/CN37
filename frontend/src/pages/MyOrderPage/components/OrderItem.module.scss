@@ -88,6 +88,47 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.action {
+  display: flex;
+  gap: 10px;
+}
+
+/* base button */
+.btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+}
+
+/* ❌ Hủy đơn */
+.btnCancel {
+  background: transparent;
+  color: #e53935;
+  border: 1px solid #e53935;
+
+  &:hover {
+    background: #e53935;
+    color: #fff;
+  }
+}
+
+/* 📞 Liên hệ shop */
+.btnContact {
+  background: transparent;
+  color: #59c241;
+  border: 1px solid #59c241;
+
+  &:hover {
+    background: #59c241;
+    color: #fff;
+  }
 }
 
 /* mobile */

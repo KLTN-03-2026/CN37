@@ -32,13 +32,21 @@ export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
         </span>
       </div>
 
+      <div className={cx("customer-info")}>
+        <span>
+          {order.customerName} - {order.phone}
+        </span>
+        <span className={cx("status", getStatusClass(order.status))}>
+          {order.address} 
+        </span>
+      </div>
+
       <div className={cx("data")}>
         {order.items?.map((item) => (
           <div key={item.productId} className={cx("item")}>
-            <img src={item.thumbnail} />
             <div className={cx("info")}>
               <h4>{item.productName}</h4>
-              <p>Số lượng: {item.quantity}</p>
+              <p>x{item.quantity}</p>
             </div>
 
             <div className={cx("price")}>{item.price.toLocaleString()}đ</div>
