@@ -3,12 +3,22 @@ import classNames from "classnames/bind";
 import styles from "./AdminUserPage.module.scss";
 
 // 👉 import API mới
-import { getUserList, lockUser, unlockUser } from "../../api/UserApi";
+import {
+  getUserList,
+  lockUser,
+  unlockUser,
+  getUserById,
+  updateUser,
+  assignUserRole,
+} from "../../api/UserApi";
+import { getAllRole } from "../../api/RoleApi";
 
 import UserTable from "./components/UserTable";
 import UserSearch from "./components/UserSearch";
 import UserAction from "./components/UserAction";
+import UserPreviewModal from "./components/UserPreviewModal";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import { notifyError, notifySuccess } from "../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -16,6 +26,9 @@ const AdminUserPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [previewUser, setPreviewUser] = useState(null);
+  const [roles, setRoles] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [filters, setFilters] = useState({ page: 1, pageSize: 10 });
   const [confirmState, setConfirmState] = useState({
     open: false,
@@ -27,6 +40,8 @@ const AdminUserPage = () => {
     setLoading(true);
     try {
       const res = await getUserList(filters);
+      const role = await getAllRole();
+      setRoles(role.data)
       setUsers(res.data?.items || []);
     } catch (err) {
       console.error("Fetch users error:", err);
@@ -42,6 +57,30 @@ const AdminUserPage = () => {
       userId: id,
       isDisableAction: isDisable,
     });
+  };
+
+  const handleView = async (id) => {
+    const { data } = await getUserById(id);
+    setPreviewUser(data);
+    setIsPreviewOpen(true);
+  };
+
+  const handleChangeRole = async (id, roleId) => {
+    const res = await assignUserRole(id, roleId)
+    if (res){
+      notifySuccess("Gán vai trò thành công");
+    }
+    fetchUsers();
+  }
+
+  const handleEdit = async (id, form) => {
+    const res = await updateUser(id, form);
+    if (res){
+      notifySuccess("Cập nhật người dùng thành công");
+    }else{
+      notifyError("Đã có lỗi xảy ra. Vui lòng thử lại!");
+    }
+    fetchUsers();
   };
 
   const handleToggle = async () => {
@@ -76,15 +115,29 @@ const AdminUserPage = () => {
         <UserAction isOpen={isOpen} setIsOpen={setIsOpen} />
       </div>
 
-      <UserSearch isOpen={isOpen} onClose={() => setIsOpen(false)} onSearch={setFilters} />
+      <UserSearch
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onSearch={setFilters}
+      />
 
       <UserTable
         users={users}
         loading={loading}
+        onView={handleView}
         onToggleOn={(id) => openConfirm(id, false)}
         onToggleOff={(id) => openConfirm(id, true)}
         onRefresh={fetchUsers}
       />
+      {isPreviewOpen && (
+        <UserPreviewModal
+          user={previewUser}
+          roles={roles}
+          onEdit={handleEdit}
+          onAssignRole={handleChangeRole}
+          onClose={() => setIsPreviewOpen(false)}
+        />
+      )}
       {/* CONFIRM */}
       <ConfirmDialog
         open={confirmState.open}

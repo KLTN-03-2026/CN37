@@ -7,6 +7,7 @@ public interface IUserService
         Task LockUnlockUserAsync(long userId, bool lockAccount, long adminId, string ip);
         Task SoftDeleteUserAsync(long userId, long adminId, string ip);
         Task AssignRoleAsync(long userId, long roleId, long adminId, string ip);
+        Task RemoveRoleAsync(long userId, long roleId, long adminId, string ip);
         Task<string> GeneratePasswordResetTokenAsync(long userId, long adminId, string ip);
         Task ResetPasswordUsingTokenAsync(string token, string newPassword);
     }

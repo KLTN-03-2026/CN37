@@ -1,0 +1,106 @@
+.card {
+  background: #fafafa;
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid #eee;
+
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ITEM */
+.item {
+  display: flex;
+  flex-direction: column;
+}
+
+/* full width row */
+.full {
+  grid-column: span 2;
+}
+
+/* LABEL */
+.label {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+/* VALUE */
+.value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  word-break: break-word;
+}
+
+/* STATUS */
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.active {
+  background: #e6f7e6;
+  color: green;
+}
+
+.lock {
+  background: #ffe6e6;
+  color: red;
+}
+.verified {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+.unverified {
+  background: #fff1f0;
+  color: #ff4d4f;
+}
+
+/* ROLES */
+.roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.role {
+  background: #eef2ff;
+  color: #4f46e5;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* EMPTY */
+.empty {
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full {
+    grid-column: span 1;
+  }
+}

@@ -78,6 +78,14 @@ public class AdminUsersController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("{id:long}/remove-role/")]
+    public async Task<IActionResult> RemoveRole(long id, long roleId)
+    {
+        var adminId = GetAdminId(); // tùy bạn implement
+        await _userService.RemoveRoleAsync(id, roleId, adminId, GetIp());
+        return Ok();
+    }
+
     [HttpGet]
     public async Task<IActionResult> Search([FromQuery] UserSearchParams? p)
     {

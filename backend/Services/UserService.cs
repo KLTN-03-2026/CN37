@@ -87,7 +87,7 @@ public class UserService : IUserService
             IsDeleted = u.IsDeleted,
             AvatarUrl = u.Profile?.Avatar
         };
-        
+
     }
 
     public async Task AssignRoleAsync(long userId, long roleId, long adminId, string ip)
@@ -103,6 +103,26 @@ public class UserService : IUserService
             await _context.SaveChangesAsync();
             await _audit.LogAsync(adminId, userId, "AssignRole", $"Assigned role {role.Name}", ip);
         }
+    }
+
+    public async Task RemoveRoleAsync(long userId, long roleId, long adminId, string ip)
+    {
+        var user = await _context.Users
+            .Include(u => u.UserRoles)
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+
+        if (user == null) throw new KeyNotFoundException("User not found");
+
+        var userRole = user.UserRoles.FirstOrDefault(ur => ur.RoleId == roleId);
+        if (userRole == null) throw new KeyNotFoundException("User does not have this role");
+
+        _context.UserRoles.Remove(userRole);
+
+        await _context.SaveChangesAsync();
+
+        var role = await _context.Roles.FindAsync(roleId);
+
+        await _audit.LogAsync(adminId, userId, "RemoveRole", $"Removed role {role?.Name}", ip);
     }
 
     public async Task LockUnlockUserAsync(long userId, bool lockAccount, long adminId, string ip)

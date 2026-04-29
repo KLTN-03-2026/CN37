@@ -35,3 +35,7 @@ export const softDeleteUser = (id) => {
 export const assignUserRole = (id, roleId) => {
   return api.post(`/admin/users/${id}/assign-role`, { roleId });
 };
+
+export const removeUserRole = (id, roleId) => {
+  return api.delete(`/admin/users/${id}/remove-role`, {roleId});
+};

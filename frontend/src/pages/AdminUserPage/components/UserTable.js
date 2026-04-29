@@ -9,7 +9,7 @@ import { BiDetail } from "react-icons/bi";
 
 const cx = classNames.bind(styles);
 
-const UserTable = ({ users, loading, onToggleOff, onToggleOn, onRefresh }) => {
+const UserTable = ({ users, loading, onView, onToggleOff, onToggleOn, onRefresh }) => {
   const handleToggleOn = (id) => {
     onToggleOn(id);
   };
@@ -65,6 +65,7 @@ const UserTable = ({ users, loading, onToggleOff, onToggleOn, onRefresh }) => {
                   <button
                     title="xem chi tiết"
                     className={cx("actionBtn", "view")}
+                    onClick={() => onView(u.id)}
                   >
                     <BiDetail />
                   </button>
