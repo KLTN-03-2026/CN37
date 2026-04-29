@@ -19,6 +19,7 @@ export default function UserPreviewModal({
   roles,
   onEdit,
   onAssignRole,
+  onRemoveRole,
   onResetPassword,
   onClose,
 }) {
@@ -32,7 +33,8 @@ export default function UserPreviewModal({
     setActiveTab,
     loading,
     handleAssignRole,
-  } = useUserForm(user, onEdit, onAssignRole);
+    handleRemoveRole,
+  } = useUserForm(user, onEdit, onAssignRole, onRemoveRole);
 
   if (!formData) return null;
 
@@ -98,6 +100,7 @@ export default function UserPreviewModal({
               user={formData}
               roles={roles}
               onAssign={handleAssignRole}
+              onRemove={handleRemoveRole}
             />
           )}
 

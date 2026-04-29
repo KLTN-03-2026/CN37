@@ -10,6 +10,7 @@ import {
   getUserById,
   updateUser,
   assignUserRole,
+  removeUserRole
 } from "../../api/UserApi";
 import { getAllRole } from "../../api/RoleApi";
 
@@ -66,11 +67,28 @@ const AdminUserPage = () => {
   };
 
   const handleChangeRole = async (id, roleId) => {
+    setIsPreviewOpen(false);
     const res = await assignUserRole(id, roleId)
     if (res){
       notifySuccess("Gán vai trò thành công");
     }
     fetchUsers();
+    const { data } = await getUserById(id);
+    setPreviewUser(data);
+    setIsPreviewOpen(true);
+  }
+
+  const handleRemoveRole = async (id, roleId) => {
+    setIsPreviewOpen(false);
+    const res = await removeUserRole(id, roleId);
+    if(res){
+      notifySuccess("Gỡ vai trò thành công")
+    }
+    fetchUsers();
+    const { data } = await getUserById(id);
+    setPreviewUser(data);
+    setIsPreviewOpen(true);
+
   }
 
   const handleEdit = async (id, form) => {
@@ -135,6 +153,7 @@ const AdminUserPage = () => {
           roles={roles}
           onEdit={handleEdit}
           onAssignRole={handleChangeRole}
+          onRemoveRole={handleRemoveRole}
           onClose={() => setIsPreviewOpen(false)}
         />
       )}

@@ -83,7 +83,11 @@ public class UserService : IUserService
             EmailVerified = u.EmailVerified,
             FullName = u.Profile?.FullName,
             Phone = u.Profile?.Phone,
-            Roles = u.UserRoles.Select(r => r.Role.Name).ToList(),
+            Roles = u.UserRoles.Select(r => new RoleDto
+            {
+                Id = r.Role.Id,
+                Name = r.Role.Name
+            }).ToList(),
             IsDeleted = u.IsDeleted,
             AvatarUrl = u.Profile?.Avatar
         };
@@ -107,6 +111,9 @@ public class UserService : IUserService
 
     public async Task RemoveRoleAsync(long userId, long roleId, long adminId, string ip)
     {
+        Console.WriteLine(userId);
+        Console.WriteLine(roleId);
+        
         var user = await _context.Users
             .Include(u => u.UserRoles)
             .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
@@ -236,10 +243,11 @@ public class UserService : IUserService
                 EmailVerified = u.EmailVerified,
                 FullName = u.Profile != null ? u.Profile.FullName : null,
                 Phone = u.Profile != null ? u.Profile.Phone : null,
-                Roles = u.UserRoles
-                    .Where(r => r.Role != null)
-                    .Select(r => r.Role.Name)
-                    .ToList()
+                Roles = u.UserRoles.Select(r => new RoleDto
+                {
+                    Id = r.Role.Id,
+                    Name = r.Role.Name
+                }).ToList(),
             })
             .ToListAsync();
 

@@ -79,10 +79,10 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpDelete("{id:long}/remove-role/")]
-    public async Task<IActionResult> RemoveRole(long id, long roleId)
+    public async Task<IActionResult> RemoveRole(long id, [FromBody] AssignRoleDto dto)
     {
         var adminId = GetAdminId(); // tùy bạn implement
-        await _userService.RemoveRoleAsync(id, roleId, adminId, GetIp());
+        await _userService.RemoveRoleAsync(id, dto.RoleId, adminId, GetIp());
         return Ok();
     }
 

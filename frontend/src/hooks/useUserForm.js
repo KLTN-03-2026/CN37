@@ -1,7 +1,7 @@
 // hooks/useUserForm.js
 import { useState, useEffect } from "react";
 
-export function useUserForm(user, onEdit, onAssignRole) {
+export function useUserForm(user, onEdit, onAssignRole, onRemoveRole) {
   const [formData, setFormData] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [activeTab, setActiveTab] = useState("info");
@@ -40,6 +40,10 @@ export function useUserForm(user, onEdit, onAssignRole) {
     await onAssignRole(formData.id, roleId);
   };
 
+  const handleRemoveRole = async (roleId) => {
+    await onRemoveRole(formData.id, roleId);
+  };
+
   return {
     formData,
     setFormData,
@@ -51,5 +55,6 @@ export function useUserForm(user, onEdit, onAssignRole) {
     setActiveTab,
     loading,
     handleAssignRole,
+    handleRemoveRole,
   };
 }

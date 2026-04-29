@@ -37,5 +37,5 @@ export const assignUserRole = (id, roleId) => {
 };
 
 export const removeUserRole = (id, roleId) => {
-  return api.delete(`/admin/users/${id}/remove-role`, {roleId});
+  return api.delete(`/admin/users/${id}/remove-role`, {data: { roleId }});
 };

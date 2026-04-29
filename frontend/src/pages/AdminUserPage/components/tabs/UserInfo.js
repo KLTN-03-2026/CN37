@@ -28,7 +28,7 @@ export default function UserInfo({ user }) {
             {user.roles?.length ? (
               user.roles.map((r, i) => (
                 <span key={i} className={cx("role")}>
-                  {r}
+                  {r.name}
                 </span>
               ))
             ) : (

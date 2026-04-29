@@ -6,7 +6,7 @@ public class UserDto
     public bool EmailVerified { get; set; }
     public string FullName { get; set; }
     public string Phone { get; set; }
-    public IEnumerable<string> Roles { get; set; }
+    public List<RoleDto> Roles { get; set; }
     public bool IsDeleted { get; set; }
     public string AvatarUrl { get; set; }
 }
