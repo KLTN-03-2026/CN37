@@ -8,6 +8,9 @@ public class User
     public DateTime? EmailVerifiedAt { get; set;}
     public DateTime CreatedAt { get; set;} = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set;} = DateTime.UtcNow;
+    public bool IsDeleted { get; set;} = false;
+    public UserProfile? Profile { get; set; }
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     public ICollection<Session> Sessions { get; set; } = new List<Session>();
     public ICollection<Cart> Carts { get; set; } = new List<Cart>();
     public ICollection<UserAddress> UserAddresses { get; set; } = new List<UserAddress>();

@@ -19,3 +19,15 @@ export const updateAddress = (id, addressId) => {
 export const getAdminOrders = (params) => {
   return api.get("/orders/admin", { params });
 };
+
+export const getAdminCountByStatus = () => {
+  return api.get("/orders/admin/count");
+};
+
+export const getCountByStatus = () => {
+  return api.get("/orders/count");
+};
+
+export const editOrderStatus = (id, status) => {
+  return api.put(`/orders/${id}/status`, { id, status });
+};

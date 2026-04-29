@@ -3,11 +3,13 @@ import styles from "./OrderItem.module.scss";
 
 const cx = classNames.bind(styles);
 
-export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
+export default function OrderItem({ order, onCancel, onEditStatus, refresh }) {
   const getStatusClass = (status) => {
     switch (status) {
-      case "Đang xử lý":
+      case "Chờ xác nhận":
         return "pending";
+      case "Chờ lấy hàng":
+        return "processing";
       case "Đang giao":
         return "shipping";
       case "Hoàn tất":
@@ -19,12 +21,67 @@ export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
     }
   };
 
+  const renderActions = () => {
+    switch (order.status) {
+      case "Chờ xác nhận":
+        return (
+          <div className={cx("action")}>
+            <button
+              className={cx("btn", "btnCancel")}
+              onClick={() => onCancel(order.id)}
+            >
+              Hủy đơn hàng
+            </button>
+
+            <button
+              className={cx("btn", "btnContact")}
+              onClick={() => onEditStatus(order.id, "Chờ lấy hàng")}
+            >
+              Xác nhận đơn
+            </button>
+          </div>
+        );
+
+      case "Chờ lấy hàng":
+        return (
+          <div className={cx("action")}>
+            <button
+              className={cx("btn", "btnCancel")}
+              onClick={() => onCancel(order.id)}
+            >
+              Hủy đơn
+            </button>
+
+            <button
+              className={cx("btn", "btnContact")}
+              onClick={() => onEditStatus(order.id, "Đang giao")}
+            >
+              Gửi hàng
+            </button>
+          </div>
+        );
+
+      case "Đang giao":
+        return (
+          <button
+            className={cx("btn", "btnContact")}
+            onClick={() => onEditStatus(order.id, "Hoàn tất")}
+          >
+            Hoàn tất
+          </button>
+        );
+
+      default:
+        return <span></span>;
+    }
+  };
+
   return (
     <div className={cx("card")}>
       <div className={cx("header")}>
         <span>
-          {new Date(order.updateAt).toLocaleDateString()} • {order.items?.length}{" "}
-          sản phẩm
+          {new Date(order.updateAt).toLocaleDateString()} • MĐH: {order.id} -
+          SL: {order.items?.length} sản phẩm
         </span>
         <span className={cx("status", getStatusClass(order.status))}>
           <span className={cx("dot")}></span>
@@ -32,13 +89,18 @@ export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
         </span>
       </div>
 
-      <div className={cx("customer-info")}>
-        <span>
-          {order.customerName} - {order.phone}
-        </span>
-        <span className={cx("status", getStatusClass(order.status))}>
-          {order.address} 
-        </span>
+      <div className={cx("order-info")}>
+        <div className={cx("customer-info")}>
+          <span>
+            {order.customerName} - {order.phone}
+          </span>
+          <span className={cx("status", getStatusClass(order.status))}>
+            {order.address}
+          </span>
+        </div>
+        <div className={cx("order-detail")}>
+          <span>Xem chi tiết</span>
+        </div>
       </div>
 
       <div className={cx("data")}>
@@ -55,18 +117,10 @@ export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
       </div>
 
       <div className={cx("footer")}>
-        {order.status === "Đang xử lý" ? (
-          <div className={cx("action")}>
-            <button className={cx("btn", "btnCancel")} onClick={() => onCancel(order.id)}>
-              Hủy đơn hàng
-            </button>
-            <button className={cx("btn", "btnContact")} onClick={() => onEditAddress(order.id)}>
-              Liên hệ shop
-            </button>
-          </div>
-        ) : <span></span>}
+        {renderActions()}
+
         <span>
-          Thành tiền: <b>{order.totalAmount.toLocaleString()}đ</b>
+          Thành tiền: <b>{(order.totalAmount || 0).toLocaleString()}đ</b>
         </span>
       </div>
     </div>

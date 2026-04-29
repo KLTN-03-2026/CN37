@@ -1,0 +1,35 @@
+.wrapper {
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.btnSearch {
+  background: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
+
+  &:hover {
+    background: #52c41a;
+    color: #fff;
+  }
+}
+
+.btnAdd {
+  background: #fff1f0;
+  color: #ff4d4f;
+  border: 1px solid #ffccc7;
+
+  &:hover {
+    background: #ff4d4f;
+    color: #fff;
+  }
+}

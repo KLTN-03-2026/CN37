@@ -52,6 +52,13 @@
     background: #fa8c16;
   }
 }
+.processing {
+  color: #ffcd18;
+
+  .dot {
+    background: #ffcd18;
+  }
+}
 
 .shipping {
   color: #1677ff;
@@ -99,6 +106,16 @@
   }
 }
 
+.order-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;            
+  gap: 12px;
+
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 .customer-info {
   display: flex;
   flex-direction: column;
@@ -119,10 +136,24 @@
   }
 }
 
+.order-detail {
+  cursor: pointer;
+  color: #1677ff;
+  font-size: 14px;
+  white-space: nowrap; // 👉 không xuống dòng
+
+  transition: all 0.2s;
+
+  &:hover {
+    color: #0958d9;
+    text-decoration: underline;
+  }
+}
+
 .info {
   display: flex;
-  flex-direction: column;
   gap: 4px;
+  align-items: center;
 
   h4 {
     font-size: 14px;

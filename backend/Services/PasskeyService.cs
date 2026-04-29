@@ -154,6 +154,11 @@ public class PasskeyService : IPasskeyService
         if (user == null)
             throw new Exception("User not found");
 
+        if (!user.IsActive)
+        {
+            throw new Exception("Tài khoản của bạn đã bị vô hiệu hóa");
+        }
+
         var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
         var accessToken = _tokenService.GenerateAccessToken(user, roles);
         var refreshToken = await _tokenService.GenerateRefreshToken(user, "", "");

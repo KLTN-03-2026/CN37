@@ -1,0 +1,85 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  max-height: 720px;
+  flex: 1;
+  min-height: 0; /* 🔥 bắt buộc */
+
+  /* chống bị global padding phá */
+  padding: 0;
+}
+
+.header {
+  position: sticky; /* 🔥 thay fixed */
+  top: 0;
+  z-index: 100;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+
+  background: #f8f9fb;
+
+  padding: 16px 20px 0px 20px;
+
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 16px;
+  letter-spacing: -0.3px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.searchForm {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.input {
+  flex: 1;
+  padding: 8px;
+}
+
+.btn {
+  padding: 8px 12px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .searchForm {
+    flex-direction: column;
+  }
+  .table th,
+  .table td {
+    font-size: 12px;
+    padding: 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  .title {
+    font-size: 20px;
+  }
+}

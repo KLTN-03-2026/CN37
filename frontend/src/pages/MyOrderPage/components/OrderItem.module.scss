@@ -1,17 +1,31 @@
 .card {
-  background: white;
-  border-radius: 12px;
+  background: #fff;
+  border-radius: 14px;
   padding: 16px;
-  margin-top: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  transition: 0.3s;
-  
+  margin-top: 10px;
+
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  transition: all 0.25s ease;
+
+  &:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  align-items: center;
+
+  font-size: 13px;
+  color: #888;
+
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #eee;
 }
 
 .status {
@@ -36,6 +50,13 @@
 
   .dot {
     background: #fa8c16;
+  }
+}
+.processing {
+  color: #ffcd18;
+
+  .dot {
+    background: #ffcd18;
   }
 }
 
@@ -63,10 +84,12 @@
   }
 }
 
+
 .item {
   display: flex;
   gap: 12px;
   margin-bottom: 12px;
+  align-items: center;
 
   img {
     width: 70px;
@@ -82,14 +105,29 @@
 
 .price {
   font-weight: 600;
+  color: #ee4d2d;
+  font-size: 14px;
 }
 
 .footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 12px;
+
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+
   flex-wrap: wrap;
+
+  span {
+    font-size: 14px;
+  }
+
+  b {
+    color: #ee4d2d;
+    font-size: 16px;
+  }
 }
 
 .action {
@@ -99,34 +137,34 @@
 
 /* base button */
 .btn {
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
   border: 1px solid transparent;
 }
 
-/* ❌ Hủy đơn */
+/* ❌ Hủy */
 .btnCancel {
-  background: transparent;
-  color: #e53935;
-  border: 1px solid #e53935;
+  background: #fff1f0;
+  color: #ff4d4f;
+  border: 1px solid #ffccc7;
 
   &:hover {
-    background: #e53935;
+    background: #ff4d4f;
     color: #fff;
   }
 }
 
-/* 📞 Liên hệ shop */
+/* 📞 Contact */
 .btnContact {
-  background: transparent;
-  color: #59c241;
-  border: 1px solid #59c241;
+  background: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
 
   &:hover {
-    background: #59c241;
+    background: #52c41a;
     color: #fff;
   }
 }

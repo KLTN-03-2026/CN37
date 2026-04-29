@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import classNames from "classnames/bind";
 import styles from "./MyOrderPage.module.scss";
-import { getOrders, cancelOrder } from "../../api/OrderApi";
+import { getOrders, cancelOrder, getCountByStatus } from "../../api/OrderApi";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { notifyError, notifySuccess } from "../../components/Nofitication";
 
@@ -18,10 +18,22 @@ export default function MyOrderPage() {
   const [orders, setOrders] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [countByStatus, setCountByStatus] = useState({});
 
   const fetchOrders = async () => {
     const res = await getOrders({ status, keyword });
     setOrders(res.data);
+  };
+
+  const fetchCounts = async () => {
+    const res = await getCountByStatus();
+
+    const map = {};
+    res.data.forEach((item) => {
+      map[item.status] = item.count;
+    });
+
+    setCountByStatus(map);
   };
 
   const handleCancelOrder = async (orderId) => {
@@ -48,6 +60,7 @@ export default function MyOrderPage() {
 
   useEffect(() => {
     fetchOrders();
+    fetchCounts();
   }, [status, keyword]);
 
   return (
@@ -58,7 +71,7 @@ export default function MyOrderPage() {
       </div>
 
       <div className={cx("content")}>
-        <OrderTabs onChange={setStatus} />
+        <OrderTabs onChange={setStatus} counts={countByStatus} />
 
         <div className={cx("list")}>
           {orders.length === 0 ? (

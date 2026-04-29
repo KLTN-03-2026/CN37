@@ -71,9 +71,9 @@ public class OrderService : IOrderService
                 AddressId = request.AddressId,
                 TotalAmount = totalAmount,
                 Note = request.Note,
-                Status = "Đang xử lý",
+                Status = "Chờ xác nhận",
                 PaymentMethod = request.PaymentMethod,
-                PaymentStatus = "Đang xử lí",
+                PaymentStatus = "Chờ thanh toán",
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now
             };
@@ -180,7 +180,7 @@ public class OrderService : IOrderService
             throw new Exception("Đơn hàng không tồn tại");
 
         if (order.Status != OrderStatus.Pending)
-            throw new Exception("Chỉ có thể hủy đơn hàng đang xử lý");
+            throw new Exception("Chỉ có thể hủy đơn hàng đang chờ xác nhận");
 
         order.Status = OrderStatus.Cancelled;
         order.UpdateAt = DateTime.Now;
@@ -197,7 +197,7 @@ public class OrderService : IOrderService
             throw new Exception("Đơn hàng không tồn tại");
 
         if (order.Status != OrderStatus.Pending)
-            throw new Exception("Chỉ có thể cập nhật địa chỉ cho đơn hàng đang xử lý");
+            throw new Exception("Chỉ có thể cập nhật địa chỉ cho đơn hàng đang chờ xác nhận");
 
         order.AddressId = newAddressId;
         order.UpdateAt = DateTime.Now;
@@ -210,46 +210,92 @@ public class OrderService : IOrderService
         var orders = _context.Orders
             .Include(o => o.User)
             .Include(o => o.Address)
+            .Include(o => o.OrderItems)
+                .ThenInclude(i => i.Product)
             .AsQueryable();
 
+        // 🔥 STATUS
         if (!string.IsNullOrEmpty(query.Status))
         {
             orders = orders.Where(o => o.Status == query.Status);
         }
 
-        if (!string.IsNullOrEmpty(query.Search))
+        // 🔥 ORDER ID
+        if (!string.IsNullOrEmpty(query.OrderId))
         {
-            orders = orders.Where(o =>
-                o.User.Email.Contains(query.Search));
+            if (long.TryParse(query.OrderId, out var orderId))
+            {
+                orders = orders.Where(o => o.Id == orderId);
+            }
         }
 
-        return await _context.Orders
-    .Where(o => string.IsNullOrEmpty(query.Status) || o.Status == query.Status)
-    .Where(o => string.IsNullOrEmpty(query.Search) || o.User.Email.Contains(query.Search))
-    .OrderByDescending(o => o.CreateAt)
-    .Select(o => new OrderDto
-    {
-        Id = o.Id,
-        CustomerName = o.Address.ReceiverName,
-        Phone = o.Address.ReceiverPhone,
-        Address = o.Address == null
-            ? ""
-            : o.Address.Street + ", " + o.Address.Ward + ", " + o.Address.District + ", " + o.Address.Province,
-
-        TotalAmount = o.TotalAmount,
-        Status = o.Status,
-        UpdateAt = o.UpdateAt,
-
-        Items = o.OrderItems.Select(i => new OrderItemDto
+        // 🔥 PHONE
+        if (!string.IsNullOrEmpty(query.Phone))
         {
-            ProductId = i.ProductId,
-            ProductName = i.Product.Name,
-            Thumbnail = i.Product.Thumbnail,
-            Price = i.Price,
-            Quantity = i.Quantity
-        }).ToList()
-    })
-    .ToListAsync();
+            orders = orders.Where(o => o.Address.ReceiverPhone.Contains(query.Phone));
+        }
+
+        // 🔥 CUSTOMER
+        if (!string.IsNullOrEmpty(query.Customer))
+        {
+            orders = orders.Where(o => o.Address.ReceiverName.Contains(query.Customer));
+        }
+
+        // 🔥 PRODUCT NAME
+        if (!string.IsNullOrEmpty(query.Product))
+        {
+            orders = orders.Where(o =>
+                o.OrderItems.Any(i => i.Product.Name.Contains(query.Product)));
+        }
+
+        // 🔥 SHIPPING
+        // if (!string.IsNullOrEmpty(query.Shipping))
+        // {
+        //     orders = orders.Where(o => o.ShippingMethod == query.Shipping);
+        // }
+
+        // 🔥 PAYMENT
+        if (!string.IsNullOrEmpty(query.Payment))
+        {
+            orders = orders.Where(o => o.PaymentMethod == query.Payment);
+        }
+
+        // 🔥 DATE RANGE
+        if (query.DateFrom.HasValue)
+        {
+            orders = orders.Where(o => o.CreateAt >= query.DateFrom.Value);
+        }
+
+        if (query.DateTo.HasValue)
+        {
+            orders = orders.Where(o => o.CreateAt <= query.DateTo.Value);
+        }
+
+        return await orders
+            .OrderByDescending(o => o.CreateAt)
+            .Select(o => new OrderDto
+            {
+                Id = o.Id,
+                CustomerName = o.Address.ReceiverName,
+                Phone = o.Address.ReceiverPhone,
+                Address = o.Address == null
+                    ? ""
+                    : o.Address.Street + ", " + o.Address.Ward + ", " + o.Address.District + ", " + o.Address.Province,
+
+                TotalAmount = o.TotalAmount,
+                Status = o.Status,
+                UpdateAt = o.UpdateAt,
+
+                Items = o.OrderItems.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product.Name,
+                    Thumbnail = i.Product.Thumbnail,
+                    Price = i.Price,
+                    Quantity = i.Quantity
+                }).ToList()
+            })
+            .ToListAsync();
     }
 
     public async Task<OrderDetailDto> GetOrderDetailAsync(long orderId)
@@ -293,7 +339,11 @@ public class OrderService : IOrderService
         var current = order.Status;
 
         // ❌ validate flow
-        if (current == OrderStatus.Pending && newStatus == OrderStatus.Shipping)
+        if (current == OrderStatus.Pending && newStatus == OrderStatus.Processing)
+        {
+            order.Status = newStatus;
+        }
+        else if (current == OrderStatus.Processing && newStatus == OrderStatus.Shipping)
         {
             order.Status = newStatus;
         }
@@ -323,5 +373,30 @@ public class OrderService : IOrderService
 
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
+    }
+
+    public async Task<List<OrderCountByStatusDto>> AdminCountOrdersByStatusAsync()
+    {
+        return await _context.Orders
+            .GroupBy(o => o.Status)
+            .Select(g => new OrderCountByStatusDto
+            {
+                Status = g.Key,
+                Count = g.Count()
+            })
+            .ToListAsync();
+    }
+
+    public async Task<List<OrderCountByStatusDto>> CountOrdersByStatusAsync(long userId)
+    {
+        return await _context.Orders
+            .Where(o => o.UserId == userId)
+            .GroupBy(o => o.Status)
+            .Select(g => new OrderCountByStatusDto
+            {
+                Status = g.Key,
+                Count = g.Count()
+            })
+            .ToListAsync();
     }
 }

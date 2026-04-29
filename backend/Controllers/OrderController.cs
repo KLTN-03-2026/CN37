@@ -9,6 +9,7 @@ public class OrderController : ControllerBase
 {
     private readonly IOrderService _orderService;
 
+
     public OrderController(IOrderService orderService)
     {
         _orderService = orderService;
@@ -77,12 +78,29 @@ public class OrderController : ControllerBase
     {
         return Ok(await _orderService.GetOrderDetailAsync(id));
     }
-    
-    [Authorize(Roles = "Admin")]
+
+    [Authorize]
     [HttpPut("{id}/status")]
-    public async Task<IActionResult> UpdateStatus(long id, [FromBody] string status)
+    public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateStatusOrderRequest request)
     {
-        await _orderService.UpdateOrderStatusAsync(id, status);
+        await _orderService.UpdateOrderStatusAsync(id, request.Status);
         return Ok();
+    }
+
+    [Authorize]
+    [HttpGet("admin/count")]
+    public async Task<IActionResult> AdminCountOrders()
+    {
+        var result = await _orderService.AdminCountOrdersByStatusAsync();
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpGet("count")]
+    public async Task<IActionResult> CountOrders()
+    {
+        var userId = GetUserId();
+        var result = await _orderService.CountOrdersByStatusAsync(userId);
+        return Ok(result);
     }
 }

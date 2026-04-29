@@ -211,7 +211,7 @@ public class AuthService : IAuthService
 
         if (user == null || !user.IsActive)
         {
-            throw new Exception("Tài khoản không tồn tại hoặc đã bị khóa.");
+            throw new Exception("Tài khoản của bạn đã bị vô hiệu hóa");
         }
         var user1 = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(u => u.Id == user.Id);
         var roles = user1?.UserRoles.Select(ur => ur.Role.Name).ToList();

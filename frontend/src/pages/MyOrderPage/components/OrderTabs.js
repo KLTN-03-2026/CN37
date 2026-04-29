@@ -6,13 +6,14 @@ const cx = classNames.bind(styles);
 
 const tabs = [
   { label: "Tất cả", value: "" },
-  { label: "Đang xử lý", value: "Đang xử lý" },
+  { label: "Chờ xác nhận", value: "Chờ xác nhận" },
+  { label: "Chờ lấy hàng", value: "Chờ lấy hàng" },
   { label: "Đang giao", value: "Đang giao" },
   { label: "Hoàn tất", value: "Hoàn tất" },
   { label: "Đã hủy", value: "Đã hủy" },
 ];
 
-export default function OrderTabs({ onChange }) {
+export default function OrderTabs({ onChange, counts = {} }) {
   const [active, setActive] = useState("");
 
   const handleClick = (value) => {
@@ -22,15 +23,20 @@ export default function OrderTabs({ onChange }) {
 
   return (
     <div className={cx("tabs")}>
-        {tabs.map((t) => (
-          <div
-            key={t.value}
-            className={cx("tab", { active: active === t.value })}
-            onClick={() => handleClick(t.value)}
-          >
-            {t.label}
-          </div>
-        ))}
-      </div>
+      {tabs.map((t) => (
+        <div
+          key={t.value}
+          className={cx("tab", { active: active === t.value })}
+          onClick={() => handleClick(t.value)}
+        >
+          {t.label}
+          <span className={cx("count")}>
+            {t.value === ""
+              ? Object.values(counts).reduce((a, b) => a + b, 0)
+              : counts[t.value] || 0}
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }

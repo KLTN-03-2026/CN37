@@ -6,8 +6,10 @@ const cx = classNames.bind(styles);
 export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
   const getStatusClass = (status) => {
     switch (status) {
-      case "Đang xử lý":
+      case "Chờ xác nhận":
         return "pending";
+      case "Chờ lấy hàng":
+        return "processing";
       case "Đang giao":
         return "shipping";
       case "Hoàn tất":
@@ -47,7 +49,7 @@ export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
       </div>
 
       <div className={cx("footer")}>
-        {order.status === "Đang xử lý" ? (
+        {order.status === "Chờ xác nhận" ? (
           <div className={cx("action")}>
             <button className={cx("btn", "btnCancel")} onClick={() => onCancel(order.id)}>
               Hủy đơn hàng

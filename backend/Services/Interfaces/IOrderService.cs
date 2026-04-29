@@ -10,4 +10,6 @@ public interface IOrderService
     Task<List<OrderDto>> GetAllOrdersAsync(AdminOrderQueryRequest query);
     Task<OrderDetailDto> GetOrderDetailAsync(long orderId);
     Task UpdateOrderStatusAsync(long orderId, string status);
+    Task<List<OrderCountByStatusDto>> AdminCountOrdersByStatusAsync();
+    Task<List<OrderCountByStatusDto>> CountOrdersByStatusAsync(long userId);
 }

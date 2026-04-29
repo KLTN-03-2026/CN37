@@ -1,27 +1,85 @@
 .tableWrapper {
-  max-height: 100vh; /* hoặc 100% tùy layout */
+  max-height: 100vh;
   overflow-y: auto;
-  border-radius: 12px;
+  border-radius: 16px;
+  background: #fff;
+
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-
+/* ===== TABLE ===== */
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate; // 🔥 quan trọng để bo góc đẹp
+  border-spacing: 0;
 
-  th {
-    position: sticky;
-    top: 0;
-    background: #f8f9fb;
-    z-index: 2;
-  }
+  font-size: 14px;
+  color: #333;
+}
 
-  th,
-  td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-    text-align: center;
-  }
+/* ===== HEADER ===== */
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  background: #00223e;
+  color: #f8fafc;
+  font-weight: 600;
+
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+
+  padding: 14px 12px;
+  text-align: center;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* ===== CELL ===== */
+.table td {
+  padding: 14px 12px;
+  text-align: center;
+  border-bottom: 1px solid #f1f1f1;
+
+  transition: all 0.2s ease;
+}
+
+/* ===== ROW ===== */
+.table tbody tr {
+  transition: all 0.2s ease;
+}
+
+/* hover cực kỳ quan trọng */
+.table tbody tr:hover {
+  background: #f9fdf6; // xanh nhẹ theo theme bạn (#59c241)
+}
+
+/* zebra nhẹ */
+.table tbody tr:nth-child(even) {
+  background: #fcfcfc;
+}
+
+/* ===== FIRST + LAST BORDER RADIUS ===== */
+.table thead tr th:first-child {
+  border-top-left-radius: 16px;
+}
+
+.table thead tr th:last-child {
+  border-top-right-radius: 16px;
+}
+.tableWrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 .status {

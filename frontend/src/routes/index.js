@@ -24,7 +24,7 @@ import AdminProductPage from "../pages/AdminProductPage";
 import OrderSuccess from "../pages/OrderSuccess";
 import MyOrderPage from "../pages/MyOrderPage";
 import AdminOrderPage from "../pages/AdminOrderPage";
-
+import AdminUserPage from "../pages/AdminUserPage";
 
 import { ProtectedRoute } from "./Routes";
 
@@ -152,6 +152,13 @@ const routes = [
   {
     path: "/admin/orders",
     component: AdminOrderPage,
+    layout: AdminLayout,
+    ProtectedRoute: true,
+    requiredRole: "Admin"
+  },
+  {
+    path: "/admin/customers",
+    component: AdminUserPage,
     layout: AdminLayout,
     ProtectedRoute: true,
     requiredRole: "Admin"
