@@ -84,8 +84,8 @@
     color: #666;
   }
 
-  input,
-  select {
+  .input,
+  .select {
     height: 36px;
     padding: 0 10px;
     border-radius: 6px;
@@ -96,6 +96,19 @@
     &:focus {
       border-color: #ee4d2d;
     }
+  }
+}
+
+.select {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 14px;
+
+  &:focus {
+    border-color: #ee4d2d;
   }
 }
 

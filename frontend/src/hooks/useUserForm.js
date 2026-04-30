@@ -1,5 +1,6 @@
 // hooks/useUserForm.js
 import { useState, useEffect } from "react";
+import { notifyError } from "../components/Nofitication";
 
 export function useUserForm(user, onEdit, onAssignRole, onRemoveRole) {
   const [formData, setFormData] = useState(null);
@@ -23,6 +24,13 @@ export function useUserForm(user, onEdit, onAssignRole, onRemoveRole) {
   };
 
   const handleSubmit = async () => {
+    if (!formData.fullName || formData.fullName.length < 2) {
+      return notifyError("Họ tên không hợp lệ");
+    }
+
+    if (!/^(0|\+84)[0-9]{9}$/.test(formData.phone)) {
+      return notifyError("SĐT không hợp lệ");
+    }
     setLoading(true);
     try {
       await onEdit(formData.id, {

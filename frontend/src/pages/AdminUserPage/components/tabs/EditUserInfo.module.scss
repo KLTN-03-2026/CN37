@@ -38,9 +38,7 @@ label {
 }
 
 /* INPUT */
-input[type="text"],
-input[type="tel"],
-input:not([type]) {
+.input {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid #ddd;
@@ -48,7 +46,7 @@ input:not([type]) {
   transition: all 0.2s ease;
 }
 
-input:focus {
+.input:focus {
   outline: none;
   border-color: #59c241;
   box-shadow: 0 0 0 2px rgba(89, 194, 65, 0.15);
@@ -124,4 +122,13 @@ input:focus {
   .full {
     grid-column: span 1;
   }
+}
+.errorInput {
+  border-color: #ff4d4f !important;
+}
+
+.errorText {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
 }

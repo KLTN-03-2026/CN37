@@ -1,0 +1,134 @@
+.card {
+  background: #fafafa;
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid #eee;
+
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* SECTION */
+.section {
+  margin-bottom: 20px;
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+  }
+}
+
+/* STATUS */
+.status {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.verified {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.unverified {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* BUTTON */
+.btnDanger {
+  background: #ff4d4f;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.btnDanger:hover {
+  background: #e04344;
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+}
+
+.btnDanger:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* CONFIRM MODAL */
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirmBox {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 320px;
+  text-align: center;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+
+  button {
+    flex: 1;
+    margin: 0 5px;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+}
+
+/* TOKEN */
+.tokenBox {
+  margin-top: 20px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 10px;
+}
+
+.tokenRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+
+  code {
+    background: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    overflow-x: auto;
+  }
+
+  button {
+    margin-left: 10px;
+    border: none;
+    background: #59c241;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+}

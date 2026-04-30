@@ -151,6 +151,7 @@ export default function UserSearch({ onSearch, isOpen, onClose }) {
             <div className={cx("field")}>
               <label>Trạng thái</label>
               <select
+                className={cx("select")}
                 value={form.isActive}
                 onChange={(e) => handleChange("isActive", e.target.value)}
               >

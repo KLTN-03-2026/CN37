@@ -10,7 +10,7 @@ import {
   getUserById,
   updateUser,
   assignUserRole,
-  removeUserRole
+  removeUserRole,
 } from "../../api/UserApi";
 import { getAllRole } from "../../api/RoleApi";
 
@@ -42,7 +42,7 @@ const AdminUserPage = () => {
     try {
       const res = await getUserList(filters);
       const role = await getAllRole();
-      setRoles(role.data)
+      setRoles(role.data);
       setUsers(res.data?.items || []);
     } catch (err) {
       console.error("Fetch users error:", err);
@@ -68,34 +68,33 @@ const AdminUserPage = () => {
 
   const handleChangeRole = async (id, roleId) => {
     setIsPreviewOpen(false);
-    const res = await assignUserRole(id, roleId)
-    if (res){
+    const res = await assignUserRole(id, roleId);
+    if (res) {
       notifySuccess("Gán vai trò thành công");
     }
     fetchUsers();
     const { data } = await getUserById(id);
     setPreviewUser(data);
     setIsPreviewOpen(true);
-  }
+  };
 
   const handleRemoveRole = async (id, roleId) => {
     setIsPreviewOpen(false);
     const res = await removeUserRole(id, roleId);
-    if(res){
-      notifySuccess("Gỡ vai trò thành công")
+    if (res) {
+      notifySuccess("Gỡ vai trò thành công");
     }
     fetchUsers();
     const { data } = await getUserById(id);
     setPreviewUser(data);
     setIsPreviewOpen(true);
-
-  }
+  };
 
   const handleEdit = async (id, form) => {
     const res = await updateUser(id, form);
-    if (res){
+    if (res) {
       notifySuccess("Cập nhật người dùng thành công");
-    }else{
+    } else {
       notifyError("Đã có lỗi xảy ra. Vui lòng thử lại!");
     }
     fetchUsers();
