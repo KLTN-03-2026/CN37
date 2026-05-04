@@ -1,35 +1,47 @@
 .wrapper {
   margin-bottom: 10px;
   gap: 10px;
+  display: flex;
 }
 
 .btn {
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid transparent;
+
+  svg {
+    font-size: 16px;
+  }
 }
 
 .btnSearch {
-  background: #f6ffed;
-  color: #52c41a;
-  border: 1px solid #b7eb8f;
+  background: #f1f1f1;
+  color: #333;
 
   &:hover {
-    background: #52c41a;
-    color: #fff;
+    background: #ddd;
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 
 .btnAdd {
-  background: #fff1f0;
-  color: #ff4d4f;
-  border: 1px solid #ffccc7;
+  background: #59c241;
+  color: white;
 
   &:hover {
-    background: #ff4d4f;
-    color: #fff;
+    background: #4caf38;
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }

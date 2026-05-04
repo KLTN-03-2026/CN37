@@ -26,9 +26,17 @@ public class AdminUsersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
-        var adminId = GetAdminId();
-        var token = await _userService.CreateUserAsync(request, adminId, GetIp());
-        return CreatedAtAction(nameof(Get), new { id = token.Id }, token);
+        try
+        {
+            var adminId = GetAdminId();
+            var token = await _userService.CreateUserAsync(request, adminId, GetIp());
+            return CreatedAtAction(nameof(Get), new { id = token.Id }, token);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+
     }
 
     [HttpGet("{id:long}")]

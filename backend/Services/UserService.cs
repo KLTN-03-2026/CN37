@@ -14,7 +14,7 @@ public class UserService : IUserService
     {
         if (string.IsNullOrWhiteSpace(request.Email)) throw new Exception("Email required");
         var exists = await _context.Users.AnyAsync(u => u.Email == request.Email && !u.IsDeleted);
-        if (exists) throw new Exception("Email already exists");
+        if (exists) throw new Exception("Email này đã tồn tại");
 
         var user = new User
         {
@@ -22,7 +22,8 @@ public class UserService : IUserService
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password ?? Guid.NewGuid().ToString("N").Substring(0, 12)),
             IsActive = true,
             CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            UpdatedAt = DateTime.Now,
+            EmailVerified = true
         };
         _context.Users.Add(user);
         await _context.SaveChangesAsync();

@@ -4,7 +4,7 @@ import { IoMdSearch } from "react-icons/io";
 
 const cx = classNames.bind(styles);
 
-export default function UserAction({ isOpen, setIsOpen }) {
+export default function UserAction({ isOpen, setIsOpen, isCreate, setIsCreate }) {
   return (
     <div className={cx("wrapper")}>
       <button
@@ -15,7 +15,7 @@ export default function UserAction({ isOpen, setIsOpen }) {
       </button>
       <button
         className={cx("btn", "btnAdd")}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsCreate(!isCreate)}
       >
         Thêm mới TK
       </button>

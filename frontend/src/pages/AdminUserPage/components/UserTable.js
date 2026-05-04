@@ -9,7 +9,7 @@ import { BiDetail } from "react-icons/bi";
 
 const cx = classNames.bind(styles);
 
-const UserTable = ({ users, loading, onView, onToggleOff, onToggleOn, onRefresh }) => {
+const UserTable = ({ users, loading, onView, onToggleOff, onToggleOn, onDelete, onRefresh }) => {
   const handleToggleOn = (id) => {
     onToggleOn(id);
   };
@@ -23,7 +23,7 @@ const UserTable = ({ users, loading, onView, onToggleOff, onToggleOn, onRefresh 
       <table className={cx("table")}>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>STT</th>
             <th>Email</th>
             <th>Tên</th>
             <th>SĐT</th>
@@ -33,9 +33,9 @@ const UserTable = ({ users, loading, onView, onToggleOff, onToggleOn, onRefresh 
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
+          {users.map((u, index) => (
             <tr key={u.id}>
-              <td>{u.id}</td>
+              <td>{index + 1}</td>
               <td>{u.email}</td>
               <td>{u.fullName}</td>
               <td>{u.phone ? u.phone : "//"}</td>
@@ -83,6 +83,7 @@ const UserTable = ({ users, loading, onView, onToggleOff, onToggleOn, onRefresh 
                   <button
                     title="xóa tài khoản"
                     className={cx("actionBtn", "more")}
+                    onClick={() => onDelete(u.id)}
                   >
                     <MdDelete/>
                   </button>
