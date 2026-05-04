@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import classNames from "classnames/bind";
 import styles from "./SupplierPreviewModal.module.scss";
+import { notifyError } from "../../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -25,7 +26,7 @@ const SupplierPreviewModal = ({
       await onEdit(supplier.id, form);
       setIsEditing(false);
     } catch (err) {
-      alert("Lỗi cập nhật: " + err.message);
+      notifyError("Lỗi cập nhật: " + err.message);
     } finally {
       setLoading(false);
     }

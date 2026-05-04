@@ -8,6 +8,7 @@ import ImportExportModal from "./components/ImportExportModal";
 
 import { getProductInventory } from "../../api/InventoryApi";
 import { getCategories } from "../../api/CategoryApi";
+import { notifyWarning } from "../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -63,14 +64,14 @@ function InventoryPage() {
           onOpenHistoryAll={() => setShowHistoryAll(true)}
           onOpenImport={() => {
             if (selectedProducts.length === 0) {
-              alert("Chưa chọn sản phẩm");
+              notifyWarning("Chưa chọn sản phẩm");
               return;
             }
             setModalType("IMPORT");
           }}
           onOpenExport={() => {
             if (selectedProducts.length === 0) {
-              alert("Chưa chọn sản phẩm");
+              notifyWarning("Chưa chọn sản phẩm");
               return;
             }
             setModalType("EXPORT");

@@ -4,6 +4,7 @@ import classNames from "classnames/bind";
 import { createImport, createExport } from "../../../api/InventoryApi";
 import { getSuppliers } from "../../../api/SupplierApi";
 import { getUserList } from "../../../api/UserApi";
+import { notifyError, notifySuccess, notifyWarning } from "../../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -70,12 +71,12 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
 
   const handleSubmit = async () => {
     if (!selectedPartner) {
-      alert(`Vui lòng chọn ${type === "IMPORT" ? "nhà cung cấp" : "khách hàng"}`);
+      notifyWarning(`Vui lòng chọn ${type === "IMPORT" ? "nhà cung cấp" : "khách hàng"}`);
       return;
     }
 
     if (items.length === 0 || items.some((i) => !i.productId || i.quantity <= 0)) {
-      alert("Vui lòng kiểm tra lại danh sách sản phẩm");
+      notifyWarning("Vui lòng kiểm tra lại danh sách sản phẩm");
       return;
     }
 
@@ -105,12 +106,12 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
         });
       }
 
-      alert("Lưu phiếu thành công!");
+      notifySuccess("Lưu phiếu thành công!");
       onSuccess?.();
       onClose();
     } catch (err) {
       console.error(err);
-      alert("Lỗi: " + (err.response?.data?.message || "Không thể lưu phiếu"));
+      notifyError("Lỗi: " + (err.response?.data?.message || "Không thể lưu phiếu"));
     } finally {
       setLoading(false);
     }

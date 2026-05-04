@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import classNames from "classnames/bind";
 import styles from "./SupplierAction.module.scss";
 import { createSupplier } from "../../../api/SupplierApi";
+import { notifyError, notifySuccess } from "../../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -32,10 +33,10 @@ const SupplierAction = ({ onClose, onSuccess }) => {
     setLoading(true);
     try {
       await createSupplier(form);
-      alert("Thêm nhà cung cấp thành công!");
+      notifySuccess("Thêm nhà cung cấp thành công!");
       onSuccess?.();
     } catch (err) {
-      alert("Lỗi: " + (err.response?.data?.message || err.message));
+      notifyError("Lỗi: " + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
