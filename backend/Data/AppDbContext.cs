@@ -30,6 +30,11 @@ public class AppDbContext : DbContext
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<Supplier> Suppliers { get; set; }
+    public DbSet<InventoryImport> InventoryImports { get; set; }
+    public DbSet<InventoryImportItem> InventoryImportItems { get; set; }
+    public DbSet<InventoryExport> InventoryExports { get; set; }
+    public DbSet<InventoryExportItem> InventoryExportItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -303,6 +308,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.QuantityAfter).HasColumnName("quantity_after").IsRequired();
             entity.Property(x => x.ChangeType).HasColumnName("change_type").HasMaxLength(50).IsRequired();
             entity.Property(x => x.Note).HasColumnName("note").HasMaxLength(255);
+            entity.Property(x => x.Note).HasColumnName("reference_id").HasMaxLength(255);
             entity.Property(x => x.CreateAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasIndex(x => x.ProductId);
@@ -325,7 +331,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.PaymentMethod).HasColumnName("payment_method").HasMaxLength(50);
             entity.Property(x => x.PaymentStatus).HasColumnName("payment_status").HasMaxLength(50);
             entity.Property(x => x.CreateAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(x => x.UpdateAt).HasColumnName("update_at").HasColumnType("timestamp");
+            entity.Property(x => x.UpdateAt).HasColumnName("update_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // 🔗 Relation Orders
             entity.HasOne(x => x.User).WithMany(u => u.Orders).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
@@ -383,5 +389,151 @@ public class AppDbContext : DbContext
             entity.HasIndex(e => e.Action);
             entity.HasIndex(e => e.CreatedAt);
         });
+
+        modelBuilder.Entity<Supplier>(entity =>
+{
+    entity.ToTable("suppliers");
+
+    entity.HasKey(x => x.Id);
+
+    entity.Property(x => x.Code).HasColumnName("code").HasMaxLength(50).IsRequired();
+    entity.HasIndex(x => x.Code).IsUnique();
+
+    entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
+
+    entity.Property(x => x.ContactPerson).HasColumnName("contact_person");
+    entity.Property(x => x.Phone).HasColumnName("phone");
+    entity.Property(x => x.Email).HasColumnName("email");
+
+    entity.Property(x => x.Address).HasColumnName("address");
+    entity.Property(x => x.Province).HasColumnName("province");
+    entity.Property(x => x.District).HasColumnName("district");
+
+    entity.Property(x => x.TaxCode).HasColumnName("tax_code");
+
+    entity.Property(x => x.BankName).HasColumnName("bank_name");
+    entity.Property(x => x.BankAccount).HasColumnName("bank_account");
+
+    entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(50);
+
+    entity.Property(x => x.Note).HasColumnName("note");
+
+    entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+    entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+    entity.Property(x => x.CreatedBy).HasColumnName("created_by");
+
+    entity.HasOne(x => x.CreatedByUser)
+        .WithMany()
+        .HasForeignKey(x => x.CreatedBy)
+        .OnDelete(DeleteBehavior.SetNull);
+});
+
+modelBuilder.Entity<InventoryImport>(entity =>
+{
+    entity.ToTable("inventory_imports");
+
+    entity.HasKey(x => x.Id);
+
+    entity.Property(x => x.Code).HasColumnName("code").HasMaxLength(50).IsRequired();
+    entity.HasIndex(x => x.Code).IsUnique();
+
+    entity.Property(x => x.SupplierId).HasColumnName("supplier_id");
+
+    entity.Property(x => x.TotalAmount).HasColumnName("total_amount").HasColumnType("decimal(12,2)");
+
+    entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(50);
+
+    entity.Property(x => x.Note).HasColumnName("note");
+
+    entity.Property(x => x.CreatedBy).HasColumnName("created_by");
+    entity.Property(x => x.ApprovedBy).HasColumnName("approved_by");
+
+    entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+    entity.Property(x => x.ApprovedAt).HasColumnName("approved_at");
+
+    entity.HasOne(x => x.Supplier)
+        .WithMany(x => x.Imports)
+        .HasForeignKey(x => x.SupplierId)
+        .OnDelete(DeleteBehavior.SetNull);
+});
+
+modelBuilder.Entity<InventoryImportItem>(entity =>
+{
+    entity.ToTable("inventory_import_items");
+
+    entity.HasKey(x => x.Id);
+
+    entity.Property(x => x.ImportId).HasColumnName("import_id");
+    entity.Property(x => x.ProductId).HasColumnName("product_id");
+
+    entity.Property(x => x.Quantity).HasColumnName("quantity");
+    entity.Property(x => x.CostPrice).HasColumnName("cost_price").HasColumnType("decimal(12,2)");
+
+    entity.HasOne(x => x.Import)
+        .WithMany(x => x.Items)
+        .HasForeignKey(x => x.ImportId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    entity.HasOne(x => x.Product)
+        .WithMany()
+        .HasForeignKey(x => x.ProductId);
+});
+
+modelBuilder.Entity<InventoryExport>(entity =>
+{
+    entity.ToTable("inventory_exports");
+
+    entity.HasKey(x => x.Id);
+
+    entity.Property(x => x.Code).HasColumnName("code").HasMaxLength(50).IsRequired();
+    entity.HasIndex(x => x.Code).IsUnique();
+
+    entity.Property(x => x.ExportType).HasColumnName("export_type").HasMaxLength(50);
+
+    entity.Property(x => x.ReferenceId).HasColumnName("reference_id");
+
+    entity.Property(x => x.TotalAmount).HasColumnName("total_amount").HasColumnType("decimal(12,2)");
+
+    entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(50);
+
+    entity.Property(x => x.Note).HasColumnName("note");
+
+    entity.Property(x => x.CreatedBy).HasColumnName("created_by");
+    entity.Property(x => x.ApprovedBy).HasColumnName("approved_by");
+
+    entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+    entity.Property(x => x.ApprovedAt).HasColumnName("approved_at");
+});
+
+modelBuilder.Entity<InventoryExportItem>(entity =>
+{
+    entity.ToTable("inventory_export_items");
+
+    entity.HasKey(x => x.Id);
+
+    entity.Property(x => x.ExportId).HasColumnName("export_id");
+    entity.Property(x => x.ProductId).HasColumnName("product_id");
+
+    entity.Property(x => x.Quantity).HasColumnName("quantity");
+
+    entity.Property(x => x.Price)
+        .HasColumnName("price")
+        .HasColumnType("decimal(12,2)")
+        .IsRequired();
+
+    entity.Property(x => x.CostPrice)
+        .HasColumnName("cost_price")
+        .HasColumnType("decimal(12,2)");
+
+    entity.HasOne(x => x.Export)
+        .WithMany(x => x.Items)
+        .HasForeignKey(x => x.ExportId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    entity.HasOne(x => x.Product)
+        .WithMany()
+        .HasForeignKey(x => x.ProductId);
+});
     }
 }

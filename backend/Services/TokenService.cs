@@ -37,7 +37,7 @@ public class TokenService : ITokenService
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpiryMinutes);
+        var expires = DateTime.Now.AddMinutes(_jwtOptions.ExpiryMinutes);
 
         var token = new JwtSecurityToken(
             claims: claims,
@@ -54,9 +54,9 @@ public class TokenService : ITokenService
         {
             UserId = user.Id,
             TokenHash = refreshTokenValue,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            ExpiresAt = DateTime.Now.AddDays(7),
             IsRevoked = false,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now,
             DeviceInfo = deviceInfo,
             IpAddress = ip
         };
@@ -121,7 +121,7 @@ public class TokenService : ITokenService
 
         // 3. Revoke refresh token
         refresh.IsRevoked = true;
-        refresh.RevokedAt = DateTime.UtcNow;
+        refresh.RevokedAt = DateTime.Now;
 
         // 4. Xóa session (khuyến nghị)
         _context.Sessions.Remove(session);
@@ -150,10 +150,10 @@ public class TokenService : ITokenService
         {
             throw new Exception("Refresh Token đã bị thu hồi");
         }
-        if (searchToken.ExpiresAt < DateTime.UtcNow)
+        if (searchToken.ExpiresAt < DateTime.Now)
         {
             searchToken.IsRevoked = true;
-            searchToken.RevokedAt = DateTime.UtcNow;
+            searchToken.RevokedAt = DateTime.Now;
             throw new Exception("Refresh Token đã hết hạn");
         }
         var user = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).FirstOrDefaultAsync(x => x.Id == searchToken.UserId);
@@ -162,7 +162,7 @@ public class TokenService : ITokenService
             throw new Exception("user này không tồn tại");
         }
         searchToken.IsRevoked = true;
-        searchToken.RevokedAt = DateTime.UtcNow;
+        searchToken.RevokedAt = DateTime.Now;
         var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
         var newAccessToken = GenerateAccessToken(user, roles);
         var newRefreshTokenValue = Guid.NewGuid().ToString();
@@ -171,7 +171,7 @@ public class TokenService : ITokenService
             UserId = user.Id,
             TokenHash = newRefreshTokenValue,
             ExpiresAt = searchToken.ExpiresAt,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now,
             DeviceInfo = searchToken.DeviceInfo,
             IpAddress = searchToken.IpAddress
         };
@@ -192,7 +192,7 @@ public class TokenService : ITokenService
         {
             AccessToken = newAccessToken,
             RefreshToken = newRefreshTokenValue,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpiryMinutes),
+            ExpiresAt = DateTime.Now.AddMinutes(_jwtOptions.ExpiryMinutes),
         };
     }
 }

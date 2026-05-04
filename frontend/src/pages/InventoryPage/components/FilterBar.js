@@ -1,4 +1,4 @@
-import { FaSearch, FaHistory } from "react-icons/fa";
+import { FaSearch, FaHistory, FaFileImport, FaFileExport } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
 import styles from "../InventoryPage.module.scss";
 import SearchFilter from "../../../components/SearchFilter";
@@ -16,6 +16,8 @@ function FilterBar({
   categories = [],
   onSearch,
   onOpenHistoryAll,
+  onOpenImport,
+  onOpenExport,
 }) {
   const handleReset = () => {
     setSearch("");
@@ -62,6 +64,13 @@ function FilterBar({
 
       <button className={cx("btnFilter", "reset")} onClick={handleReset}>
         <GrPowerReset />
+      </button>
+      <button className={cx("btnFilter", "import")} onClick={onOpenImport}>
+        <FaFileImport /> Nhập kho
+      </button>
+
+      <button className={cx("btnFilter", "export")} onClick={onOpenExport}>
+        <FaFileExport /> Xuất kho
       </button>
 
       <button className={cx("btnFilter", "reset")} onClick={onOpenHistoryAll}>

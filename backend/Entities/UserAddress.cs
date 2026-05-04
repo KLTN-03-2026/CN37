@@ -9,7 +9,7 @@ public class UserAddress
     public string? Ward { get; set; }
     public string? Street { get; set; }
     public bool IsDefault { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     // Navigation property
     public User? User { get; set; }
     public ICollection<Order> Orders { get; set; } = new List<Order>();

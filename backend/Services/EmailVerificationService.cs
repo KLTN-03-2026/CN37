@@ -18,9 +18,9 @@ public class EmailVerificationService : IEmailVerificationService
         {
             UserId = user.Id,
             Token = token,
-            ExpiresAt = DateTime.UtcNow.AddHours(24),
+            ExpiresAt = DateTime.Now.AddHours(24),
             IsUsed = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
         await _context.EmailVerificationTokens.AddAsync(verificationToken);
         await _context.SaveChangesAsync();
@@ -36,7 +36,7 @@ public class EmailVerificationService : IEmailVerificationService
         {
             throw new Exception("Token is required.");
         }
-        var tokens = _context.EmailVerificationTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.UtcNow).ToList();
+        var tokens = _context.EmailVerificationTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.Now).ToList();
         var matchingToken = tokens.FirstOrDefault(x => BCrypt.Net.BCrypt.Verify(token, x.Token));
         if (matchingToken == null)
         {
@@ -48,7 +48,7 @@ public class EmailVerificationService : IEmailVerificationService
             throw new Exception("User not found.");
         }
         user.EmailVerified = true;
-        user.EmailVerifiedAt = DateTime.UtcNow;
+        user.EmailVerifiedAt = DateTime.Now;
         matchingToken.IsUsed = true;
         await _context.SaveChangesAsync();
     }
@@ -61,9 +61,9 @@ public class EmailVerificationService : IEmailVerificationService
         {
             UserId = user.Id,
             TokenHash = tokenHash,
-            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            ExpiresAt = DateTime.Now.AddHours(1),
             IsUsed = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
         await _context.ResetPasswordTokens.AddAsync(resetToken);
         await _context.SaveChangesAsync();

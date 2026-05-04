@@ -21,8 +21,8 @@ public class UserService : IUserService
             Email = request.Email.Trim().ToLowerInvariant(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password ?? Guid.NewGuid().ToString("N").Substring(0, 12)),
             IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
         };
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
@@ -32,8 +32,8 @@ public class UserService : IUserService
             UserId = user.Id,
             FullName = request.FullName,
             Phone = request.Phone,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
         };
         _context.UserProfiles.Add(profile);
         await _context.SaveChangesAsync();
@@ -49,17 +49,17 @@ public class UserService : IUserService
         if (user == null) throw new Exception("User not found");
 
         if (request.IsActive.HasValue) user.IsActive = request.IsActive.Value;
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.Now;
 
         if (user.Profile == null)
         {
-            user.Profile = new UserProfile { UserId = user.Id, CreatedAt = DateTime.UtcNow };
+            user.Profile = new UserProfile { UserId = user.Id, CreatedAt = DateTime.Now };
             _context.UserProfiles.Add(user.Profile);
         }
 
         user.Profile.FullName = request.FullName ?? user.Profile.FullName;
         user.Profile.Phone = request.Phone ?? user.Profile.Phone;
-        user.Profile.UpdatedAt = DateTime.UtcNow;
+        user.Profile.UpdatedAt = DateTime.Now;
 
         await _context.SaveChangesAsync();
         await _audit.LogAsync(adminId, user.Id, "UpdateUser", $"Updated user {user.Email}", ip);
@@ -137,12 +137,12 @@ public class UserService : IUserService
         var user = await _context.Users.Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
         if (user == null) throw new KeyNotFoundException("User not found");
         user.IsActive = !lockAccount;
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.Now;
 
         if (lockAccount)
         {
             var tokens = user.RefreshTokens.Where(t => !t.IsRevoked).ToList();
-            foreach (var t in tokens) { t.IsRevoked = true; t.RevokedAt = DateTime.UtcNow; }
+            foreach (var t in tokens) { t.IsRevoked = true; t.RevokedAt = DateTime.Now; }
         }
 
         await _context.SaveChangesAsync();
@@ -161,9 +161,9 @@ public class UserService : IUserService
         {
             UserId = userId,
             TokenHash = tokenHash,
-            ExpiresAt = DateTime.UtcNow.AddHours(2),
+            ExpiresAt = DateTime.Now.AddHours(2),
             IsUsed = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
         _context.ResetPasswordTokens.Add(prt);
         await _context.SaveChangesAsync();
@@ -175,7 +175,7 @@ public class UserService : IUserService
 
     public async Task ResetPasswordUsingTokenAsync(string token, string newPassword)
     {
-        var tokens = await _context.ResetPasswordTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.UtcNow).ToListAsync();
+        var tokens = await _context.ResetPasswordTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.Now).ToListAsync();
         var matched = tokens.FirstOrDefault(t => BCrypt.Net.BCrypt.Verify(token, t.TokenHash));
         if (matched == null) throw new Exception("Invalid or expired token");
 
@@ -260,10 +260,10 @@ public class UserService : IUserService
         if (user == null) throw new KeyNotFoundException("User not found");
         user.IsDeleted = true;
         user.IsActive = false;
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.Now;
 
         var tokens = await _context.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync();
-        foreach (var t in tokens) { t.IsRevoked = true; t.RevokedAt = DateTime.UtcNow; }
+        foreach (var t in tokens) { t.IsRevoked = true; t.RevokedAt = DateTime.Now; }
 
         await _context.SaveChangesAsync();
         await _audit.LogAsync(adminId, userId, "SoftDeleteUser", null, ip);

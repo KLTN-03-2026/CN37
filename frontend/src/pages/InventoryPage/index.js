@@ -5,6 +5,8 @@ import StockTable from "./components/StockTable";
 import StockModal from "./components/StockModal";
 import FilterBar from "./components/FilterBar";
 import HistoryAllModal from "./components/HistoryModal";
+import ImportExportModal from "./components/ImportExportModal";
+
 import { getProductInventory } from "../../api/InventoryApi";
 import { getCategories } from "../../api/CategoryApi";
 
@@ -19,6 +21,7 @@ function InventoryPage() {
   const [modalType, setModalType] = useState(null); // import / export
   const [search, setSearch] = useState("");
   const [showHistoryAll, setShowHistoryAll] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState([]);
 
   const fetchCategories = async () => {
     const res = await getCategories();
@@ -34,7 +37,6 @@ function InventoryPage() {
     const res = await getProductInventory({ search, category, status });
     setData(res);
   };
-
 
   const handleAction = (product, type) => {
     setSelectedProduct(product);
@@ -60,17 +62,47 @@ function InventoryPage() {
           categories={categories}
           onSearch={fetchData}
           onOpenHistoryAll={() => setShowHistoryAll(true)}
+          onOpenImport={() => {
+            if (selectedProducts.length === 0) {
+              alert("Chưa chọn sản phẩm");
+              return;
+            }
+            setModalType("IMPORT");
+          }}
+          onOpenExport={() => {
+            if (selectedProducts.length === 0) {
+              alert("Chưa chọn sản phẩm");
+              return;
+            }
+            setModalType("EXPORT");
+          }}
         />
       </div>
       <div className={cx("data")}>
-        <StockTable data={filteredData} onAction={handleAction} />
-  
+        <StockTable
+          data={filteredData}
+          onAction={handleAction}
+          selected={selectedProducts}
+          setSelected={setSelectedProducts}
+        />
+{/* 
         {modalType && (
           <StockModal
             product={selectedProduct}
             type={modalType}
             onClose={() => setModalType(null)}
             onSuccess={fetchData}
+          />
+        )} */}
+        {modalType && (
+          <ImportExportModal
+            type={modalType}
+            products={selectedProducts}
+            onClose={() => setModalType(null)}
+            onSuccess={() => {
+              fetchData();
+              setSelectedProducts([]);
+            }}
           />
         )}
         {showHistoryAll && (

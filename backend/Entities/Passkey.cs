@@ -9,5 +9,5 @@ public class Passkey
     public string PublicKey { get; set; } = null!;
     public uint SignCount { get; set; }
     public string? DeviceName { get; set; }
-    public DateTime CreateAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreateAt { get; set; } = DateTime.Now;
 }

@@ -6,8 +6,8 @@ public class User
     public bool IsActive { get; set;} = true;
     public bool EmailVerified { get; set;} = false;
     public DateTime? EmailVerifiedAt { get; set;}
-    public DateTime CreatedAt { get; set;} = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set;} = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set;} = DateTime.Now;
+    public DateTime UpdatedAt { get; set;} = DateTime.Now;
     public bool IsDeleted { get; set;} = false;
     public UserProfile? Profile { get; set; }
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();

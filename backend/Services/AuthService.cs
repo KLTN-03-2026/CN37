@@ -38,8 +38,8 @@ public class AuthService : IAuthService
         {
             Email = request.Email,
             PasswordHash = _passwordService.HashPassword(request.Password),
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
         };
         await _userRepo.AddUserAsync(user);
         await _userRepo.SaveChangesAsync();
@@ -63,7 +63,7 @@ public class AuthService : IAuthService
         return new AuthResponse
         {
             AccessToken = tokenService,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(1)
+            ExpiresAt = DateTime.Now.AddMinutes(1)
         };
     }
 
@@ -90,7 +90,7 @@ public class AuthService : IAuthService
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(1)
+            ExpiresAt = DateTime.Now.AddMinutes(1)
         };
     }
 
@@ -104,7 +104,7 @@ public class AuthService : IAuthService
 
         }
         searchToken.IsRevoked = true;
-        searchToken.RevokedAt = DateTime.UtcNow;
+        searchToken.RevokedAt = DateTime.Now;
         await _userRepo.SaveChangesAsync();
     }
 
@@ -157,9 +157,9 @@ public class AuthService : IAuthService
                         PasswordHash = null, // Đăng nhập MXH không cần pass
                         IsActive = true,
                         EmailVerified = true,
-                        EmailVerifiedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
+                        EmailVerifiedAt = DateTime.Now,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
                     };
                     await _context.Users.AddAsync(user);
                     await _context.SaveChangesAsync(); // Lưu để có User.Id
@@ -222,7 +222,7 @@ public class AuthService : IAuthService
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(1) // Nên để thời gian dài hơn 1 phút để test
+            ExpiresAt = DateTime.Now.AddMinutes(1) // Nên để thời gian dài hơn 1 phút để test
         };
     }
 
@@ -243,7 +243,7 @@ public class AuthService : IAuthService
         {
             throw new Exception("Token is required.");
         }
-        var tokens = _context.ResetPasswordTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.UtcNow).ToList();
+        var tokens = _context.ResetPasswordTokens.Where(t => !t.IsUsed && t.ExpiresAt > DateTime.Now).ToList();
         var matchingToken = tokens.FirstOrDefault(x => BCrypt.Net.BCrypt.Verify(request.Token, x.TokenHash));
         if (matchingToken == null)
         {

@@ -15,7 +15,7 @@ public class AuditService : IAuditService
             Action = action,
             Details = details,
             IpAddress = ip,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
         _db.AuditLogs.Add(a);
         await _db.SaveChangesAsync();

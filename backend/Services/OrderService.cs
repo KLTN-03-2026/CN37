@@ -370,6 +370,7 @@ public class OrderService : IOrderService
         //     Status = newStatus,
         //     Note = $"Changed from {current} to {newStatus}"
         // });
+        order.UpdateAt = DateTime.Now;
 
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();

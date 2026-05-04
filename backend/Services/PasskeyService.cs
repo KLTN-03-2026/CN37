@@ -83,7 +83,7 @@ public class PasskeyService : IPasskeyService
             SignCount = result.SignCount,
 
             DeviceName = "Unknown device",
-            CreateAt = DateTime.UtcNow
+            CreateAt = DateTime.Now
         };
 
         _db.Passkeys.Add(passkey);
@@ -169,7 +169,7 @@ public class PasskeyService : IPasskeyService
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(1)
+            ExpiresAt = DateTime.Now.AddMinutes(1)
         };
     }
 }

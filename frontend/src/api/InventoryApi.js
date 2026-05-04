@@ -1,7 +1,7 @@
 import api from "./AxiosClient";
 import { getProduct } from "./ProductApi";
 
-export const getProductInventory = async (search, category, status ) => {
+export const getProductInventory = async (search, category, status) => {
   const res = await api.get("/inventory", {
     params: {
       search,
@@ -22,4 +22,20 @@ export const exportInventory = async (productId, quantity) => {
 
 export const getAllInventoryLogs = () => {
   return api.get("/inventory/logs");
+};
+
+// 👉 Lấy danh sách phiếu nhập
+export const getImports = (search) => {
+  return api.get("/api/imports", {
+    params: { search },
+  });
+};
+
+// 👉 Tạo phiếu nhập
+export const createImport = (data) => {
+  return api.post(`/inventory-documents/imports`, data);
+};
+
+export const createExport = (data) => {
+  return api.post("/inventory-documents/exports", data);
 };

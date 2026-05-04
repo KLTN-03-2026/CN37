@@ -25,6 +25,7 @@ import OrderSuccess from "../pages/OrderSuccess";
 import MyOrderPage from "../pages/MyOrderPage";
 import AdminOrderPage from "../pages/AdminOrderPage";
 import AdminUserPage from "../pages/AdminUserPage";
+import AdminImportPage from "../pages/AdminImportPage";
 
 import { ProtectedRoute } from "./Routes";
 
@@ -162,7 +163,8 @@ const routes = [
     layout: AdminLayout,
     ProtectedRoute: true,
     requiredRole: "Admin"
-  }
+  },
+
 
 ];
 

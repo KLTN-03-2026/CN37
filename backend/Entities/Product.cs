@@ -13,15 +13,15 @@ public class Product
     public string Name { get; set; }
 
     [MaxLength(255)]
-    public string Slug { get; set; }
+    public string? Slug { get; set; }
 
     [Required]
     public long CategoryId { get; set; }
 
     [MaxLength(100)]
-    public string Brand { get; set; }
+    public string? Brand { get; set; }
 
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     [Required]
     [Column(TypeName = "decimal(12,2)")]
@@ -31,7 +31,7 @@ public class Product
     public decimal? DiscountPrice { get; set; }
 
     [MaxLength(500)]
-    public string Thumbnail { get; set; }
+    public string? Thumbnail { get; set; }
 
     [Column(TypeName = "decimal(3,2)")]
     public decimal RatingAvg { get; set; } = 0;

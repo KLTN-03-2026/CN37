@@ -9,12 +9,24 @@ function getStatus(qty) {
   return "ok";
 }
 
-function StockTable({ data, onAction }) {
+function StockTable({ data, onAction, selected, setSelected }) {
   return (
     <div className={cx("tableWrapper")}>
       <table className={cx("table")}>
         <thead>
           <tr>
+            <th>
+              <input
+                type="checkbox"
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelected(data); // chọn tất cả
+                  } else {
+                    setSelected([]);
+                  }
+                }}
+              />
+            </th>
             <th>STT</th>
             <th>Tên sản phẩm</th>
             <th>Tồn kho</th>
@@ -28,6 +40,19 @@ function StockTable({ data, onAction }) {
 
             return (
               <tr key={item.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selected.some((p) => p.id === item.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelected([...selected, item]);
+                      } else {
+                        setSelected(selected.filter((p) => p.id !== item.id));
+                      }
+                    }}
+                  />
+                </td>
                 <td>{index + 1}</td>
                 <td>{item.name}</td>
                 <td>{item.quantity || 0}</td>
