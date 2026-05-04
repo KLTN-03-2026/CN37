@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import classNames from "classnames/bind";
 import styles from "./AdminUserPage.module.scss";
+import Pagination from "../../helper/Pagination";
 
 // 👉 import API mới
 import {
@@ -36,19 +37,35 @@ const AdminUserPage = () => {
     userId: null,
     isDisableAction: false,
   });
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 10,
+    totalPages: 0,
+    totalItems: 0,
+  });
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const res = await getUserList(filters);
+
       const role = await getAllRole();
       setRoles(role.data);
-      setUsers(res.data?.items || []);
+
+      const data = res.data;
+
+      setUsers(data.items || []);
+
+      setPagination({
+        currentPage: data.page,
+        pageSize: data.pageSize,
+        totalPages: data.totalPages,
+        totalItems: data.total,
+      });
     } catch (err) {
       console.error("Fetch users error:", err);
     } finally {
       setLoading(false);
-      setIsOpen(false);
     }
   };
 
@@ -58,6 +75,13 @@ const AdminUserPage = () => {
       userId: id,
       isDisableAction: isDisable,
     });
+  };
+
+  const handleChangePage = (page) => {
+    setFilters((prev) => ({
+      ...prev,
+      page: page,
+    }));
   };
 
   const handleView = async (id) => {
@@ -145,6 +169,11 @@ const AdminUserPage = () => {
         onToggleOn={(id) => openConfirm(id, false)}
         onToggleOff={(id) => openConfirm(id, true)}
         onRefresh={fetchUsers}
+      />
+      <Pagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        onPageChange={handleChangePage}
       />
       {isPreviewOpen && (
         <UserPreviewModal

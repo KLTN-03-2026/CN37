@@ -75,6 +75,8 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<IInventoryDocumentService, InventoryDocumentService>();
 
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection("JwtOptions"));

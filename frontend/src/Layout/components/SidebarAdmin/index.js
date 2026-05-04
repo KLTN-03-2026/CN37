@@ -11,6 +11,7 @@ import {
   FaUsers,
   FaChartBar,
   FaBars,
+  FaTruck,
 } from "react-icons/fa";
 
 const cx = classNames.bind(styles);
@@ -24,6 +25,7 @@ export default function SidebarAdmin() {
     { name: "Quản lý đơn hàng", path: "/admin/orders", icon: <FaShoppingCart /> },
     { name: "Quản lý kho", path: "/admin/inventory", icon: <FaWarehouse /> },
     { name: "Quản lý khách hàng", path: "/admin/customers", icon: <FaUsers /> },
+    { name: "Quản lý nhà cung cấp", path: "/admin/suppliers", icon: <FaTruck /> },
     { name: "Báo cáo thống kê", path: "/admin/reports", icon: <FaChartBar /> },
     { name: "Về trang chủ", path: "/", icon: <RiLogoutBoxLine /> },
   ];

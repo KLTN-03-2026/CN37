@@ -33,9 +33,9 @@ export const getImports = (search) => {
 
 // 👉 Tạo phiếu nhập
 export const createImport = (data) => {
-  return api.post(`/inventory-documents/imports`, data);
+  return api.post(`/inventory-documents/import`, data);
 };
 
 export const createExport = (data) => {
-  return api.post("/inventory-documents/exports", data);
+  return api.post("/inventory-documents/export", data);
 };

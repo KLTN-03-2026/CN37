@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import styles from "./InventoryPage.module.scss";
 import classNames from "classnames/bind";
 import StockTable from "./components/StockTable";
-import StockModal from "./components/StockModal";
 import FilterBar from "./components/FilterBar";
 import HistoryAllModal from "./components/HistoryModal";
 import ImportExportModal from "./components/ImportExportModal";
@@ -18,7 +17,7 @@ function InventoryPage() {
   const [categories, setCategories] = useState([]);
   const [data, setData] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [modalType, setModalType] = useState(null); // import / export
+  const [modalType, setModalType] = useState(null); // IMPORT / EXPORT
   const [search, setSearch] = useState("");
   const [showHistoryAll, setShowHistoryAll] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState([]);
@@ -34,7 +33,7 @@ function InventoryPage() {
   }, []);
 
   const fetchData = async () => {
-    const res = await getProductInventory({ search, category, status });
+    const res = await getProductInventory(search, category, status);
     setData(res);
   };
 
@@ -85,15 +84,7 @@ function InventoryPage() {
           selected={selectedProducts}
           setSelected={setSelectedProducts}
         />
-{/* 
-        {modalType && (
-          <StockModal
-            product={selectedProduct}
-            type={modalType}
-            onClose={() => setModalType(null)}
-            onSuccess={fetchData}
-          />
-        )} */}
+
         {modalType && (
           <ImportExportModal
             type={modalType}

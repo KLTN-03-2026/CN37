@@ -58,7 +58,8 @@ public class InventoryDocumentService : IInventoryDocumentService
                     QuantityAfter = inventory.Quantity,
                     ReferenceId = $"IMP_{import.Id}",
                     Note = "Nhập kho",
-                    CreateAt = DateTime.Now
+                    CreateAt = DateTime.Now,
+                    Price = importItem.CostPrice,
                 });
 
                 total += item.Quantity * item.CostPrice;
@@ -139,7 +140,8 @@ public class InventoryDocumentService : IInventoryDocumentService
                     QuantityAfter = inventory.Quantity,
                     ReferenceId = $"EXP_{export.Id}",
                     Note = "Xuất kho",
-                    CreateAt = DateTime.Now
+                    CreateAt = DateTime.Now,
+                    Price = exportItem.CostPrice,
                 });
 
                 total += item.Quantity * item.Price;

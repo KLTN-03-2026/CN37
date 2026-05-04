@@ -10,7 +10,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "../../api/CategoryApi";
-import { notifyError, notifySuccess } from "../../components/Nofitication";
+import { notifyError, notifySuccess, notifyWarning } from "../../components/Nofitication";
 import ConfirmDialog from "../../components/ConfirmDialog";
 
 const cx = classNames.bind(styles);
@@ -110,7 +110,7 @@ function AdminCategoryPage() {
         {/* FORM */}
         <div className={cx("left")}>
           {loading ? (
-            <div className={cx("loading")}>Đang tải dữ liệu...</div>
+            <div className={cx("loadingMessage")}>Đang tải dữ liệu...</div>
           ) : (
             <CategoryTable
               data={parentCategories}
@@ -133,7 +133,7 @@ function AdminCategoryPage() {
         {/* TABLE */}
         <div className={cx("right")}>
           {loading ? (
-            <div className={cx("loading")}>Đang tải dữ liệu...</div>
+            <div className={cx("loadingMessage")}>Đang tải dữ liệu...</div>
           ) : (
             <CategoryTable
               data={childCategories}
@@ -143,7 +143,7 @@ function AdminCategoryPage() {
               onSearch={fetch}
               onAdd={() => {
                 if (!selectedParent) {
-                  alert("Vui lòng chọn danh mục cha trước");
+                  notifyWarning("Vui lòng chọn danh mục cha trước");
                   return;
                 }
                 setCreateType("child");

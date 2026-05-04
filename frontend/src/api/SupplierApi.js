@@ -2,7 +2,7 @@ import api from "./AxiosClient";
 
 // 👉 Lấy danh sách nhà cung cấp
 export const getSuppliers = (params) => {
-  return api.get(`/admin/suppliers`, { params });
+  return api.get("/admin/suppliers", { params });
 };
 
 // 👉 Lấy chi tiết 1 supplier

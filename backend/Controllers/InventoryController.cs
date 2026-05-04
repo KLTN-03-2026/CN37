@@ -125,11 +125,16 @@ public class InventoryController : ControllerBase
                 x.Id,
                 x.ProductId,
                 ProductName = x.Product.Name,
+                x.ReferenceId,
                 x.ChangeType,
                 x.QuantityChanged,
                 x.QuantityBefore,
                 x.QuantityAfter,
-                x.CreateAt
+                x.CreateAt,
+                x.Price,
+                x.Total,
+                x.Note,
+                
             })
             .ToListAsync();
 

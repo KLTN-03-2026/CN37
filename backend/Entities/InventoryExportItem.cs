@@ -11,7 +11,7 @@ public class InventoryExportItem
     public int Quantity { get; set; }
 
     public decimal Price { get; set; } = 0;
-    public decimal? CostPrice { get; set; }
+    public decimal CostPrice { get; set; }
 
     public decimal TotalAmount => Quantity * Price;
 }

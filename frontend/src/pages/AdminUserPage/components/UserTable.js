@@ -16,7 +16,7 @@ const UserTable = ({ users, loading, onView, onToggleOff, onToggleOn, onRefresh 
   const handleToggleOff = (id) => {
     onToggleOff(id);
   };
-  if (loading) return <p>Đang tải...</p>;
+  if (loading) return <p className={cx("loadingMessage")}>Đang tải...</p>;
 
   return (
     <div className={cx("tableWrapper")}>

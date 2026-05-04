@@ -37,13 +37,6 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.loadingMessage {
-  padding: 40px;
-  text-align: center;
-  color: #999;
-  font-size: 14px;
-}
-
 /* ===== CELL ===== */
 .table td {
   padding: 14px 12px;
@@ -189,5 +182,12 @@
   &:hover {
     background: #f0f0f0;
   }
+}
+
+.loadingMessage {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
 }
 

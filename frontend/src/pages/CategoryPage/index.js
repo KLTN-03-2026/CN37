@@ -34,7 +34,7 @@ export default function CategoryPage() {
     );
   }, [slug]);
 
-  if (loading) return <div className={cx("loading")}>Đang tải sản phẩm...</div>;
+  if (loading) return <div className={cx("loadingMessage")}>Đang tải sản phẩm...</div>;
 
   return (
     <div className={cx("container")}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import styles from "./CategoryModal.module.scss";
 import classNames from "classnames/bind";
+import { notifyError, notifyWarning } from "../../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -46,7 +47,7 @@ function CategoryModal({ open, onClose, onSubmit, editing, parentId }) {
   // ===== SUBMIT =====
   const handleSubmit = () => {
     if (!form.name) {
-      alert("Tên danh mục không được để trống");
+      notifyError("Tên danh mục không được để trống");
       return;
     }
 

@@ -31,7 +31,7 @@ function ProductTable({ data, loading, onEdit, onView, onToggleOn, onToggleOff }
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan="6">Loading...</td>
+              <td colSpan="6" className={cx("loadingMessage")}>Đang tải...</td>
             </tr>
           ) : (
             data.map((p, i) => (

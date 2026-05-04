@@ -1,0 +1,397 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 12px 12px 0 0;
+  gap: 10px;
+}
+
+.printBtn {
+  padding: 8px 16px;
+  background: #00223e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 34, 62, 0.3);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 34, 62, 0.4);
+    background: #004a7a;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.closeBtn {
+  background: none;
+  border: 2px solid #e0e0e0;
+  font-size: 20px;
+  cursor: pointer;
+  color: #333;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #e0e0e0;
+    border-color: #999;
+  }
+}
+
+.invoicePaper {
+  padding: 40px;
+  background: white;
+  font-family: "Arial", sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Company Header */
+.companyHeader {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #00223e;
+
+  h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #00223e;
+  }
+
+  p {
+    margin: 4px 0;
+    font-size: 12px;
+  }
+}
+
+.companyName {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #00223e;
+}
+
+.companyAddress,
+.companyPhone {
+  color: #666;
+}
+
+/* Invoice Title */
+.invoiceTitle {
+  text-align: center;
+  margin: 20px 0;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 1px;
+  }
+}
+
+/* Invoice Info */
+.invoiceInfo {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.infoRow {
+  display: flex;
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.infoCol {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+
+  label {
+    font-weight: 600;
+    min-width: 100px;
+    color: #333;
+  }
+
+  span {
+    flex: 1;
+    color: #666;
+  }
+}
+
+/* Items Table */
+.itemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  border: 1px solid #333;
+
+  thead {
+    background: #f0f0f0;
+    border: 1px solid #333;
+  }
+
+  th {
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid #333;
+    font-size: 12px;
+    color: #333;
+
+    &.right {
+      text-align: right;
+    }
+  }
+
+  td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    font-size: 12px;
+    color: #333;
+
+    &.right {
+      text-align: right;
+      font-weight: 500;
+    }
+  }
+
+  tbody tr {
+    &:nth-child(odd) {
+      background: #fafafa;
+    }
+
+    &.emptyRow {
+      height: 30px;
+
+      td {
+        border: 1px solid #ddd;
+      }
+    }
+  }
+}
+
+/* Total Section */
+.totalSection {
+  margin: 20px 0;
+  text-align: right;
+  padding-right: 20px;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 80px;
+  margin-bottom: 8px;
+  padding: 8px 0;
+
+  &.highlight {
+    font-weight: 700;
+    font-size: 14px;
+    border-top: 2px solid #333;
+    border-bottom: 2px solid #333;
+    padding: 10px 0;
+    margin-top: 10px;
+  }
+}
+
+.label {
+  min-width: 120px;
+  text-align: left;
+}
+
+.amount {
+  min-width: 120px;
+  text-align: right;
+  font-family: "Courier New", monospace;
+}
+
+/* Signatures */
+.signaturesSection {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.signatureBox {
+  text-align: center;
+  flex: 1;
+
+  p {
+    margin: 0;
+    font-size: 11px;
+  }
+}
+
+.signatureLabel {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.signatureNote {
+  color: #666;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+.signatureSpace {
+  height: 40px;
+  border-bottom: 1px solid #333;
+  margin-top: 10px;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+  font-size: 11px;
+  color: #999;
+
+  p {
+    margin: 0;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .controls {
+    display: none;
+  }
+
+  .modal {
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .invoicePaper {
+    padding: 0;
+    max-width: 100%;
+  }
+
+  body {
+    background: white;
+  }
+
+  .modalOverlay {
+    background: white;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .invoicePaper {
+    padding: 15px;
+    font-size: 11px;
+  }
+
+  .companyHeader h1 {
+    font-size: 14px;
+  }
+
+  .invoiceTitle h2 {
+    font-size: 16px;
+  }
+
+  .infoRow {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .signaturesSection {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .signatureBox {
+    margin-top: 20px;
+  }
+
+  .itemsTable {
+    font-size: 10px;
+
+    th,
+    td {
+      padding: 5px 4px;
+    }
+  }
+
+  .totalRow {
+    gap: 40px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

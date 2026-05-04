@@ -94,14 +94,23 @@ select {
   align-items: center;
   justify-content: center;
 
-  padding: 10px;
+  gap: 6px; // thêm cho icon + text đẹp hơn
+  padding: 10px 14px;
+
   border-radius: 10px;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
 
+  font-size: 14px;
+  font-weight: 500;
+
   svg {
     font-size: 16px;
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 
@@ -113,9 +122,25 @@ select {
   &:hover {
     background: #4caf38;
   }
+}
 
-  &:active {
-    transform: scale(0.95);
+/* Import button */
+.import {
+  background: #2196f3;
+  color: white;
+
+  &:hover {
+    background: #1976d2;
+  }
+}
+
+/* Export button */
+.export {
+  background: #ff9800;
+  color: white;
+
+  &:hover {
+    background: #f57c00;
   }
 }
 

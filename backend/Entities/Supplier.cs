@@ -18,7 +18,7 @@ public class Supplier
     public string? BankName { get; set; }
     public string? BankAccount { get; set; }
 
-    public string Status { get; set; } = "ACTIVE";
+    public bool IsActive { get; set;} = true;
     public string? Note { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;

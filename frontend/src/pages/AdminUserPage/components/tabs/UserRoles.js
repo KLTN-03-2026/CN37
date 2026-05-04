@@ -3,6 +3,7 @@ import classNames from "classnames/bind";
 import styles from "./UserRoles.module.scss";
 
 import ConfirmDialog from "../../../../components/ConfirmDialog";
+import { notifyError } from "../../../../components/Nofitication";
 
 const cx = classNames.bind(styles);
 
@@ -16,7 +17,7 @@ export default function UserRoles({ user, roles, onAssign, onRemove }) {
     if (!selectedRole) return;
 
     if (user.roles?.some((r) => r.id === Number(selectedRole))) {
-      return alert("User đã có role này");
+      return notifyError("User đã có role này");
     }
 
     onAssign(Number(selectedRole));
