@@ -1,3 +1,4 @@
+import { getRolesFromToken } from "../helper/JwtDecodeHelper";
 import { Navigate } from "react-router-dom";
 
 const PublicRoutes = ({ children }) => {
@@ -15,4 +16,14 @@ const ProtectedRoute = ({ children }) => {
   }
   return children;
 };
-export { PublicRoutes, ProtectedRoute };
+
+const AdminRoute = ({ children }) => {
+  const role = getRolesFromToken();
+
+  if (!role.includes("ADMIN")) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+
+export { PublicRoutes, ProtectedRoute, AdminRoute };

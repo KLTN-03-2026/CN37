@@ -6,7 +6,7 @@ let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
@@ -24,7 +24,7 @@ api.interceptors.request.use(
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // response interceptor
@@ -38,7 +38,7 @@ api.interceptors.response.use(
         // Nếu đang refresh → push request vào queue
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(token => {
+        }).then((token) => {
           originalRequest.headers.Authorization = `Bearer ${token}`;
           return api(originalRequest);
         });
@@ -51,7 +51,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem("refreshToken");
         const res = await axios.post(
           "http://localhost:5235/api/session/refresh-token",
-          { refreshToken }
+          { refreshToken },
         );
 
         const newAccessToken = res.data.accessToken;
@@ -59,6 +59,7 @@ api.interceptors.response.use(
 
         localStorage.setItem("accessToken", newAccessToken);
         localStorage.setItem("refreshToken", newRefreshToken);
+        window.dispatchEvent(new Event("auth-change"));
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         processQueue(null, newAccessToken);
@@ -69,6 +70,10 @@ api.interceptors.response.use(
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("roles");
+        window.dispatchEvent(new Event("auth-change"));
+        if (window.subiz) {
+          window.subiz("resetCustomer");
+        }
 
         window.location.href = "/login";
         return Promise.reject(err);
@@ -78,7 +83,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

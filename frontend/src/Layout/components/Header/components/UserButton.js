@@ -28,12 +28,19 @@ function UserButton() {
     await logOut(localStorage.getItem("refreshToken"));
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    window.dispatchEvent(new Event("auth-change"));
+    if (window.subiz) {
+      window.subiz("resetCustomer");
+    }
     navigate("/login");
   };
 
   return (
     <div className={cx("userBtnWrapper")}>
-      <button className={login ? cx("userBtn") : cx("categoryBtn")} onClick={handleClick}>
+      <button
+        className={login ? cx("userBtn") : cx("categoryBtn")}
+        onClick={handleClick}
+      >
         <FaUser />
         {login ? "" : "Đăng nhập"}
       </button>
@@ -57,10 +64,7 @@ function UserButton() {
           >
             Cài đặt tài khoản
           </div>
-          <div
-            className={cx("dropdownItem")}
-            onClick={handleLogout}
-          >
+          <div className={cx("dropdownItem")} onClick={handleLogout}>
             Đăng xuất
           </div>
         </div>

@@ -132,6 +132,7 @@ public class ProductController : ControllerBase
         return Ok(new { product, related });
     }
 
+    [Authorize(Roles = "ADMIN")]
     [HttpGet("admin")]
     public async Task<IActionResult> GetAll([FromQuery] ProductFilterRequest filter)
     {
@@ -139,6 +140,7 @@ public class ProductController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "ADMIN")]
     [HttpGet("admin/{id}")]
     public async Task<IActionResult> Get(long id)
     {
@@ -150,6 +152,7 @@ public class ProductController : ControllerBase
         return Ok(new { product });
     }
 
+    [Authorize(Roles = "ADMIN")]
     [HttpPost("admin")]
     public async Task<IActionResult> Create([FromForm] ProductCreateUpdateDto dto)
     {
@@ -158,6 +161,7 @@ public class ProductController : ControllerBase
         return Ok(new { id });
     }
 
+    [Authorize(Roles = "ADMIN")]
     [HttpPut("admin/{id}")]
     public async Task<IActionResult> Update(long id, [FromForm] ProductCreateUpdateDto dto)
     {
@@ -168,6 +172,7 @@ public class ProductController : ControllerBase
         return Ok();
     }
 
+    [Authorize(Roles = "ADMIN")]
     [HttpPatch("admin/toggle-active/{id}")]
     public async Task<IActionResult> ToggleActive(long id)
     {

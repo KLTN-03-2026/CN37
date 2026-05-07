@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-[Authorize]
+[Authorize(Roles="ADMIN")]
 [ApiController]
 [Route("api/inventory-documents")]
 public class InventoryDocumentController : ControllerBase

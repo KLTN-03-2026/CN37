@@ -10,13 +10,13 @@ function BannerSlider({ category }) {
   if (!category) return null;
 
   const bannerMap = {
-    "dien-thoai": [
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_664c316a1f.png",
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_c397b8ff8b.png"
+    "may-lanh-dieu-hoa": [
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_4_b3fdbf6944.png",
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_8_6eed6e4d52.png"
     ],
-    "laptop": [
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_9d9274aaa9.png",
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_8ba5e09313.png"
+    "quat-dien-thiet-bi-lam-mat": [
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_955dbf1e2b.png",
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_1_d483e56c6f.png"
     ],
     "may-tinh-bang": [
       "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_86a0117ffc.png",
@@ -33,20 +33,18 @@ function BannerSlider({ category }) {
       "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_4d5b86f1bd.png",
       "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_ef2e2b4bf1.png"
     ],
-    "am-thanh": [
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_91668c239b.png",
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_ce23c156b3.png"
-
+    "may-loc-nuoc": [
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_a2193a61be.png"
     ],
-    "dong-ho": [
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_21626eafa7.png",
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_1_30caa8c72d.png"
+    "may-giat": [
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_2_51154273f3.png"
     ],
     "camera": [
       "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_aa134f0f74.png"
     ],
-    "tivi": [
-      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_046e4876fe.png"
+    "tivi-thiet-bi-hien-thi": [
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_7_23608ae0d3.png",
+      "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_1440x242_3_e771fac71f.png"
     ],
     "linh-kien-pc": [
       "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/H1_msi_0f56c11f0f.png",

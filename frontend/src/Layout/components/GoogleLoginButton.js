@@ -3,6 +3,7 @@ import api from "../../api/AxiosClient";
 import { deviceInfo } from "../../helper/GetDeviceInfoHelper";
 import { notifyError, notifySuccess } from "../../components/Nofitication";
 import { useNavigate } from "react-router-dom";
+import { getUserFromToken } from "../../helper/JwtDecodeHelper";
 
 function GoogleLoginButton() {
   const navigate = useNavigate();
@@ -15,6 +16,16 @@ function GoogleLoginButton() {
 
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
+      window.dispatchEvent(new Event("auth-change"));
+      const user = getUserFromToken();
+      if (window.subiz) {
+        window.subiz("resetCustomer");
+
+        window.subiz("setCustomer", {
+          id: user.userId,
+          email: user.email,
+        });
+      }
 
       notifySuccess("Đăng nhập thành công");
 

@@ -8,6 +8,7 @@ function Home() {
         <div className={cx("homecontainer")}>
             <CategoryBanner />
         </div>
+        
     );
 }
 

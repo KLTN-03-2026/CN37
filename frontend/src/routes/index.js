@@ -28,6 +28,7 @@ import AdminUserPage from "../pages/AdminUserPage";
 import SupplierPage from "../pages/SupplierPage";
 
 import { ProtectedRoute } from "./Routes";
+import { AdminRoute } from "./Routes";
 
 const routes = [
   {
@@ -127,49 +128,49 @@ const routes = [
     component: AdminPage,
     layout: AdminLayout,
     ProtectedRoute: true,
-    requiredRole: "Admin"
+    AdminRoute: true
   },
   {
     path: "/admin/inventory",
     component: InventoryPage,
     layout: AdminLayout,
     ProtectedRoute: true,
-    requiredRole: "Admin"
+    AdminRoute: true
   },
   {
     path: "/admin/category",
     component: AdminCategoryPage,
     layout: AdminLayout,
     ProtectedRoute: true,
-    requiredRole: "Admin"
+    AdminRoute: true
   },
   {
     path: "/admin/products",
     component: AdminProductPage,
     layout: AdminLayout,
     ProtectedRoute: true,
-    requiredRole: "Admin"
+    AdminRoute: true
   },
   {
     path: "/admin/orders",
     component: AdminOrderPage,
     layout: AdminLayout,
     ProtectedRoute: true,
-    requiredRole: "Admin"
+    AdminRoute: true
   },
   {
     path: "/admin/customers",
     component: AdminUserPage,
     layout: AdminLayout,
     ProtectedRoute: true,
-    requiredRole: "Admin"
+    AdminRoute: true
   },
   {
     path: "/admin/suppliers",
     component: SupplierPage,
     layout: AdminLayout,
     ProtectedRoute: true,
-    requiredRole: "Admin"
+    AdminRoute: true
   },
 
 

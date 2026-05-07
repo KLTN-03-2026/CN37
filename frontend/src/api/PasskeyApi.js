@@ -45,6 +45,7 @@ export const loginPasskey = async () => {
     // 🔥 LƯU TOKEN
     localStorage.setItem("accessToken", data.accessToken);
     localStorage.setItem("refreshToken", data.refreshToken);
+    window.dispatchEvent(new Event("auth-change"));
     return data;
 
   } catch (err) {

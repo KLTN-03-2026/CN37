@@ -1,13 +1,21 @@
 import classNames from "classnames/bind";
-import styles from "..//ProductDetail.module.scss";
+import DOMPurify from "dompurify";
+import styles from "../ProductDetail.module.scss";
+import ExpandableContent from "../../../helper/ExpandableContent";
 
 const cx = classNames.bind(styles);
 
 export default function ProductDescription({ description }) {
   return (
     <div className={cx("description")}>
-      <h2>Description</h2>
-      <p>{description}</p>
+      <ExpandableContent maxHeight={300}>
+        <div
+          className={cx("content")}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(description),
+          }}
+        />
+      </ExpandableContent>
     </div>
   );
 }

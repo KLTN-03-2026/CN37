@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize]
+[Authorize(Roles="ADMIN")]
 [ApiController]
 [Route("api/admin/suppliers")]
 public class SupplierController : ControllerBase

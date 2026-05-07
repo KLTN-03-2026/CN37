@@ -9,18 +9,24 @@ import AdminButton from "./components/AdminButton";
 import { getRolesFromToken } from "../../../helper/JwtDecodeHelper";
 import { useEffect, useState } from "react";
 
-
 const cx = classNames.bind(styles);
 
 function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const roles = getRolesFromToken();
-    console.log(roles);
-    if (roles.includes("ADMIN")) {
-      setIsAdmin(true);
-    }
+    const checkAuth = () => {
+      const roles = getRolesFromToken();
+      setIsAdmin(roles.includes("ADMIN"));
+    };
+
+    checkAuth();
+
+    window.addEventListener("auth-change", checkAuth);
+
+    return () => {
+      window.removeEventListener("auth-change", checkAuth);
+    };
   }, []);
 
   return (
@@ -34,9 +40,7 @@ function Header() {
           <UserButton />
           <CartButton />
           {/* 🔥 NÚT ADMIN */}
-          {isAdmin && (
-            <AdminButton />
-          )}
+          {isAdmin && <AdminButton />}
         </div>
       </div>
     </header>

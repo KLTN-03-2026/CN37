@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Breadcrumb from "./components/Breadcrumb";
 import ProductGallery from "./components/ProductGallery";
 import ProductInfo from "./components/ProductInfo";
@@ -7,6 +6,8 @@ import ProductDescription from "./components/ProductDescription";
 import ProductSpecifications from "./components/ProductSpecifications";
 import RelatedProducts from "./components/RelatedProducts";
 import Reviews from "./components/Reviews";
+import ContentPost from "./components/ContentPost";
+
 import classNames from "classnames/bind";
 import styles from "./ProductDetail.module.scss";
 import { getProduct } from "../../api/ProductApi";
@@ -46,13 +47,16 @@ export default function ProductDetail() {
     <div className={cx("page")}>
       <Breadcrumb product={product}/>
       <div className={cx("top-section")}>
-        <ProductGallery images={product.images} />
+        <div>
+          <ProductGallery images={product.images} />
+          <ProductSpecifications specs={product.specifications} />
+        </div>
         <ProductInfo product={product} />
       </div>
       <hr></hr>
       <div className={cx("top-section")}>
-        <ProductDescription description={product.description} />
-        <ProductSpecifications specs={product.specifications} />
+        <div className={cx("left")}><ProductDescription description={product.description} /></div>
+        <div className={cx("right")}><ContentPost /></div>
       </div>
       <hr></hr>
       <RelatedProducts related={related || []} />

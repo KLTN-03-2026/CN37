@@ -57,22 +57,22 @@ public class CategoryController : ControllerBase
         return Ok(category);
     }
 
-    [Authorize]
+    [Authorize(Roles="ADMIN")]
     [HttpGet("admin")]
     public async Task<IActionResult> GetAll()
         => Ok(await _service.GetAllAsync());
 
-    [Authorize]
+    [Authorize(Roles="ADMIN")]
     [HttpPost("admin")]
     public async Task<IActionResult> Create(CreateCategoryRequest req)
         => Ok(await _service.CreateAsync(req));
 
-    [Authorize]
+    [Authorize(Roles="ADMIN")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, UpdateCategoryRequest req)
         => Ok(await _service.UpdateAsync(id, req));
 
-    [Authorize]
+    [Authorize(Roles="ADMIN")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {

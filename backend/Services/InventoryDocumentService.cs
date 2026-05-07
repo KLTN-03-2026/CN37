@@ -12,153 +12,168 @@ public class InventoryDocumentService : IInventoryDocumentService
     // ================= IMPORT =================
     public async Task<long> CreateImportAsync(CreateImportRequest request, long userId)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        var hasTransaction = _context.Database.CurrentTransaction != null;
 
-        try
+        if (!hasTransaction)
         {
-            var import = new InventoryImport
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                Code = GenerateCode("IMP"),
-                SupplierId = request.SupplierId,
-                Note = request.Note,
-                CreatedBy = userId,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.InventoryImports.Add(import);
-            await _context.SaveChangesAsync();
-
-            decimal total = 0;
-
-            foreach (var item in request.Items)
-            {
-                var importItem = new InventoryImportItem
-                {
-                    ImportId = import.Id,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    CostPrice = item.CostPrice
-                };
-
-                _context.InventoryImportItems.Add(importItem);
-
-                // update inventory
-                var inventory = await GetOrCreateInventory(item.ProductId);
-
-                int before = inventory.Quantity;
-                inventory.Quantity += item.Quantity;
-
-                // log
-                _context.InventoryLogs.Add(new InventoryLog
-                {
-                    ProductId = item.ProductId,
-                    ChangeType = "IMPORT",
-                    QuantityChanged = item.Quantity,
-                    QuantityBefore = before,
-                    QuantityAfter = inventory.Quantity,
-                    ReferenceId = $"IMP_{import.Id}",
-                    Note = "Nhập kho",
-                    CreateAt = DateTime.Now,
-                    Price = importItem.CostPrice,
-                });
-
-                total += item.Quantity * item.CostPrice;
+                var result = await CreateImportInternal(request, userId);
+                await transaction.CommitAsync();
+                return result;
             }
-
-            import.TotalAmount = total;
-
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            return import.Id;
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+
+        return await CreateImportInternal(request, userId);
     }
-
     // ================= EXPORT =================
     public async Task<long> CreateExportAsync(CreateExportRequest request, long userId)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        var hasTransaction = _context.Database.CurrentTransaction != null;
 
-        try
+        if (!hasTransaction)
         {
-            var export = new InventoryExport
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                Code = GenerateCode("EXP"),
-                ExportType = request.ExportType,
-                ReferenceId = request.ReferenceId,
-                Note = request.Note,
-                CreatedBy = userId,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.InventoryExports.Add(export);
-            await _context.SaveChangesAsync();
-
-            decimal total = 0;
-
-            foreach (var item in request.Items)
-            {
-                var inventory = await GetOrCreateInventory(item.ProductId);
-
-                if (inventory.Quantity < item.Quantity)
-                    throw new Exception($"Không đủ hàng cho product {item.ProductId}");
-
-                int before = inventory.Quantity;
-                inventory.Quantity -= item.Quantity;
-
-                // lấy cost gần nhất (simple version)
-                var lastImport = await _context.InventoryImportItems
-                    .Where(x => x.ProductId == item.ProductId)
-                    .OrderByDescending(x => x.Id)
-                    .FirstOrDefaultAsync();
-
-                decimal cost = lastImport?.CostPrice ?? 0;
-
-                var exportItem = new InventoryExportItem
-                {
-                    ExportId = export.Id,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    Price = item.Price,
-                    CostPrice = cost
-                };
-
-                _context.InventoryExportItems.Add(exportItem);
-
-                // log
-                _context.InventoryLogs.Add(new InventoryLog
-                {
-                    ProductId = item.ProductId,
-                    ChangeType = "EXPORT",
-                    QuantityChanged = -item.Quantity,
-                    QuantityBefore = before,
-                    QuantityAfter = inventory.Quantity,
-                    ReferenceId = $"EXP_{export.Id}",
-                    Note = "Xuất kho",
-                    CreateAt = DateTime.Now,
-                    Price = exportItem.CostPrice,
-                });
-
-                total += item.Quantity * item.Price;
+                var result = await CreateExportInternal(request, userId);
+                await transaction.CommitAsync();
+                return result;
             }
-
-            export.TotalAmount = total;
-
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            return export.Id;
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
-        catch
+
+        return await CreateExportInternal(request, userId);
+    }
+
+    private async Task<long> CreateImportInternal(CreateImportRequest request, long userId)
+    {
+        var import = new InventoryImport
         {
-            await transaction.RollbackAsync();
-            throw;
+            Code = GenerateCode("IMP"),
+            SupplierId = request.SupplierId,
+            Note = request.Note,
+            CreatedBy = userId,
+            CreatedAt = DateTime.Now
+        };
+
+        _context.InventoryImports.Add(import);
+        await _context.SaveChangesAsync();
+
+        decimal total = 0;
+
+        foreach (var item in request.Items)
+        {
+            _context.InventoryImportItems.Add(new InventoryImportItem
+            {
+                ImportId = import.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                CostPrice = item.CostPrice
+            });
+
+            var inventory = await GetOrCreateInventory(item.ProductId);
+
+            int before = inventory.Quantity;
+            inventory.Quantity += item.Quantity;
+
+            _context.InventoryLogs.Add(new InventoryLog
+            {
+                ProductId = item.ProductId,
+                ChangeType = "IMPORT",
+                QuantityChanged = item.Quantity,
+                QuantityBefore = before,
+                QuantityAfter = inventory.Quantity,
+                ReferenceId = $"IMP_{import.Id}",
+                Note = request.Note,
+                CreateAt = DateTime.Now,
+                Price = item.CostPrice,
+            });
+
+            total += item.Quantity * item.CostPrice;
         }
+
+        import.TotalAmount = total;
+
+        await _context.SaveChangesAsync();
+
+        return import.Id;
+    }
+
+    private async Task<long> CreateExportInternal(CreateExportRequest request, long userId)
+    {
+        var export = new InventoryExport
+        {
+            Code = GenerateCode("EXP"),
+            ExportType = request.ExportType,
+            ReferenceId = request.ReferenceId,
+            Note = request.Note,
+            CreatedBy = userId,
+            CreatedAt = DateTime.Now
+        };
+
+        _context.InventoryExports.Add(export);
+        await _context.SaveChangesAsync();
+
+        decimal total = 0;
+
+        foreach (var item in request.Items)
+        {
+            var inventory = await GetOrCreateInventory(item.ProductId);
+
+            if (inventory.Quantity < item.Quantity)
+                throw new Exception($"Không đủ hàng cho product {item.ProductId}");
+
+            int before = inventory.Quantity;
+            inventory.Quantity -= item.Quantity;
+
+            var lastImport = await _context.InventoryImportItems
+                .Where(x => x.ProductId == item.ProductId)
+                .OrderByDescending(x => x.Id)
+                .FirstOrDefaultAsync();
+
+            decimal cost = lastImport?.CostPrice ?? 0;
+
+            _context.InventoryExportItems.Add(new InventoryExportItem
+            {
+                ExportId = export.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                Price = item.Price,
+                CostPrice = cost
+            });
+
+            _context.InventoryLogs.Add(new InventoryLog
+            {
+                ProductId = item.ProductId,
+                ChangeType = "EXPORT",
+                QuantityChanged = -item.Quantity,
+                QuantityBefore = before,
+                QuantityAfter = inventory.Quantity,
+                ReferenceId = $"EXP_{export.Id}",
+                Note = request.Note,
+                CreateAt = DateTime.Now,
+                Price = cost
+            });
+
+            total += item.Quantity * item.Price;
+        }
+
+        export.TotalAmount = total;
+
+        await _context.SaveChangesAsync();
+
+        return export.Id;
     }
 
     // ================= PRIVATE =================
@@ -176,7 +191,6 @@ public class InventoryDocumentService : IInventoryDocumentService
             };
 
             _context.Inventories.Add(inventory);
-            await _context.SaveChangesAsync();
         }
 
         return inventory;

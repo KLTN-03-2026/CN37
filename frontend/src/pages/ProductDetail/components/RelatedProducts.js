@@ -17,7 +17,7 @@ export default function RelatedProducts({ related = [] }) {
 
   return (
     <div className={cx("related")}>
-      <h2>Related Products</h2>
+      <h2>Sản phẩm liên quan</h2>
       <div className={cx("list")}>
         {related.map((p) => (
           <div

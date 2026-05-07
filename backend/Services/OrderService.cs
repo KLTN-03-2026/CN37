@@ -5,11 +5,12 @@ public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly AppDbContext _context;
-
-    public OrderService(IOrderRepository orderRepository, AppDbContext context)
+    private readonly IInventoryDocumentService _service;
+    public OrderService(IOrderRepository orderRepository, AppDbContext context, IInventoryDocumentService service)
     {
         _orderRepository = orderRepository;
         _context = context;
+        _service = service;
     }
 
     public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
@@ -43,16 +44,6 @@ public class OrderService : IOrderService
                 var inventory = inventories.FirstOrDefault(i => i.ProductId == item.ProductId);
                 if (inventory == null || inventory.Quantity < item.Quantity)
                     throw new Exception($"Sản phẩm này hiện tại không đủ hàng");
-
-                inventory.Quantity -= item.Quantity;
-
-                _context.InventoryLogs.Add(new InventoryLog
-                {
-                    ProductId = item.ProductId,
-                    ChangeType = "order",
-                    QuantityChanged = -item.Quantity,
-                    Note = "Order pending"
-                });
 
                 var price = product.Price;
                 totalAmount += price * item.Quantity;
@@ -113,6 +104,19 @@ public class OrderService : IOrderService
             }
 
             await _context.SaveChangesAsync();
+            var exportRequest = new CreateExportRequest
+            {
+                ExportType = "ORDER",
+                ReferenceId = order.Id,
+                Note = $"Xuất kho cho đơn hàng #{order.Id}",
+                Items = request.Items.Select(i => new ExportItemDto
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    Price = products.FirstOrDefault(p => p.Id == i.ProductId)?.Price ?? 0
+                }).ToList()
+            };
+            await _service.CreateExportAsync(exportRequest, request.UserId);
             await transaction.CommitAsync();
 
             return order;
@@ -173,19 +177,46 @@ public class OrderService : IOrderService
 
     public async Task CancelOrderAsync(long userId, long orderId)
     {
-        var order = await _context.Orders
-            .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+        using var transaction = await _context.Database.BeginTransactionAsync();
 
-        if (order == null)
-            throw new Exception("Đơn hàng không tồn tại");
+        try
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
 
-        if (order.Status != OrderStatus.Pending)
-            throw new Exception("Chỉ có thể hủy đơn hàng đang chờ xác nhận");
+            if (order == null)
+                throw new Exception("Đơn hàng không tồn tại");
 
-        order.Status = OrderStatus.Cancelled;
-        order.UpdateAt = DateTime.Now;
+            if (order.Status != OrderStatus.Pending)
+                throw new Exception("Chỉ có thể hủy đơn hàng đang chờ xác nhận");
 
-        await _context.SaveChangesAsync();
+            order.Status = OrderStatus.Cancelled;
+            order.UpdateAt = DateTime.Now;
+
+            // 👉 tạo import trả kho
+            var importRequest = new CreateImportRequest
+            {
+                SupplierId = null,
+                Note = $"Nhập lại kho từ đơn hàng #{order.Id}",
+                Items = order.OrderItems.Select(i => new ImportItemDto
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    CostPrice = i.Price // hoặc lấy cost chuẩn
+                }).ToList()
+            };
+
+            await _service.CreateImportAsync(importRequest, userId);
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task UpdateAddressAsync(long userId, long orderId, long newAddressId)

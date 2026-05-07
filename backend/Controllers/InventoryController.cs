@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+[Authorize(Roles="ADMIN")]
 [ApiController]
 [Route("api/inventory")]
 public class InventoryController : ControllerBase

@@ -1,0 +1,85 @@
+.expand-wrapper {
+  position: relative;
+}
+
+.expand-content {
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+  position: relative;
+  min-height: 390px;
+}
+
+/* gradient mờ phía dưới */
+.expand-content::after {
+  content: "";
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, #fff);
+  pointer-events: none;
+}
+
+.expand-content.expanded::after {
+  display: none;
+}
+
+/* 🔥 BUTTON VIÊN THUỐC */
+.expand-btn {
+  margin-top: 12px;
+  padding: 10px 22px;
+
+  border-radius: 999px; // 👉 viên thuốc
+  border: 1.5px solid #59c241;
+
+  background: #fff;
+  color: #59c241;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  display: block;
+  align-items: center;
+  justify-content: center;
+  margin: 12px auto 0;
+
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 🔥 hover effect */
+.expand-btn:hover {
+  background: #59c241;
+  color: #fff;
+  transform: translateY(-2px); // nổi lên nhẹ
+  box-shadow: 0 6px 18px rgba(89, 194, 65, 0.3);
+}
+
+/* 🔥 click effect */
+.expand-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ✨ ripple effect */
+.expand-btn::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transform: scale(0);
+  transition: all 0.4s ease;
+}
+
+.expand-btn:active::after {
+  width: 200px;
+  height: 200px;
+  transform: scale(1);
+  opacity: 0;
+}

@@ -14,6 +14,7 @@ import { notifySuccess, notifyError } from "../../components/Nofitication";
 import GoogleLoginButton from "../../Layout/components/GoogleLoginButton";
 import { loginPasskey } from "../../api/PasskeyApi";
 import { deviceInfo } from "../../helper/GetDeviceInfoHelper";
+import { getUserFromToken } from "../../helper/JwtDecodeHelper";
 
 const cx = classNames.bind(styles);
 
@@ -33,6 +34,16 @@ function LogIn() {
         notifySuccess("Đăng nhập thành công");
         localStorage.setItem("accessToken", res.data.accessToken);
         localStorage.setItem("refreshToken", res.data.refreshToken);
+        window.dispatchEvent(new Event("auth-change"));
+        const user = getUserFromToken();
+        if (window.subiz) {
+          window.subiz("resetCustomer");
+
+          window.subiz("setCustomer", {
+            id: user.userId,
+            email: user.email,
+          });
+        }
         navigate("/");
       }
     } catch (error) {
@@ -49,6 +60,15 @@ function LogIn() {
       const res = await loginPasskey();
       if (res) {
         notifySuccess("Đăng nhập bằng Passkey thành công");
+        const user = getUserFromToken();
+        if (window.subiz) {
+          window.subiz("resetCustomer");
+
+          window.subiz("setCustomer", {
+            id: user.userId,
+            email: user.email,
+          });
+        }
         navigate("/"); // redirect luôn
       }
     } catch (error) {

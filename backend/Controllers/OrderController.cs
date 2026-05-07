@@ -60,12 +60,12 @@ public class OrderController : ControllerBase
         return Ok();
     }
 
-    [Authorize]
     private long GetUserId()
     {
         return long.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
     }
 
+    [Authorize(Roles = "ADMIN")]
     [HttpGet("admin")]
     public async Task<IActionResult> GetOrders([FromQuery] AdminOrderQueryRequest query)
     {
@@ -79,7 +79,7 @@ public class OrderController : ControllerBase
         return Ok(await _orderService.GetOrderDetailAsync(id));
     }
 
-    [Authorize]
+    [Authorize(Roles="ADMIN")]
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateStatusOrderRequest request)
     {
@@ -87,7 +87,7 @@ public class OrderController : ControllerBase
         return Ok();
     }
 
-    [Authorize]
+    [Authorize(Roles="ADMIN")]
     [HttpGet("admin/count")]
     public async Task<IActionResult> AdminCountOrders()
     {
