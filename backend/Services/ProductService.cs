@@ -44,12 +44,56 @@ public class ProductService : IProductService
                 query = query.Where(p => !p.IsActive);
         }
 
-        // SORT
-        query = query.OrderByDescending(p => p.CreateAt);
+        // FILTER PRICE
+        if (filter.MinPrice.HasValue)
+        {
+            var minPrice = filter.MinPrice.Value;
+            query = query.Where(p => p.DiscountPrice.HasValue
+                ? p.DiscountPrice >= minPrice
+                : p.Price >= minPrice);
+        }
 
-        Console.WriteLine($"search: {filter.Search}");
-        Console.WriteLine($"parent: {filter.ParentCategoryId}");
-        Console.WriteLine($"child: {filter.CategoryId}");
+        if (filter.MaxPrice.HasValue)
+        {
+            var maxPrice = filter.MaxPrice.Value;
+            query = query.Where(p => p.DiscountPrice.HasValue
+                ? p.DiscountPrice <= maxPrice
+                : p.Price <= maxPrice);
+        }
+
+        // FILTER BRANDS
+        if (!string.IsNullOrEmpty(filter.Brands))
+        {
+            var brandList = filter.Brands.Split(",").Select(b => b.Trim()).ToList();
+            query = query.Where(p => brandList.Contains(p.Brand));
+        }
+
+        // SORT
+        if (!string.IsNullOrEmpty(filter.Sort))
+        {
+            switch (filter.Sort)
+            {
+                case "price-asc":
+                    query = query.OrderBy(p => p.DiscountPrice ?? p.Price);
+                    break;
+                case "price-desc":
+                    query = query.OrderByDescending(p => p.DiscountPrice ?? p.Price);
+                    break;
+                case "discount":
+                    query = query.OrderByDescending(p =>
+                        p.DiscountPrice.HasValue
+                            ? (p.Price - p.DiscountPrice.Value) * 100 / p.Price
+                            : 0);
+                    break;
+                default:
+                    query = query.OrderByDescending(p => p.CreateAt);
+                    break;
+            }
+        }
+        else
+        {
+            query = query.OrderByDescending(p => p.CreateAt);
+        }
 
         return await query.Select(p => new ProductDto
         {

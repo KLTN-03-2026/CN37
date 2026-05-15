@@ -39,50 +39,121 @@
 }
 
 /* Category Menu */
-.menu {
-  background: #fff;
-  border-radius: 12px;
-  padding: 10px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+.categorySidebar {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
-.item {
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: 0.2s;
-  font-size: 14px;
-  color: #333;
+.menuList {
+  padding: 10px 0;
+}
+
+.menuItem {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
 
   display: flex;
   align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 18px;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
 
   &:hover {
-    background: #f5f5f5;
-    color: #e11b1e;
+    background: rgba(89, 194, 65, 0.08);
   }
 }
+
+.active {
+  background: rgba(89, 194, 65, 0.1);
+
+  .label,
+  .icon,
+  .arrow {
+    color: #59c241;
+  }
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
 .icon {
-  margin-right: 12px;
-  font-size: 20px;
+  width: 18px;
+  height: 18px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  color: #4b5563;
+  font-size: 17px;
+
+  flex-shrink: 0;
+
+  transition: all 0.25s ease;
 }
 
-/* Mobile: scroll ngang */
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  transition: all 0.25s ease;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.count {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.arrow {
+  font-size: 12px;
+  color: #9ca3af;
+
+  transition: all 0.25s ease;
+}
+
+.arrowActive {
+  transform: translateX(4px);
+  color: #59c241;
+}
+
+/* Responsive */
+
 @media (max-width: 768px) {
-  .menu {
-    display: flex;
-    overflow-x: auto;
-    padding: 8px;
+  .menuItem {
+    padding: 12px 16px;
   }
 
-  .item {
-    white-space: nowrap;
-    padding: 8px 12px;
-    background: #f5f5f5;
-    margin-right: 8px;
-    border-radius: 8px;
+  .label {
+    font-size: 13px;
+  }
+
+  .count {
+    display: none;
   }
 }
 

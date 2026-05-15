@@ -1,6 +1,7 @@
 import classNames from "classnames/bind";
-import styles from "../CategoryPage.module.scss";
+import styles from "./ProductGrid.module.scss";
 import { useNavigate } from "react-router-dom";
+import { FaHeart, FaShoppingCart, FaStar } from "react-icons/fa";
 
 const cx = classNames.bind(styles);
 
@@ -8,60 +9,69 @@ export default function ProductGrid({ products }) {
   const navigate = useNavigate();
   const handleProduct = (slug) => {
     console.log(slug);
-    navigate(`/product/${slug}`)
-  }
-  {products.map((p) => (
-    console.log(p)
-  ))}
-
+    navigate(`/product/${slug}`);
+  };
   return (
     <div className={cx("grid")}>
-      {products.map((p) => (
-        <div key={p.id} className={cx("card")} onClick={() => handleProduct(p.slug)}>         
+      {products.slice(0, 8).map((p) => (
+        <div
+          key={p.id}
+          className={cx("card")}
+          onClick={() => handleProduct(p.slug)}
+        >
+          {/* DISCOUNT */}
+          {p.discountPercent && (
+            <div className={cx("badge")}>-{p.discountPercent}%</div>
+          )}
+
+          {/* WISHLIST */}
+          <button
+            className={cx("wishlist")}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FaHeart />
+          </button>
+
           {/* IMAGE */}
-          <div className={cx("image-wrap")}>
+          <div className={cx("imageWrap")}>
             <img src={p.thumbnail} alt={p.name} />
-
-            {p.discountPercent && (
-              <span className={cx("badge")}>
-                -{p.discountPercent}%
-              </span>
-            )}
           </div>
 
-          {/* NAME */}
-          <h4 className={cx("name")}>{p.name}</h4>
+          {/* INFO */}
+          <div className={cx("content")}>
 
-          {/* SPEC */}
-          <div className={cx("specs")}>
-            {p.specs?.slice(0, 3).map((s, i) => (
-              <span key={i}>{s}</span>
-            ))}
-          </div>
+            <h3 className={cx("name")}>{p.name}</h3>
 
-          {/* PRICE */}
-          <div className={cx("price-box")}>
-            <span className={cx("price-sale")}>
-                {p.discountPrice?.toLocaleString() || p.price.toLocaleString()}đ
+            {/* RATING */}
+            <div className={cx("rating")}>
+              <FaStar />
+
+              <span>{p.rating || 5}</span>
+
+              <small>({p.reviewCount || 0})</small>
+            </div>
+
+            {/* PRICE */}
+            <div className={cx("priceBox")}>
+              <span className={cx("salePrice")}>
+                {(p.discountPrice || p.price)?.toLocaleString()}đ
               </span>
 
               {p.discountPrice && (
-                <span className={cx("price-original")}>
-                  {p.price.toLocaleString()}đ
+                <span className={cx("originPrice")}>
+                  {p.price?.toLocaleString()}đ
                 </span>
               )}
-          </div>
+            </div>
 
-          {/* RATING */}
-          <div className={cx("rating")}>
-            ⭐ {p.rating}
-            <span>({p.reviewCount})</span>
-          </div>
-
-          {/* BUTTON */}
-          <div className={cx("actions")}>
-            <button className={cx("buy-now")}>Mua ngay</button>
-            <button className={cx("add-cart")}>🛒</button>
+            {/* BUTTON */}
+            <button
+              className={cx("addCart")}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <FaShoppingCart />
+              Thêm vào giỏ
+            </button>
           </div>
         </div>
       ))}

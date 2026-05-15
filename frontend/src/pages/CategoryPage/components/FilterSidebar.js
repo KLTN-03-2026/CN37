@@ -2,65 +2,174 @@ import classNames from "classnames/bind";
 import styles from "../CategoryPage.module.scss";
 import { useState } from "react";
 
+
 const cx = classNames.bind(styles);
 
-function FilterSidebar({ products = [], onFilterChange }) {
-  const [selectedBrand, setSelectedBrand] = useState("");
-  const [selectedPrice, setSelectedPrice] = useState("");
+const MIN_PRICE = 0;
+const MAX_PRICE = 60000000;
+const HARD_MAX = 60000000;
+const SAFE_MAX = 59999999;
 
-  // loại bỏ trùng lặp, trả về mảng string
-  const brands = Array.from(new Set(products.map((p) => p.brand)));
 
-  const handleBrandChange = (brand) => {
-    setSelectedBrand(brand);
-    onFilterChange?.({ brand, price: selectedPrice });
+function FilterSidebar({ products = [], allProducts = [], onFilterChange }) {
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [priceRange, setPriceRange] = useState([MIN_PRICE, MAX_PRICE]);
+  const formatPrice = (value) => {
+    if (!value && value !== 0) return "";
+    return Number(value).toLocaleString("vi-VN");
+  };
+  const [minInput, setMinInput] = useState(formatPrice(MIN_PRICE));
+  const [maxInput, setMaxInput] = useState(formatPrice(MAX_PRICE));
+  const [sort, setSort] = useState("discount");
+
+  const brands = Array.from(new Set(allProducts.map((p) => p.brand)));
+
+  const clampPrice = (value, min, max) => {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
   };
 
-  const handlePriceChange = (price) => {
-    setSelectedPrice(price);
-    onFilterChange?.({ brand: selectedBrand, price });
+  const updateFilter = (newState) => {
+    onFilterChange?.({
+      brands: newState.brands ?? selectedBrands,
+      priceRange: newState.priceRange ?? priceRange,
+      sort: newState.sort ?? sort,
+    });
+  };
+
+  // ===== Brand =====
+  const toggleBrand = (brand) => {
+    let updated;
+
+    if (selectedBrands.includes(brand)) {
+      updated = selectedBrands.filter((b) => b !== brand);
+    } else {
+      updated = [...selectedBrands, brand];
+    }
+
+    setSelectedBrands(updated);
+    updateFilter({ brands: updated });
+  };
+
+  // ===== Sort =====
+  const handleSort = (e) => {
+    setSort(e.target.value);
+    updateFilter({ sort: e.target.value });
+  };
+
+  // ===== Reset =====
+  const resetFilters = () => {
+    const reset = {
+      brands: [],
+      priceRange: [MIN_PRICE, MAX_PRICE],
+      sort: "discount",
+    };
+
+    setSelectedBrands([]);
+    setPriceRange(reset.priceRange);
+    setSort(reset.sort);
+    setMinInput(MIN_PRICE);
+    setMaxInput(MAX_PRICE.toLocaleString())
+
+    updateFilter(reset);
   };
 
   return (
     <div className={cx("filter")}>
-      <h3>Bộ lọc</h3>
+      <h3 className={cx("title")}>Bộ lọc sản phẩm</h3>
 
-      {/* Filter Brand */}
-      <div>
-        <p>Thương hiệu</p>
-        {brands.map((c) => (
-          <button
-            key={c}
-            value={c}
-            onClick={() => handleBrandChange(c)}
-            className={cx("tab-item", { active: selectedBrand === c })}
-          >
-            {c}
-          </button>
-        ))}
+      {/* SORT */}
+      <div className={cx("section")}>
+        <p className={cx("label")}>Sắp xếp</p>
+        <select className={cx("select")} value={sort} onChange={handleSort}>
+          <option value="price-asc">Giá thấp → cao</option>
+          <option value="price-desc">Giá cao → thấp</option>
+          <option value="discount">Giảm giá nhiều nhất</option>
+        </select>
       </div>
-      {/* Filter Price */}
-      <div>
-        <p>Giá</p>
-        <label>
+
+      {/* PRICE */}
+      <div className={cx("section")}>
+        <p className={cx("label")}>Khoảng giá</p>
+
+        <div className={cx("priceInputs")}>
           <input
-            type="radio"
-            name="price"
-            checked={selectedPrice === "under5"}
-            onChange={() => handlePriceChange("under5")}
+            value={minInput}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/\D/g, "");
+              if (raw === "") {
+                setMinInput("");
+                return;
+              }
+
+              let value = Number(raw);
+
+              value = clampPrice(value, MIN_PRICE, priceRange[1] - 500000);
+
+              const newRange = [value, priceRange[1]];
+
+              setPriceRange(newRange);
+              setMinInput(formatPrice(value));
+
+              updateFilter({
+                priceRange: newRange,
+              });
+            }}
           />
-          Dưới 5 triệu
-        </label>
-        <label>
+
+          <span className={cx("dash")}>đến</span>
+
           <input
-            type="radio"
-            name="price"
-            checked={selectedPrice === "5to10"}
-            onChange={() => handlePriceChange("5to10")}
+            className={cx("priceInput")}
+            value={maxInput}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/\D/g, "");
+              if (raw === "") {
+                setMaxInput("");
+                return;
+              }
+
+              let value = Number(raw);
+
+              // 🔥 CHẶN VƯỢT 60TR
+              value = clampPrice(value, priceRange[0] + 500000, SAFE_MAX);
+
+              const newRange = [priceRange[0], value];
+
+              setPriceRange(newRange);
+              setMaxInput(formatPrice(value));
+
+              updateFilter({
+                priceRange: newRange,
+              });
+            }}
           />
-          5 - 10 triệu
-        </label>
+        </div>
       </div>
+
+      {/* BRAND */}
+      <div className={cx("section")}>
+        <p className={cx("label")}>Thương hiệu</p>
+
+        <div className={cx("brandList")}>
+          {brands.map((brand) => (
+            <label key={brand} className={cx("brandItem")}>
+              <input
+                type="checkbox"
+                checked={selectedBrands.includes(brand)}
+                onChange={() => toggleBrand(brand)}
+              />
+              <span>{brand}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* RESET */}
+      <button className={cx("resetBtn")} onClick={resetFilters}>
+        Đặt lại bộ lọc
+      </button>
     </div>
   );
 }

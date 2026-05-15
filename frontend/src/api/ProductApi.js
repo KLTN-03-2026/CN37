@@ -10,6 +10,10 @@ export const searchProducts = async (keyword) => {
   return res.data;
 };
 
+export const getProductfilter = (params) =>{
+  return api.get(`/products?${params}`)
+}
+
 export const getProducts = (slug) =>{
   return api.get(`/products?categorySlug=${slug}`)
 }

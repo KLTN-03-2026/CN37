@@ -8,7 +8,7 @@ import SubCategoryTabs from "./components/SubCategoryTabs";
 import BannerSlider from "./components/BannerSlider";
 import FilterSidebar from "./components/FilterSidebar";
 import ProductGrid from "./components/ProductGrid";
-import { getProducts } from "../../api/ProductApi";
+import { getProductfilter, getProducts } from "../../api/ProductApi";
 import { getCategory } from "../../api/CategoryApi";
 
 import classNames from "classnames/bind";
@@ -20,6 +20,7 @@ export default function CategoryPage() {
 
   const [category, setCategory] = useState(null);
   const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,14 +28,30 @@ export default function CategoryPage() {
 
     Promise.all([getCategory(slug), getProducts(slug)]).then(
       ([catRes, productRes]) => {
-        setCategory(catRes.data); // ✅ Axios dùng .data
-        setProducts(productRes.data); // ✅
+        setCategory(catRes.data); 
+        setProducts(productRes.data);
+        setAllProducts(productRes.data);
         setLoading(false);
       },
     );
   }, [slug]);
 
-  if (loading) return <div className={cx("loadingMessage")}>Đang tải sản phẩm...</div>;
+  const handleFilter = async ({ brands, priceRange, sort }) => {
+    const params = new URLSearchParams({
+      categorySlug: slug,
+      minPrice: priceRange?.[0] ?? 0,
+      maxPrice: priceRange?.[1] ?? 99999999,
+      brands: (brands || []).join(","), // 👈 QUAN TRỌNG
+      sort: sort || "price-asc",
+    });
+
+    const res = await getProductfilter(params);
+
+    setProducts(res.data);
+  };
+
+  if (loading)
+    return <div className={cx("loadingMessage")}>Đang tải sản phẩm...</div>;
 
   return (
     <div className={cx("container")}>
@@ -47,7 +64,7 @@ export default function CategoryPage() {
       {category && <BannerSlider category={category} />}
 
       <div className={cx("main")}>
-        <FilterSidebar products={products} />
+        <FilterSidebar products={products} allProducts={allProducts} onFilterChange={handleFilter} />
         <ProductGrid products={products} />
       </div>
     </div>

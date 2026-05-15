@@ -17,7 +17,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProducts(string categorySlug)
+    public async Task<IActionResult> GetProducts(string categorySlug, [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice, [FromQuery] string? brands, [FromQuery] string? sort)
     {
         var category = await _context.Categories
             .FirstOrDefaultAsync(c => c.Slug == categorySlug);
@@ -30,27 +30,74 @@ public class ProductController : ControllerBase
             .Select(c => c.Id)
             .ToListAsync();
 
-        var products = await _context.Products
-            .Where(p => categoryIds.Contains(p.CategoryId))
+        var query = _context.Products
+            .Where(p => categoryIds.Contains(p.CategoryId) && p.IsActive)
+            .AsQueryable();
+
+        // Filter by price
+        if (minPrice.HasValue)
+        {
+            query = query.Where(p => p.DiscountPrice.HasValue
+                ? p.DiscountPrice >= minPrice
+                : p.Price >= minPrice);
+        }
+
+        if (maxPrice.HasValue)
+        {
+            query = query.Where(p => p.DiscountPrice.HasValue
+                ? p.DiscountPrice <= maxPrice
+                : p.Price <= maxPrice);
+        }
+
+        // Filter by brands
+        if (!string.IsNullOrEmpty(brands))
+        {
+            var brandList = brands.Split(",").Select(b => b.Trim()).ToList();
+            query = query.Where(p => brandList.Contains(p.Brand));
+        }
+
+        // Sort
+        if (!string.IsNullOrEmpty(sort))
+        {
+            switch (sort)
+            {
+                case "price-asc":
+                    query = query.OrderBy(p => p.DiscountPrice ?? p.Price);
+                    break;
+                case "price-desc":
+                    query = query.OrderByDescending(p => p.DiscountPrice ?? p.Price);
+                    break;
+                case "discount":
+                    query = query.OrderByDescending(p =>
+                        p.DiscountPrice.HasValue
+                            ? (p.Price - p.DiscountPrice.Value) * 100 / p.Price
+                            : 0);
+                    break;
+                default:
+                    query = query.OrderByDescending(p => p.CreateAt);
+                    break;
+            }
+        }
+        else
+        {
+            query = query.OrderByDescending(p => p.CreateAt);
+        }
+
+        var products = await query
             .Select(p => new
             {
                 p.Id,
                 p.Name,
-                p.Price, // giá gốc
-                p.DiscountPrice, // giá KM
+                p.Price,
+                p.DiscountPrice,
                 p.Thumbnail,
-
                 Rating = p.RatingAvg,
                 ReviewCount = p.RatingCount,
                 p.Brand,
                 p.Slug,
-
-                // 🔥 tính % giảm giá
                 DiscountPercent = p.DiscountPrice != null
                     ? (int)((p.Price - p.DiscountPrice) * 100 / p.Price)
                     : 0,
-
-                // 🔥 lấy specs
                 Specs = _context.productSpecifications
                     .Where(s => s.ProductId == p.Id)
                     .Select(s => s.SpecValue)
