@@ -13,3 +13,5 @@ obj/
 
 # Env
 .env
+
+backend/appsettings.Development.json
