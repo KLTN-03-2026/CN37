@@ -1,0 +1,321 @@
+// =========================
+// VARIABLES
+// =========================
+$primary-color: #59c241;
+$secondary-color: #e74c3c;
+$text-main: #333;
+$text-secondary: #666;
+$bg-light: #f8f8f8;
+$border-color: #e0e0e0;
+
+// =========================
+// CONTAINER
+// =========================
+.searchResults {
+  background: $bg-light;
+  min-height: calc(100vh - 80px);
+  padding: 0px 20px;
+  margin-top: 80px;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+// =========================
+// HEADER
+// =========================
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #eee;
+
+  .titleSection {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .icon {
+      font-size: 24px;
+      color: $primary-color;
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      color: $text-main;
+      margin: 0;
+
+      span {
+        color: $primary-color;
+      }
+    }
+  }
+
+  .count {
+    margin-top: 6px;
+    color: #888;
+    font-size: 15px;
+  }
+}
+
+// =========================
+// SORT BAR
+// =========================
+.sortBar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 12px 20px;
+  background: $bg-light;
+  border-radius: 8px;
+
+
+  .sortGroup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: $text-secondary;
+
+    .sortSelect {
+      padding: 8px 12px;
+      border: 1px solid $border-color;
+      border-radius: 6px;
+      background: white;
+      color: $text-main;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: $primary-color;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 2px rgba(89, 194, 65, 0.1);
+      }
+    }
+  }
+}
+
+// =========================
+// GRID
+// =========================
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// =========================
+// PRODUCT CARD
+// =========================
+.productLink {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+
+    .productCard {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+  }
+}
+
+
+// =========================
+// LOADING STATE
+// =========================
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 20px;
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid $border-color;
+    border-top-color: $primary-color;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  p {
+    color: $text-secondary;
+    font-size: 16px;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// =========================
+// EMPTY STATE
+// =========================
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+  background: white;
+  border-radius: 12px;
+  padding: 40px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  .emptyIcon {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-main;
+  }
+
+  p {
+    margin: 0;
+    color: $text-secondary;
+    font-size: 14px;
+  }
+}
+
+// =========================
+// RESPONSIVE
+// =========================
+@media (max-width: 768px) {
+  .searchResults {
+    padding: 20px 16px;
+    margin-top: 70px;
+  }
+
+  .header {
+    padding: 20px;
+
+    .titleSection {
+      gap: 12px;
+
+      .icon {
+        font-size: 24px;
+      }
+
+      .title {
+        font-size: 22px;
+      }
+    }
+
+    .count {
+      font-size: 14px;
+    }
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+  }
+
+  .productCard {
+    .content {
+      padding: 12px;
+
+      .name {
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+
+      .pricing {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .searchResults {
+    padding: 16px 12px;
+  }
+
+  .header {
+    padding: 16px;
+
+    .titleSection {
+      gap: 8px;
+
+      .icon {
+        font-size: 20px;
+      }
+
+      .title {
+        font-size: 18px;
+      }
+    }
+  }
+
+  .sortBar {
+    padding: 10px 12px;
+
+    .sortGroup {
+      gap: 8px;
+      font-size: 12px;
+
+      .sortSelect {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+
+  .productCard {
+    .content {
+      padding: 10px;
+
+      .name {
+        font-size: 12px;
+        margin-bottom: 6px;
+      }
+
+      .pricing {
+        font-size: 11px;
+      }
+    }
+
+    .imageWrapper .badge {
+      padding: 4px 8px;
+      font-size: 10px;
+    }
+  }
+}

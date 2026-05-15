@@ -101,10 +101,6 @@ function AddressListPage() {
       />
 
       <div className={cx("card")}>
-        {addresses.length === 0 && (
-          <div className={cx("empty")}>📭 Bạn chưa có địa chỉ nào</div>
-        )}
-
         <AddressList
           addresses={addresses}
           onEdit={handleEdit}

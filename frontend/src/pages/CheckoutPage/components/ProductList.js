@@ -22,7 +22,7 @@ export default function ProductList({ items }) {
 
             <div className={cx("productMeta")}>
               <span className={cx("productPrice")}>
-                {(item.price ?? 0).toLocaleString()} đ
+                {(item.discountPrice ?? 0).toLocaleString()} đ
               </span>
 
               <span className={cx("productQty")}>

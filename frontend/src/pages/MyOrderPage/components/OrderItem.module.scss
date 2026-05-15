@@ -99,6 +99,12 @@
   }
 }
 
+.price_review{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 .info {
   flex: 1;
 }
@@ -107,6 +113,7 @@
   font-weight: 600;
   color: #ee4d2d;
   font-size: 14px;
+  margin-bottom: 10px;
 }
 
 .footer {

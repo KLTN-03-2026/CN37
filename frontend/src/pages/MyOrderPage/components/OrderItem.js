@@ -3,7 +3,13 @@ import styles from "./OrderItem.module.scss";
 
 const cx = classNames.bind(styles);
 
-export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
+export default function OrderItem({
+  order,
+  onCancel,
+  onEditAddress,
+  onReview,
+  refresh,
+}) {
   const getStatusClass = (status) => {
     switch (status) {
       case "Chờ xác nhận":
@@ -25,8 +31,8 @@ export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
     <div className={cx("card")}>
       <div className={cx("header")}>
         <span>
-          {new Date(order.updateAt).toLocaleDateString()} • {order.items?.length}{" "}
-          sản phẩm
+          {new Date(order.updateAt).toLocaleDateString()} •{" "}
+          {order.items?.length} sản phẩm
         </span>
         <span className={cx("status", getStatusClass(order.status))}>
           <span className={cx("dot")}></span>
@@ -43,7 +49,19 @@ export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
               <p>Số lượng: {item.quantity}</p>
             </div>
 
-            <div className={cx("price")}>{item.price.toLocaleString()}đ</div>
+            <div className={cx("price_review")}>
+              <div className={cx("price")}>{item.price.toLocaleString()}đ</div>
+              {order.status === "Hoàn tất" && !item.isReview && (
+                <div className={cx("action")}>
+                  <button
+                    className={cx("btn", "btnContact")}
+                    onClick={() => onReview(item.productId, order.id)}
+                  >
+                    Đánh giá đơn hàng
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -51,14 +69,27 @@ export default function OrderItem({ order, onCancel, onEditAddress, refresh }) {
       <div className={cx("footer")}>
         {order.status === "Chờ xác nhận" ? (
           <div className={cx("action")}>
-            <button className={cx("btn", "btnCancel")} onClick={() => onCancel(order.id)}>
+            <button
+              className={cx("btn", "btnCancel")}
+              onClick={() => onCancel(order.id)}
+            >
               Hủy đơn hàng
             </button>
-            <button className={cx("btn", "btnContact")} onClick={() => onEditAddress(order.id)}>
+            <button
+              className={cx("btn", "btnContact")}
+              onClick={() => onEditAddress(order.id)}
+            >
               Liên hệ shop
             </button>
           </div>
-        ) : <span></span>}
+        ) : (
+          <span></span>
+        )}
+        {order.status === "Hoàn tất" && (
+          <div className={cx("action")}>
+            <span></span>
+          </div>
+        )}
         <span>
           Thành tiền: <b>{order.totalAmount.toLocaleString()}đ</b>
         </span>

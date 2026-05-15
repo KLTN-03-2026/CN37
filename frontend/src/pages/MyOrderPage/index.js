@@ -9,6 +9,8 @@ import OrderTabs from "./components/OrderTabs";
 import OrderSearch from "./components/OrderSearch";
 import OrderList from "./components/OrderList";
 import EmptyState from "./components/EmptyState";
+import { useNavigate } from "react-router-dom";
+import { createReview } from "../../api/ReviewApi";
 
 const cx = classNames.bind(styles);
 
@@ -19,6 +21,17 @@ export default function MyOrderPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [countByStatus, setCountByStatus] = useState({});
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [images, setImages] = useState([]);
+
+  const [comment, setComment] = useState("");
+  const [rating, setRating] = useState(5);
+  const [previewImages, setPreviewImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const fetchOrders = async () => {
     const res = await getOrders({ status, keyword });
@@ -34,6 +47,63 @@ export default function MyOrderPage() {
     });
 
     setCountByStatus(map);
+  };
+
+  const handleOpenReview = (productId, orderId) => {
+    setSelectedProduct(productId);
+    setSelectedOrder(orderId);
+    setShowReviewModal(true);
+  };
+
+  const handleSelectImages = (e) => {
+    const files = Array.from(e.target.files);
+
+    // lưu file thật
+    setImages((prev) => [...prev, ...files]);
+
+    // tạo preview
+    const previewUrls = files.map((file) => URL.createObjectURL(file));
+
+    setPreviewImages((prev) => [...prev, ...previewUrls]);
+  };
+
+  const handleRemoveImage = (index) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+
+    setPreviewImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+
+      formData.append("comment", comment);
+      formData.append("rating", rating);
+      formData.append("productId", selectedProduct);
+      formData.append("orderId", selectedOrder);
+
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
+
+      await createReview(formData);
+
+      notifySuccess("Đánh giá thành công");
+
+      setShowReviewModal(false);
+
+      setComment("");
+      setRating(5);
+      setImages([]);
+      setPreviewImages([]);
+      fetchOrders();
+    } catch (error) {
+      notifyError("Gửi đánh giá thất bại");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancelOrder = async (orderId) => {
@@ -82,6 +152,7 @@ export default function MyOrderPage() {
               onCancel={handleAskCancel}
               onEditAddress={handleEditAddress}
               refresh={fetchOrders}
+              onReview={(productId, orderId) => handleOpenReview(productId, orderId)}
             />
           )}
         </div>
@@ -95,6 +166,79 @@ export default function MyOrderPage() {
         onConfirm={() => handleCancelOrder(deleteId)}
         onCancel={() => setShowConfirm(false)}
       />
+      {showReviewModal && (
+        <div className={cx("review-modal-overlay")}>
+          <div className={cx("review-modal")}>
+            <div className={cx("review-header")}>
+              <h3>Đánh giá sản phẩm</h3>
+
+              <button onClick={() => setShowReviewModal(false)}>✕</button>
+            </div>
+
+            <div className={cx("review-input")}>
+              <textarea
+                placeholder="Nhập nội dung bình luận..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+
+              <div className={cx("tools")}>
+                <select
+                  value={rating}
+                  onChange={(e) => setRating(Number(e.target.value))}
+                >
+                  <option value={5}>⭐ 5</option>
+                  <option value={4}>⭐ 4</option>
+                  <option value={3}>⭐ 3</option>
+                  <option value={2}>⭐ 2</option>
+                  <option value={1}>⭐ 1</option>
+                </select>
+
+                <input
+                  type="file"
+                  hidden
+                  multiple
+                  accept="image/*"
+                  id="upload"
+                  onChange={handleSelectImages}
+                />
+
+                <button
+                  className={cx("upload-btn")}
+                  onClick={() => document.getElementById("upload").click()}
+                >
+                  + Hình ảnh
+                </button>
+              </div>
+
+              {previewImages.length > 0 && (
+                <div className={cx("preview-list")}>
+                  {previewImages.map((img, index) => (
+                    <div key={index} className={cx("preview-item")}>
+                      <img src={img} alt="" />
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <button
+                className={cx("submit-btn")}
+                onClick={handleSubmit}
+                disabled={loading}
+              >
+                {loading ? "Đang gửi..." : "Gửi bình luận"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

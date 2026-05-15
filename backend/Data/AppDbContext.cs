@@ -1,4 +1,3 @@
-using System.Reflection.Emit;
 using Microsoft.EntityFrameworkCore;
 
 public class AppDbContext : DbContext
@@ -35,6 +34,14 @@ public class AppDbContext : DbContext
     public DbSet<InventoryImportItem> InventoryImportItems { get; set; }
     public DbSet<InventoryExport> InventoryExports { get; set; }
     public DbSet<InventoryExportItem> InventoryExportItems { get; set; }
+    public DbSet<AiChatSession> AiChatSessions { get; set; }
+    public DbSet<AiChatMessage> AiChatMessages { get; set; }
+    public DbSet<ProductEmbedding> ProductEmbeddings { get; set; }
+    public DbSet<AiRecommendation> AiRecommendations { get; set; }
+    public DbSet<Review> Reviews { get; set; }
+    public DbSet<ReviewImage> ReviewImages { get; set; }
+    public DbSet<ReviewReply> ReviewReplies { get; set; }
+    public DbSet<ProductView> ProductViews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,6 +66,7 @@ public class AppDbContext : DbContext
             entity.HasMany(x => x.UserRoles).WithOne(ur => ur.User).HasForeignKey(ur => ur.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(x => x.Orders).WithOne(o => o.User).HasForeignKey(o => o.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(x => x.UserAddresses).WithOne(ua => ua.User).HasForeignKey(ua => ua.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.Reviews).WithOne(r => r.User).HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<EmailVerificationToken>(entity =>
@@ -196,6 +204,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Inventory).WithOne(i => i.Product).HasForeignKey<Inventory>(i => i.ProductId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(x => x.InventoryLogs).WithOne(il => il.Product).HasForeignKey(il => il.ProductId).OnDelete(DeleteBehavior.Restrict);
             entity.HasMany(x => x.OrderItems).WithOne(oi => oi.Product).HasForeignKey(oi => oi.ProductId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(x => x.Reviews).WithOne(r => r.Product).HasForeignKey(oi => oi.ProductId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ProductImage>(entity =>
@@ -334,12 +343,14 @@ public class AppDbContext : DbContext
             entity.Property(x => x.PaymentStatus).HasColumnName("payment_status").HasMaxLength(50);
             entity.Property(x => x.CreateAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(x => x.UpdateAt).HasColumnName("update_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.CompletedAt).HasColumnName("completed_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // 🔗 Relation Orders
             entity.HasOne(x => x.User).WithMany(u => u.Orders).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(x => x.Address).WithMany(ua => ua.Orders).HasForeignKey(x => x.AddressId).OnDelete(DeleteBehavior.Restrict);
             entity.HasMany(x => x.OrderItems).WithOne(oi => oi.Order).HasForeignKey(oi => oi.OrderId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(x => x.Payments).WithOne(p => p.Order).HasForeignKey(p => p.OrderId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.Reviews).WithOne(oi => oi.Order).HasForeignKey(oi => oi.OrderId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
@@ -350,7 +361,10 @@ public class AppDbContext : DbContext
             entity.Property(x => x.OrderId).HasColumnName("order_id").IsRequired();
             entity.Property(x => x.ProductId).HasColumnName("product_id").IsRequired();
             entity.Property(x => x.Price).HasColumnName("price").HasColumnType("decimal(12,2)").IsRequired();
+            entity.Property(x => x.CostPrice).HasColumnName("cost_price").HasColumnType("decimal(12,2)").IsRequired();
             entity.Property(x => x.Quantity).HasColumnName("quantity").IsRequired();
+            entity.Property(x => x.IsReview)
+            .HasColumnName("is_review").HasDefaultValue(false);
 
             // 🔗 Relation Order
             entity.HasOne(x => x.Order).WithMany(o => o.OrderItems).HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
@@ -393,43 +407,43 @@ public class AppDbContext : DbContext
         });
 
         modelBuilder.Entity<Supplier>(entity =>
-{
-    entity.ToTable("suppliers");
+        {
+            entity.ToTable("suppliers");
 
-    entity.HasKey(x => x.Id);
+            entity.HasKey(x => x.Id);
 
-    entity.Property(x => x.Code).HasColumnName("code").HasMaxLength(50).IsRequired();
-    entity.HasIndex(x => x.Code).IsUnique();
+            entity.Property(x => x.Code).HasColumnName("code").HasMaxLength(50).IsRequired();
+            entity.HasIndex(x => x.Code).IsUnique();
 
-    entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
+            entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
 
-    entity.Property(x => x.ContactPerson).HasColumnName("contact_person");
-    entity.Property(x => x.Phone).HasColumnName("phone");
-    entity.Property(x => x.Email).HasColumnName("email");
+            entity.Property(x => x.ContactPerson).HasColumnName("contact_person");
+            entity.Property(x => x.Phone).HasColumnName("phone");
+            entity.Property(x => x.Email).HasColumnName("email");
 
-    entity.Property(x => x.Address).HasColumnName("address");
-    entity.Property(x => x.Province).HasColumnName("province");
-    entity.Property(x => x.District).HasColumnName("district");
+            entity.Property(x => x.Address).HasColumnName("address");
+            entity.Property(x => x.Province).HasColumnName("province");
+            entity.Property(x => x.District).HasColumnName("district");
 
-    entity.Property(x => x.TaxCode).HasColumnName("tax_code");
+            entity.Property(x => x.TaxCode).HasColumnName("tax_code");
 
-    entity.Property(x => x.BankName).HasColumnName("bank_name");
-    entity.Property(x => x.BankAccount).HasColumnName("bank_account");
+            entity.Property(x => x.BankName).HasColumnName("bank_name");
+            entity.Property(x => x.BankAccount).HasColumnName("bank_account");
 
-    entity.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            entity.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
 
-    entity.Property(x => x.Note).HasColumnName("note");
+            entity.Property(x => x.Note).HasColumnName("note");
 
-    entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
-    entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-    entity.Property(x => x.CreatedBy).HasColumnName("created_by");
+            entity.Property(x => x.CreatedBy).HasColumnName("created_by");
 
-    entity.HasOne(x => x.CreatedByUser)
-        .WithMany()
-        .HasForeignKey(x => x.CreatedBy)
-        .OnDelete(DeleteBehavior.SetNull);
-});
+            entity.HasOne(x => x.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(x => x.CreatedBy)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
 
         modelBuilder.Entity<InventoryImport>(entity =>
         {
@@ -481,7 +495,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.ProductId).HasColumnName("product_id");
 
             entity.Property(x => x.Quantity).HasColumnName("quantity");
-            entity.Property(x => x.CostPrice).HasColumnName("cost_price").HasColumnType("decimal(12,2)");
+            entity.Property(x => x.Price).HasColumnName("cost_price").HasColumnType("decimal(12,2)");
 
             entity.HasOne(x => x.Import)
                 .WithMany(x => x.Items)
@@ -542,9 +556,9 @@ public class AppDbContext : DbContext
                 .HasColumnType("decimal(12,2)")
                 .IsRequired();
 
-            entity.Property(x => x.CostPrice)
-                .HasColumnName("cost_price")
-                .HasColumnType("decimal(12,2)");
+            // entity.Property(x => x.)
+            //     .HasColumnName("cost_price")
+            //     .HasColumnType("decimal(12,2)");
 
             entity.HasOne(x => x.Export)
                 .WithMany(x => x.Items)
@@ -554,6 +568,245 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Product)
                 .WithMany()
                 .HasForeignKey(x => x.ProductId);
+        });
+
+        modelBuilder.Entity<AiChatSession>(entity =>
+        {
+            entity.ToTable("ai_chat_sessions");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.UserId).HasColumnName("user_id");
+            entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasColumnType("datetime").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // 🔗 Relation User
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // 🔗 Relation AiChatMessage
+            entity.HasMany(x => x.Messages)
+                .WithOne(m => m.Session)
+                .HasForeignKey(m => m.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AiChatMessage>(entity =>
+        {
+            entity.ToTable("ai_chat_messages");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.SessionId).HasColumnName("session_id").IsRequired();
+            entity.Property(x => x.Role).HasColumnName("role").HasMaxLength(20);
+            entity.Property(x => x.Message).HasColumnName("message").HasColumnType("text");
+            entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasColumnType("datetime").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // 🔗 Relation AiChatSession
+            entity.HasOne(x => x.Session)
+                .WithMany(s => s.Messages)
+                .HasForeignKey(x => x.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProductEmbedding>(entity =>
+        {
+            entity.ToTable("product_embeddings");
+            entity.HasKey(x => x.ProductId);
+            entity.Property(x => x.ProductId).HasColumnName("product_id");
+            entity.Property(x => x.Embedding).HasColumnName("embedding").HasColumnType("json");
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("datetime").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // 🔗 Relation Product
+            entity.HasOne(x => x.Product)
+                .WithOne()
+                .HasForeignKey<ProductEmbedding>(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AiRecommendation>(entity =>
+        {
+            entity.ToTable("ai_recommendations");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.UserId).HasColumnName("user_id");
+            entity.Property(x => x.ProductId).HasColumnName("product_id");
+            entity.Property(x => x.Score).HasColumnName("score").HasColumnType("float");
+            entity.Property(x => x.CreatedAt).HasColumnName("create_at").HasColumnType("datetime").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // 🔗 Relation User
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // 🔗 Relation Product
+            entity.HasOne(x => x.Product)
+                .WithMany()
+                .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Review>(entity =>
+        {
+            entity.ToTable("reviews");
+
+            // Primary Key
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id)
+                .HasColumnName("id");
+
+            entity.Property(x => x.ProductId)
+                .HasColumnName("product_id")
+                .IsRequired();
+
+            entity.Property(x => x.UserId)
+                .HasColumnName("user_id")
+                .IsRequired();
+
+            entity.Property(x => x.OrderId)
+                .HasColumnName("order_id")
+                .IsRequired();
+
+            entity.Property(x => x.Rating)
+                .HasColumnName("rating")
+                .IsRequired();
+
+            entity.Property(x => x.Comment)
+                .HasColumnName("comment")
+                .HasColumnType("text");
+
+            entity.Property(x => x.CreateAt)
+                .HasColumnName("create_at")
+                .HasColumnType("timestamp")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(x => x.VerifyPurchase)
+            .HasColumnName("verified_purchase").HasDefaultValue(false);
+
+            // 🔗 Relation Product
+            entity.HasOne(x => x.Product)
+                .WithMany(p => p.Reviews)
+                .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 🔗 Relation User
+            entity.HasOne(x => x.User)
+                .WithMany(u => u.Reviews)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.Order)
+                .WithMany(p => p.Reviews)
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 🔗 Relation ReviewImage
+            entity.HasMany(x => x.Images)
+                .WithOne(i => i.Review)
+                .HasForeignKey(i => i.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ReviewImage>(entity =>
+        {
+            entity.ToTable("review_images");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id)
+                .HasColumnName("id");
+
+            entity.Property(x => x.ReviewId)
+                .HasColumnName("review_id")
+                .IsRequired();
+
+            entity.Property(x => x.ImageUrl)
+                .HasColumnName("image_url")
+                .HasMaxLength(500)
+                .IsRequired();
+
+            // 🔗 Review
+            entity.HasOne(x => x.Review)
+                .WithMany(r => r.Images)
+                .HasForeignKey(x => x.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ReviewReply>(entity =>
+        {
+            entity.ToTable("review_replies");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id)
+                .HasColumnName("id");
+
+            entity.Property(x => x.ReviewId)
+                .HasColumnName("review_id")
+                .IsRequired();
+
+            entity.Property(x => x.UserId)
+                .HasColumnName("user_id")
+                .IsRequired();
+
+            entity.Property(x => x.Reply)
+                .HasColumnName("reply")
+                .HasColumnType("text");
+
+            entity.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasIndex(x => x.ReviewId)
+                .HasDatabaseName("idx_reviewreply_review");
+
+            entity.HasIndex(x => x.UserId)
+                .HasDatabaseName("idx_reviewreply_user");
+
+            entity.HasOne(x => x.Review)
+                .WithOne(x => x.Reply)
+                .HasForeignKey<ReviewReply>(x => x.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.User)
+                .WithMany(x => x.ReviewReplies)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ProductView>(entity =>
+        {
+            entity.ToTable("product_views");
+
+            entity.HasKey(x => x.Id);
+
+            // FK mapping
+            entity.Property(x => x.ProductId)
+                .HasColumnName("product_id");
+
+            entity.Property(x => x.UserId)
+                .HasColumnName("user_id");
+
+            entity.Property(x => x.ViewTime)
+                .HasColumnName("view_time")
+                .HasColumnType("timestamp")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // relationships (CHỈ VIẾT 1 LẦN)
+            entity.HasOne(x => x.Product)
+                .WithMany()
+                .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

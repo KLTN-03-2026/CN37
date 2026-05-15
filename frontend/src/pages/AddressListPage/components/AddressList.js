@@ -6,7 +6,13 @@ const cx = classNames.bind(styles);
 
 function AddressList({ addresses = [], onEdit, onDelete }) {
   if (!addresses.length) {
-    return <div className={cx("listContainer")}>Chưa có địa chỉ nào</div>;
+    return <div style={{ textAlign: "center", padding: 40 }}>
+      <img
+        src="https://cdn2.fptshop.com.vn/unsafe/750x0/filters:format(webp):quality(75)/estore-v2/img/empty_address_book.png"
+        style={{ width: 300, marginBottom: 20 }}
+      />
+      <p>Bạn chưa có địa chỉ nào</p>
+    </div>;
   }
 
   return (

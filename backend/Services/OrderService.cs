@@ -32,6 +32,18 @@ public class OrderService : IOrderService
                 .Where(i => productIds.Contains(i.ProductId))
                 .ToListAsync();
 
+            var latestImportPrices = await _context.InventoryImportItems
+                .Where(x => productIds.Contains(x.ProductId))
+                .GroupBy(x => x.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    CostPrice = g
+                        .OrderByDescending(x => x.Id)
+                        .Select(x => x.Price)
+                        .FirstOrDefault()
+                }).ToListAsync();
+
             decimal totalAmount = 0;
             var orderItems = new List<OrderItem>();
 
@@ -45,6 +57,10 @@ public class OrderService : IOrderService
                 if (inventory == null || inventory.Quantity < item.Quantity)
                     throw new Exception($"Sản phẩm này hiện tại không đủ hàng");
 
+                var latestCostPrice = latestImportPrices
+                    .FirstOrDefault(x => x.ProductId == item.ProductId)
+                    ?.CostPrice ?? 0;
+
                 var price = product.Price;
                 totalAmount += price * item.Quantity;
 
@@ -52,7 +68,8 @@ public class OrderService : IOrderService
                 {
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
-                    Price = price
+                    Price = price,
+                    CostPrice = latestCostPrice
                 });
             }
 
@@ -164,10 +181,12 @@ public class OrderService : IOrderService
                 Items = o.OrderItems.Select(i => new OrderItemDto
                 {
                     ProductId = i.ProductId,
+                    Slug = i.Product.Slug,
                     ProductName = i.Product.Name,
                     Thumbnail = i.Product.Thumbnail,
                     Price = i.Price,
-                    Quantity = i.Quantity
+                    Quantity = i.Quantity,
+                    IsReview = i.IsReview,
                 }).ToList()
             })
             .ToListAsync();
@@ -203,7 +222,7 @@ public class OrderService : IOrderService
                 {
                     ProductId = i.ProductId,
                     Quantity = i.Quantity,
-                    CostPrice = i.Price // hoặc lấy cost chuẩn
+                    Price = i.Price // hoặc lấy cost chuẩn
                 }).ToList()
             };
 
@@ -381,13 +400,7 @@ public class OrderService : IOrderService
         else if (current == OrderStatus.Shipping && newStatus == OrderStatus.Completed)
         {
             order.Status = newStatus;
-
-            // 💰 cộng doanh thu
-            // _context.Revenues.Add(new Revenue
-            // {
-            //     OrderId = order.Id,
-            //     Amount = order.TotalAmount
-            // });
+            order.CompletedAt = DateTime.Now;
         }
         else
         {

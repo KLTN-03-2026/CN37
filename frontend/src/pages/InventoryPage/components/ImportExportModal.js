@@ -4,7 +4,12 @@ import classNames from "classnames/bind";
 import { createImport, createExport } from "../../../api/InventoryApi";
 import { getSuppliers } from "../../../api/SupplierApi";
 import { getUserList } from "../../../api/UserApi";
-import { notifyError, notifySuccess, notifyWarning } from "../../../components/Nofitication";
+import {
+  notifyError,
+  notifySuccess,
+  notifyWarning,
+} from "../../../components/Nofitication";
+import { MdDelete } from "react-icons/md";
 
 const cx = classNames.bind(styles);
 
@@ -17,7 +22,7 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
       unit: p.unit || "Cái",
       quantity: 1,
       price: p.price || 0,
-    }))
+    })),
   );
 
   const [suppliers, setSuppliers] = useState([]);
@@ -25,6 +30,7 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
   const [selectedPartner, setSelectedPartner] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,6 +49,51 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
     fetchData();
   }, [type]);
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Validate partner
+    if (!selectedPartner) {
+      newErrors.partner =
+        type === "IMPORT"
+          ? "Vui lòng chọn nhà cung cấp"
+          : "Vui lòng chọn khách hàng";
+    }
+
+    // Validate items
+    if (items.length === 0) {
+      newErrors.items = "Danh sách sản phẩm không được để trống";
+    }
+
+    items.forEach((item, index) => {
+      const rowErrors = {};
+
+      if (
+        item.quantity === "" ||
+        item.quantity === null ||
+        isNaN(item.quantity)
+      ) {
+        rowErrors.quantity = "Số lượng không hợp lệ";
+      } else if (Number(item.quantity) <= 0) {
+        rowErrors.quantity = "Số lượng phải lớn hơn 0";
+      }
+
+      if (item.price === "" || item.price === null || isNaN(item.price)) {
+        rowErrors.price = "Đơn giá không hợp lệ";
+      } else if (Number(item.price) < 0) {
+        rowErrors.price = "Đơn giá không được âm";
+      }
+
+      if (Object.keys(rowErrors).length > 0) {
+        newErrors[index] = rowErrors;
+      }
+    });
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
   const total = items.reduce((sum, i) => sum + i.quantity * i.price, 0);
 
   const handleChange = (index, field, value) => {
@@ -55,32 +106,14 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
     setItems(items.filter((_, i) => i !== index));
   };
 
-  const handleAddItem = () => {
-    setItems([
-      ...items,
-      {
-        productId: null,
-        name: "",
-        code: "",
-        unit: "Cái",
-        quantity: 1,
-        price: 0,
-      },
-    ]);
-  };
-
   const handleSubmit = async () => {
-    if (!selectedPartner) {
-      notifyWarning(`Vui lòng chọn ${type === "IMPORT" ? "nhà cung cấp" : "khách hàng"}`);
-      return;
-    }
-
-    if (items.length === 0 || items.some((i) => !i.productId || i.quantity <= 0)) {
-      notifyWarning("Vui lòng kiểm tra lại danh sách sản phẩm");
+    if (!validateForm()) {
+      notifyWarning("Vui lòng kiểm tra lại thông tin nhập");
       return;
     }
 
     setLoading(true);
+
     try {
       if (type === "IMPORT") {
         await createImport({
@@ -89,7 +122,7 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
           items: items.map((i) => ({
             productId: Number(i.productId),
             quantity: Number(i.quantity),
-            costPrice: Number(i.price),
+            Price: Number(i.price),
           })),
         });
       } else {
@@ -111,7 +144,9 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
       onClose();
     } catch (err) {
       console.error(err);
-      notifyError("Lỗi: " + (err.response?.data?.message || "Không thể lưu phiếu"));
+      notifyError(
+        "Lỗi: " + (err.response?.data?.message || "Không thể lưu phiếu"),
+      );
     } finally {
       setLoading(false);
     }
@@ -119,25 +154,24 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
 
   return (
     <div className={cx("modalOverlay")} onClick={onClose}>
-      <div
-        className={cx("modal")}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={cx("modal")} onClick={(e) => e.stopPropagation()}>
         <div className={cx("modalHeader")}>
-          <h2>{type === "IMPORT" ? "📥 Phiếu Nhập Kho" : "📤 Phiếu Xuất Kho"}</h2>
-          <button className={cx("closeBtn")} onClick={onClose}>✕</button>
+          <h2>{type === "IMPORT" ? "Phiếu Nhập Kho" : "Phiếu Xuất Kho"}</h2>
+          <button className={cx("closeBtn")} onClick={onClose}>
+            ✕
+          </button>
         </div>
 
         <div className={cx("modalContent")}>
           {/* Partner Selection */}
           <div className={cx("partnerSection")}>
-            <label>
-              {type === "IMPORT" ? "Nhà cung cấp" : "Khách hàng"} *
-            </label>
+            <label>{type === "IMPORT" ? "Nhà cung cấp" : "Khách hàng"} *</label>
             <select
               value={selectedPartner}
               onChange={(e) => setSelectedPartner(e.target.value)}
-              className={cx("partnerSelect")}
+              className={cx("partnerSelect", {
+                error: errors.partner,
+              })}
             >
               <option value="">-- Chọn --</option>
               {type === "IMPORT"
@@ -152,6 +186,9 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
                     </option>
                   ))}
             </select>
+            {errors.partner && (
+              <span className={cx("errorText")}>{errors.partner}</span>
+            )}
           </div>
 
           {/* Note */}
@@ -188,19 +225,23 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
                       <input
                         type="text"
                         value={item.name}
-                        onChange={(e) =>
-                          handleChange(index, "name", e.target.value)
-                        }
+                        readOnly
+                        className={cx("readonlyInput")}
                         placeholder="Tên sản phẩm"
                       />
+
+                      {errors[index]?.name && (
+                        <span className={cx("errorText")}>
+                          {errors[index].name}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <input
                         type="text"
                         value={item.code}
-                        onChange={(e) =>
-                          handleChange(index, "code", e.target.value)
-                        }
+                        readOnly
+                        className={cx("readonlyInput")}
                         placeholder="Mã"
                       />
                     </td>
@@ -208,22 +249,33 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
                       <input
                         type="text"
                         value={item.unit}
-                        onChange={(e) =>
-                          handleChange(index, "unit", e.target.value)
-                        }
+                        readOnly
+                        className={cx("readonlyInput")}
                         placeholder="ĐVT"
                       />
                     </td>
                     <td>
                       <input
                         type="number"
-                        min="0"
+                        min="1"
                         value={item.quantity}
                         onChange={(e) =>
-                          handleChange(index, "quantity", +e.target.value)
+                          handleChange(
+                            index,
+                            "quantity",
+                            Math.max(1, Number(e.target.value)),
+                          )
                         }
-                        className={cx("numberInput")}
+                        className={cx("numberInput", {
+                          inputError: errors[index]?.quantity,
+                        })}
                       />
+
+                      {errors[index]?.quantity && (
+                        <span className={cx("errorText")}>
+                          {errors[index].quantity}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <input
@@ -234,8 +286,16 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
                         onChange={(e) =>
                           handleChange(index, "price", +e.target.value)
                         }
-                        className={cx("numberInput")}
+                        className={cx("numberInput", {
+                          inputError: errors[index]?.price,
+                        })}
                       />
+
+                      {errors[index]?.price && (
+                        <span className={cx("errorText")}>
+                          {errors[index].price}
+                        </span>
+                      )}
                     </td>
                     <td className={cx("total")}>
                       {(item.quantity * item.price).toLocaleString("vi-VN")} ₫
@@ -246,7 +306,7 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
                         onClick={() => handleRemoveItem(index)}
                         title="Xóa"
                       >
-                        🗑️
+                        <MdDelete />
                       </button>
                     </td>
                   </tr>
@@ -254,11 +314,6 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
               </tbody>
             </table>
           </div>
-
-          {/* Add Item Button */}
-          <button className={cx("addItemBtn")} onClick={handleAddItem}>
-            + Thêm sản phẩm
-          </button>
 
           {/* Total */}
           <div className={cx("totalSection")}>
@@ -273,10 +328,10 @@ function ImportExportModal({ type, products = [], onClose, onSuccess }) {
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading ? "Đang lưu..." : "💾 Lưu phiếu"}
+              {loading ? "Đang lưu..." : "Lưu phiếu"}
             </button>
             <button className={cx("cancelBtn")} onClick={onClose}>
-              ✕ Hủy
+              Hủy
             </button>
           </div>
         </div>

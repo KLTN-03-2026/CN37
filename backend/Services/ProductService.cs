@@ -272,6 +272,34 @@ public class ProductService : IProductService
         await _repo.SaveAsync();
     }
 
+    // 🔍 SEARCH FOR HEADER - Tối ưu cho realtime search
+    public async Task<List<ProductSearchDto>> SearchAsync(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+            return new List<ProductSearchDto>();
+
+        keyword = keyword.Trim().ToLower();
+
+        var products = await _context.Products
+            .Where(p => p.IsActive && EF.Functions.Like(p.Name, $"%{keyword}%"))
+            .AsNoTracking()
+            .OrderByDescending(p => p.Name.StartsWith(keyword)) // Ưu tiên sản phẩm bắt đầu với từ khóa
+            .ThenByDescending(p => p.RatingAvg) // Sau đó sắp xếp theo rating
+            .ThenByDescending(p => p.CreateAt) // Cuối cùng theo ngày tạo
+            .Select(p => new ProductSearchDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                Price = p.Price,
+                DiscountPrice = p.DiscountPrice,
+                Thumbnail = p.Thumbnail
+            })
+            .ToListAsync();
+
+        return products;
+    }
+
     private string GenerateSlug(string name)
     {
         return name.ToLower().Replace(" ", "-");

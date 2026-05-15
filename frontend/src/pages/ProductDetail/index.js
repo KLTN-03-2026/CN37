@@ -62,7 +62,7 @@ export default function ProductDetail() {
       <RelatedProducts related={related || []} />
           
       <hr></hr>
-      <Reviews reviews={product.Reviews || []} /> {/* bạn có thể fetch Reviews riêng */}
+      <Reviews productId={product.id || []} /> {/* bạn có thể fetch Reviews riêng */}
     </div>
   );
 }

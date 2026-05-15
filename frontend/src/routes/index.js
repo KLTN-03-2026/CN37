@@ -26,6 +26,9 @@ import MyOrderPage from "../pages/MyOrderPage";
 import AdminOrderPage from "../pages/AdminOrderPage";
 import AdminUserPage from "../pages/AdminUserPage";
 import SupplierPage from "../pages/SupplierPage";
+import ReviewManagement from "../pages/Seller/ReviewManagement/ReviewManagement";
+import SearchResults from "../pages/SearchResults";
+import StatisticsDashboard from "../components/Dashboard/Statistics/StatisticsDashboard";
 
 import { ProtectedRoute } from "./Routes";
 import { AdminRoute } from "./Routes";
@@ -106,6 +109,11 @@ const routes = [
     ProtectedRoute: true
   },
   {
+    path: "/search",
+    component: SearchResults,
+    layout: DefaultLayout,
+  },
+  {
     path: "/checkout",
     component: CheckoutPage,
     layout: DefaultLayout,
@@ -172,6 +180,20 @@ const routes = [
     ProtectedRoute: true,
     AdminRoute: true
   },
+  {
+    path: "/admin/review",
+    component: ReviewManagement,
+    layout: AdminLayout,
+    ProtectedRoute: true,
+    AdminRoute: true
+  },
+  {
+    path: "/admin/dashboard",
+    component: StatisticsDashboard,
+    layout: AdminLayout,
+    ProtectedRoute: true,
+    AdminRoute: true
+  }
 
 
 ];

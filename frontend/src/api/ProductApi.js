@@ -1,5 +1,15 @@
 import api from "./AxiosClient"
 
+export const searchProducts = async (keyword) => {
+  if (!keyword?.trim()) return [];
+
+  const res = await api.get("/products/search", {
+    params: { keyword },
+  });
+
+  return res.data;
+};
+
 export const getProducts = (slug) =>{
   return api.get(`/products?categorySlug=${slug}`)
 }

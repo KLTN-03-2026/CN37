@@ -79,7 +79,7 @@ public class InventoryDocumentService : IInventoryDocumentService
                 ImportId = import.Id,
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
-                CostPrice = item.CostPrice
+                Price = item.Price
             });
 
             var inventory = await GetOrCreateInventory(item.ProductId);
@@ -97,10 +97,10 @@ public class InventoryDocumentService : IInventoryDocumentService
                 ReferenceId = $"IMP_{import.Id}",
                 Note = request.Note,
                 CreateAt = DateTime.Now,
-                Price = item.CostPrice,
+                Price = item.Price,
             });
 
-            total += item.Quantity * item.CostPrice;
+            total += item.Quantity * item.Price;
         }
 
         import.TotalAmount = total;
@@ -142,15 +142,14 @@ public class InventoryDocumentService : IInventoryDocumentService
                 .OrderByDescending(x => x.Id)
                 .FirstOrDefaultAsync();
 
-            decimal cost = lastImport?.CostPrice ?? 0;
+            decimal cost = lastImport?.Price ?? 0;
 
             _context.InventoryExportItems.Add(new InventoryExportItem
             {
                 ExportId = export.Id,
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
-                Price = item.Price,
-                CostPrice = cost
+                Price = item.Price
             });
 
             _context.InventoryLogs.Add(new InventoryLog

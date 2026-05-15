@@ -1,0 +1,55 @@
+.floatingBubble {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  z-index: 999;
+  transition: all 0.3s ease;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .icon {
+    font-size: 1.5rem;
+    color: white;
+  }
+
+  .label {
+    font-size: 0.65rem;
+    color: white;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 768px) {
+  .floatingBubble {
+    bottom: 1rem;
+    right: 1rem;
+    width: 56px;
+    height: 56px;
+
+    .icon {
+      font-size: 1.25rem;
+    }
+
+    .label {
+      font-size: 0.6rem;
+    }
+  }
+}

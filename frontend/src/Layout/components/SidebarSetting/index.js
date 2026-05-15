@@ -63,10 +63,6 @@ export default function SidebarSettings() {
         <NavLink to="/my-orders" className={({ isActive }) => cx("item", { active: isActive })}>
           Đơn hàng của tôi
         </NavLink>
-
-        <NavLink to="/notifications" className={({ isActive }) => cx("item", { active: isActive })}>
-          Thông báo của tôi
-        </NavLink>
       </div>
 
       {/* EXTRA */}
@@ -87,6 +83,11 @@ export default function SidebarSettings() {
 
         <NavLink to="/address" className={cx("item")}>
           Sổ địa chỉ nhận hàng
+        </NavLink>
+      </div>
+      <div className={cx("menu")}>
+        <NavLink to="/address" className={cx("item")}>
+          Cài đặt bảo mật
         </NavLink>
       </div>
 

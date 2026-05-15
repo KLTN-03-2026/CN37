@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 public class OrderRepository : IOrderRepository
 {
     private readonly AppDbContext _context;
@@ -12,6 +14,19 @@ public class OrderRepository : IOrderRepository
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
         return order;
+    }
+
+    public async Task<bool> HasPurchasedProductAsync(
+    long userId,
+    long productId)
+    {
+        return await _context.OrderItems
+            .Include(x => x.Order)
+            .AnyAsync(x =>
+                x.ProductId == productId &&
+                x.Order.UserId == userId &&
+                x.Order.Status == "Hoàn tất"
+            );
     }
 
     public async Task AddOrderItemsAsync(List<OrderItem> items)

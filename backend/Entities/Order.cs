@@ -13,11 +13,14 @@ public class Order
 
     public DateTime CreateAt { get; set; }
     public DateTime? UpdateAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+
 
     public User User { get; set; }
     public UserAddress Address { get; set; }
 
     public ICollection<OrderItem> OrderItems { get; set; }
+    public ICollection<Review> Reviews { get; set; }
     public ICollection<Payment> Payments { get; set; }
 
 }

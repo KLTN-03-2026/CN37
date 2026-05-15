@@ -9,7 +9,7 @@ public class InventoryImportItem
     public Product Product { get; set; }
 
     public int Quantity { get; set; }
-    public decimal CostPrice { get; set; }
+    public decimal Price { get; set; }
 
-    public decimal TotalCost => Quantity * CostPrice;
+    public decimal TotalCost => Quantity * Price;
 }

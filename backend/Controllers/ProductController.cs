@@ -16,7 +16,6 @@ public class ProductController : ControllerBase
         _service = service;
     }
 
-    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetProducts(string categorySlug)
     {
@@ -63,7 +62,7 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
-    [Authorize]
+
     [HttpGet("{slug}")]
     public async Task<IActionResult> GetProductDetail(string slug)
     {
@@ -178,5 +177,15 @@ public class ProductController : ControllerBase
     {
         await _service.ToggleActiveAsync(id);
         return Ok();
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword) || keyword.Length < 1)
+            return Ok(new List<ProductSearchDto>());
+
+        var results = await _service.SearchAsync(keyword);
+        return Ok(results);
     }
 }

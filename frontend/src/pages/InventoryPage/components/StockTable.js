@@ -31,7 +31,6 @@ function StockTable({ data, onAction, selected, setSelected }) {
             <th>Tên sản phẩm</th>
             <th>Tồn kho</th>
             <th>Trạng thái</th>
-            <th>Hành động</th>
           </tr>
         </thead>
         <tbody>
@@ -62,20 +61,6 @@ function StockTable({ data, onAction, selected, setSelected }) {
                     {status === "low" && "Sắp hết"}
                     {status === "out" && "Hết hàng"}
                   </span>
-                </td>
-                <td>
-                  <button
-                    className={cx("btn", "import")}
-                    onClick={() => onAction(item, "import")}
-                  >
-                    Nhập
-                  </button>
-                  <button
-                    className={cx("btn", "export")}
-                    onClick={() => onAction(item, "export")}
-                  >
-                    Xuất
-                  </button>
                 </td>
               </tr>
             );

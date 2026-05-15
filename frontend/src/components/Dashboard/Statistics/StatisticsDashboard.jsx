@@ -1,0 +1,187 @@
+import React, { useState, useEffect } from "react";
+import KPICard from "./KPICard";
+import RevenueChart from "./RevenueChart";
+import ProfitChart from "./ProfitChart";
+import CategoryChart from "./CategoryChart";
+import TopProductsTable from "./TopProductsTable";
+import styles from "./StatisticsDashboard.module.scss";
+import { exportToExcel, exportToPdf, getKpiCards } from "../../../api/StatisticsApi";
+
+const StatisticsDashboard = () => {
+  const [kpiCards, setKpiCards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  useEffect(() => {
+    fetchKPICards();
+  }, []);
+
+  const fetchKPICards = async () => {
+    try {
+      setLoading(true);
+      const response = await getKpiCards();
+      if (response.data.success) {
+        setKpiCards(response.data.data);
+        setError(null);
+      }
+    } catch (err) {
+      setError("Failed to load dashboard data");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const response = await exportToExcel({
+        format: "EXCEL",
+        statisticsType: "SUMMARY",
+        reportTitle: "Monthly Statistics Report",
+      });
+
+      // Create a blob and download it
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `statistics_${new Date().toISOString()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export Excel file");
+    }
+  };
+
+  const handleExportPdf = async () => {
+    try {
+      const response = await exportToPdf({
+        format: "PDF",
+        statisticsType: "SUMMARY",
+        reportTitle: "Monthly Statistics Report",
+      });
+
+      // Create a blob and download it
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `statistics_${new Date().toISOString()}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export PDF file");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.dashboard}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner} />
+          <p>Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.dashboard}>
+        <div className={styles.errorContainer}>
+          <p>{error}</p>
+          <button onClick={fetchKPICards} className={styles.retryButton}>
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.dashboard}>
+      <div className={styles.header}>
+        <h1>Analytics Dashboard</h1>
+        <div className={styles.controls}>
+          <button className={styles.exportButton} onClick={handleExportExcel}>
+            📊 Export Excel
+          </button>
+          <button className={styles.exportButton} onClick={handleExportPdf}>
+            📄 Export PDF
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className={styles.kpiGrid}>
+        {kpiCards.map((card, index) => (
+          <KPICard
+            key={index}
+            title={card.title}
+            value={card.value}
+            unit={card.unit}
+            changePercentage={card.changePercentage}
+            trend={card.trend}
+            color={card.color}
+          />
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${activeTab === "overview" ? styles.active : ""}`}
+          onClick={() => setActiveTab("overview")}
+        >
+          📈 Overview
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === "products" ? styles.active : ""}`}
+          onClick={() => setActiveTab("products")}
+        >
+          🛍️ Products
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === "categories" ? styles.active : ""}`}
+          onClick={() => setActiveTab("categories")}
+        >
+          📁 Categories
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      <div className={styles.content}>
+        {activeTab === "overview" && (
+          <div>
+            <RevenueChart />
+            <ProfitChart />
+          </div>
+        )}
+
+        {activeTab === "products" && (
+          <div>
+            <div className={styles.tablesRow}>
+              <div className={styles.halfWidth}>
+                <TopProductsTable type="selling" />
+              </div>
+              <div className={styles.halfWidth}>
+                <TopProductsTable type="profit" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "categories" && (
+          <div>
+            <CategoryChart />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default StatisticsDashboard;

@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Fido2NetLib;
+using backend.Repositories.Interfaces;
+using backend.Services.Interfaces;
+using backend.Repositories;
+using backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +81,21 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IInventoryDocumentService, InventoryDocumentService>();
+builder.Services.AddScoped<IAiChatRepository, AiChatRepository>();
+builder.Services.AddScoped<IAiChatService, AiChatService>();
+builder.Services.AddScoped<IProductRetrievalService, ProductRetrievalService>();
+builder.Services.AddHttpClient<IOpenAiService, OpenAiService>();
+builder.Services.AddScoped<IPromptBuilderService, PromptBuilderService>();
+builder.Services.AddScoped<IIntentDetectionService,IntentDetectionService>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IStatisticsRepository, StatisticsRepository>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IEmbeddingService,EmbeddingService>();
+builder.Services.AddScoped<ISemanticSearchService,SemanticSearchService>();
+builder.Services.AddScoped<IHybridSearchService,HybridSearchService>();
+builder.Services.AddScoped<IConversationMemoryService,ConversationMemoryService>();
+builder.Services.AddScoped<IRecommendationService,RecommendationService>();
 
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection("JwtOptions"));

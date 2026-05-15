@@ -62,7 +62,13 @@ function UserButton() {
             className={cx("dropdownItem")}
             onClick={() => navigate("/session")}
           >
-            Cài đặt tài khoản
+            Sổ địa chỉ nhận hàng
+          </div>
+          <div
+            className={cx("dropdownItem")}
+            onClick={() => navigate("/session")}
+          >
+            Cài đặt bảo mật
           </div>
           <div className={cx("dropdownItem")} onClick={handleLogout}>
             Đăng xuất

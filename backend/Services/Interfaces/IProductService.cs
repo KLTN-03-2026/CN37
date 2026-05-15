@@ -5,4 +5,5 @@ public interface IProductService
     Task<long> CreateAsync(ProductCreateUpdateDto dto, string baseUrl);
     Task<bool> UpdateAsync(long id, ProductCreateUpdateDto dto, string baseUrl);
     Task ToggleActiveAsync(long id);
+    Task<List<ProductSearchDto>> SearchAsync(string keyword);
 }

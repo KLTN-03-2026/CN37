@@ -54,4 +54,5 @@ public class Product
     public Inventory Inventory { get; set; }
     public ICollection<InventoryLog> InventoryLogs { get; set; }
     public ICollection<OrderItem> OrderItems { get; set; }
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
 }

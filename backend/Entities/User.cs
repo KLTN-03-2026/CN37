@@ -1,14 +1,14 @@
 public class User
 {
-    public long Id{ get; set;}
-    public string Email { get; set;}
-    public string? PasswordHash { get; set;}
-    public bool IsActive { get; set;} = true;
-    public bool EmailVerified { get; set;} = false;
-    public DateTime? EmailVerifiedAt { get; set;}
-    public DateTime CreatedAt { get; set;} = DateTime.Now;
-    public DateTime UpdatedAt { get; set;} = DateTime.Now;
-    public bool IsDeleted { get; set;} = false;
+    public long Id { get; set; }
+    public string Email { get; set; }
+    public string? PasswordHash { get; set; }
+    public bool IsActive { get; set; } = true;
+    public bool EmailVerified { get; set; } = false;
+    public DateTime? EmailVerifiedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public bool IsDeleted { get; set; } = false;
     public UserProfile? Profile { get; set; }
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     public ICollection<Session> Sessions { get; set; } = new List<Session>();
@@ -16,4 +16,7 @@ public class User
     public ICollection<UserAddress> UserAddresses { get; set; } = new List<UserAddress>();
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public ICollection<Order> Orders { get; set; } = new List<Order>();
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public ICollection<ReviewReply> ReviewReplies { get; set; }
+        = new List<ReviewReply>();
 }

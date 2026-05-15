@@ -6,6 +6,7 @@ import { ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SubizChat from "./components/Chat/SubizChat";
 import { useSubizUser } from "./hooks/useSubizUser";
+import FloatingChatBubble from "./components/FloatingChatBubble";
 
 function App() {
   useSubizUser();
@@ -53,6 +54,7 @@ function App() {
           transition={Bounce}
         />
         <SubizChat />
+        <FloatingChatBubble />
       </div>
     </Router>
   );
