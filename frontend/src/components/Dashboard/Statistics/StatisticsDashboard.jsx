@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import KPICard from "./KPICard";
 import RevenueChart from "./RevenueChart";
-import ProfitChart from "./ProfitChart";
 import CategoryChart from "./CategoryChart";
 import TopProductsTable from "./TopProductsTable";
 import styles from "./StatisticsDashboard.module.scss";
@@ -157,7 +156,6 @@ const StatisticsDashboard = () => {
         {activeTab === "overview" && (
           <div>
             <RevenueChart />
-            <ProfitChart />
           </div>
         )}
 

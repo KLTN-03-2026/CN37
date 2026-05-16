@@ -1,12 +1,15 @@
 using backend.DTOs.Statistics;
 using backend.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace backend.Repositories;
 
 public class StatisticsRepository : IStatisticsRepository
 {
     private readonly AppDbContext _context;
+    private const string CompletedStatus = "Hoàn tất";
+    private const string CancelledStatus = "CANCELLED";
 
     public StatisticsRepository(AppDbContext context)
     {
@@ -15,425 +18,202 @@ public class StatisticsRepository : IStatisticsRepository
 
     #region Revenue Statistics
 
-    public async Task<List<RevenueStatisticsDto>> GetRevenueByDayAsync(DateTime fromDate, DateTime toDate)
+    public async Task<List<BusinessStatisticsDto>> GetStatisticsByDayAsync(DateTime fromDate, DateTime toDate)
     {
-        var result = await _context.OrderItems
+        var startDate = fromDate.Date;
+        var endDate = toDate.Date.AddDays(1);
+
+        var data = await _context.InventoryExportItems
             .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => oi.Order.CompletedAt.Value.Date)
-            .Select(g => new RevenueStatisticsDto
+            .Where(x =>
+                x.Export.ExportType == "ORDER" &&
+                x.Export.Status == "COMPLETED" &&
+                x.Export.ApprovedAt.HasValue &&
+                x.Export.ApprovedAt.Value >= startDate &&
+                x.Export.ApprovedAt.Value < endDate)
+            .GroupBy(x => new
             {
-                Label = g.Key.ToString("yyyy-MM-dd"),
-                Date = g.Key,
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                OrderCount = g.Select(oi => oi.OrderId).Distinct().Count(),
-                AverageOrderValue = g.Select(oi => oi.OrderId).Distinct().Count() > 0
-                    ? g.Sum(oi => oi.Price * oi.Quantity) / g.Select(oi => oi.OrderId).Distinct().Count()
-                    : 0
+                Year = x.Export.ApprovedAt.Value.Year,
+                Month = x.Export.ApprovedAt.Value.Month,
+                Day = x.Export.ApprovedAt.Value.Day
             })
-            .OrderBy(x => x.Date)
+            .Select(g => new
+            {
+                g.Key.Year,
+                g.Key.Month,
+                g.Key.Day,
+
+                Revenue = g.Sum(x => x.Price * x.Quantity),
+
+                Cost = g.SelectMany(x => x.ExportItemBatches)
+                    .Sum(b => b.CostPrice * b.Quantity),
+
+                ExportCount = g.Select(x => x.ExportId).Distinct().Count()
+            })
+            .OrderBy(x => x.Year)
+            .ThenBy(x => x.Month)
+            .ThenBy(x => x.Day)
             .ToListAsync();
 
-        return result;
+        return data.Select(x =>
+        {
+            var profit = x.Revenue - x.Cost;
+
+            return new BusinessStatisticsDto
+            {
+                Label = $"{x.Year}-{x.Month:D2}-{x.Day:D2}",
+                Date = new DateTime(x.Year, x.Month, x.Day),
+                Revenue = x.Revenue,
+                Cost = x.Cost,
+                Profit = profit,
+                ExportCount = x.ExportCount
+            };
+        }).ToList();
     }
 
-    public async Task<List<RevenueStatisticsDto>> GetRevenueByWeekAsync(DateTime fromDate, DateTime toDate)
+    public async Task<List<BusinessStatisticsDto>> GetStatisticsByMonthAsync(DateTime fromDate, DateTime toDate)
     {
-        var result = await _context.OrderItems
+        var startDate = fromDate.Date;
+        var endDate = toDate.Date.AddDays(1);
+
+        var data = await _context.InventoryExportItems
             .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => new
+            .Where(x =>
+                x.Export.ExportType == "ORDER" &&
+                x.Export.Status == "COMPLETED" &&
+                x.Export.ApprovedAt.HasValue &&
+                x.Export.ApprovedAt.Value >= startDate &&
+                x.Export.ApprovedAt.Value < endDate)
+            .GroupBy(x => new
             {
-                Year = oi.Order.CompletedAt.Value.Year,
-                Week = GetWeekOfYear(oi.Order.CompletedAt.Value)
+                Year = x.Export.ApprovedAt.Value.Year,
+                Month = x.Export.ApprovedAt.Value.Month
             })
-            .Select(g => new RevenueStatisticsDto
+            .Select(g => new
             {
-                Label = $"{g.Key.Year}-W{g.Key.Week}",
-                Date = g.Min(oi => oi.Order.CompletedAt.Value),
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                OrderCount = g.Select(oi => oi.OrderId).Distinct().Count(),
-                AverageOrderValue = g.Select(oi => oi.OrderId).Distinct().Count() > 0
-                    ? g.Sum(oi => oi.Price * oi.Quantity) / g.Select(oi => oi.OrderId).Distinct().Count()
-                    : 0
+                g.Key.Year,
+                g.Key.Month,
+
+                Revenue = g.Sum(x => x.Price * x.Quantity),
+
+                Cost = g.SelectMany(x => x.ExportItemBatches)
+                    .Sum(b => b.CostPrice * b.Quantity),
+
+                ExportCount = g.Select(x => x.ExportId).Distinct().Count()
             })
-            .OrderBy(x => x.Date)
+            .OrderBy(x => x.Year)
+            .ThenBy(x => x.Month)
             .ToListAsync();
 
-        return result;
+        return data.Select(x =>
+        {
+            var profit = x.Revenue - x.Cost;
+
+            return new BusinessStatisticsDto
+            {
+                Label = $"{x.Year}-{x.Month:D2}",
+                Date = new DateTime(x.Year, x.Month, 1),
+                Revenue = x.Revenue,
+                Cost = x.Cost,
+                Profit = profit,
+                ExportCount = x.ExportCount
+            };
+        }).ToList();
     }
 
-    public async Task<List<RevenueStatisticsDto>> GetRevenueByMonthAsync(DateTime fromDate, DateTime toDate)
+    public async Task<List<BusinessStatisticsDto>> GetStatisticsByQuarterAsync(DateTime fromDate, DateTime toDate)
     {
-        var result = await _context.OrderItems
+        var startDate = fromDate.Date;
+        var endDate = toDate.Date.AddDays(1);
+
+        var data = await _context.InventoryExportItems
             .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => new
+            .Where(x =>
+                x.Export.ExportType == "ORDER" &&
+                x.Export.Status == "COMPLETED" &&
+                x.Export.ApprovedAt.HasValue &&
+                x.Export.ApprovedAt.Value >= startDate &&
+                x.Export.ApprovedAt.Value < endDate)
+            .GroupBy(x => new
             {
-                Year = oi.Order.CompletedAt.Value.Year,
-                Month = oi.Order.CompletedAt.Value.Month
+                Year = x.Export.ApprovedAt.Value.Year,
+                Quarter = ((x.Export.ApprovedAt.Value.Month - 1) / 3) + 1
             })
-            .Select(g => new RevenueStatisticsDto
+            .Select(g => new
             {
-                Label = $"{g.Key.Year}-{g.Key.Month:D2}",
-                Date = new DateTime(g.Key.Year, g.Key.Month, 1),
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.CostPrice) * oi.Quantity),
-                OrderCount = g.Select(oi => oi.OrderId).Distinct().Count(),
-                AverageOrderValue = g.Select(oi => oi.OrderId).Distinct().Count() > 0
-                    ? g.Sum(oi => oi.Price * oi.Quantity) / g.Select(oi => oi.OrderId).Distinct().Count()
-                    : 0
+                g.Key.Year,
+                g.Key.Quarter,
+
+                Revenue = g.Sum(x => x.Price * x.Quantity),
+
+                Cost = g.SelectMany(x => x.ExportItemBatches)
+                    .Sum(b => b.CostPrice * b.Quantity),
+
+                ExportCount = g.Select(x => x.ExportId).Distinct().Count()
             })
-            .OrderBy(x => x.Date)
+            .OrderBy(x => x.Year)
+            .ThenBy(x => x.Quarter)
             .ToListAsync();
 
-        return result;
+        return data.Select(x =>
+        {
+            var profit = x.Revenue - x.Cost;
+            var firstMonthOfQuarter = ((x.Quarter - 1) * 3) + 1;
+
+            return new BusinessStatisticsDto
+            {
+                Label = $"{x.Year}-Q{x.Quarter}",
+                Date = new DateTime(x.Year, firstMonthOfQuarter, 1),
+                Revenue = x.Revenue,
+                Cost = x.Cost,
+                Profit = profit,
+                ExportCount = x.ExportCount
+            };
+        }).ToList();
     }
 
-    public async Task<List<RevenueStatisticsDto>> GetRevenueByQuarterAsync(DateTime fromDate, DateTime toDate)
+    public async Task<List<BusinessStatisticsDto>> GetStatisticsByYearAsync(DateTime fromDate, DateTime toDate)
     {
-        var result = await _context.OrderItems
+        var startDate = fromDate.Date;
+        var endDate = toDate.Date.AddDays(1);
+
+        var data = await _context.InventoryExportItems
             .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => new
+            .Where(x =>
+                x.Export.ExportType == "ORDER" &&
+                x.Export.Status == "COMPLETED" &&
+                x.Export.ApprovedAt.HasValue &&
+                x.Export.ApprovedAt.Value >= startDate &&
+                x.Export.ApprovedAt.Value < endDate)
+            .GroupBy(x => x.Export.ApprovedAt.Value.Year)
+            .Select(g => new
             {
-                Year = oi.Order.CompletedAt.Value.Year,
-                Quarter = (oi.Order.CompletedAt.Value.Month - 1) / 3 + 1
+                Year = g.Key,
+
+                Revenue = g.Sum(x => x.Price * x.Quantity),
+
+                Cost = g.SelectMany(x => x.ExportItemBatches)
+                    .Sum(b => b.CostPrice * b.Quantity),
+
+                ExportCount = g.Select(x => x.ExportId).Distinct().Count()
             })
-            .Select(g => new RevenueStatisticsDto
-            {
-                Label = $"{g.Key.Year}-Q{g.Key.Quarter}",
-                Date = new DateTime(g.Key.Year, (g.Key.Quarter - 1) * 3 + 1, 1),
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.CostPrice) * oi.Quantity),
-                OrderCount = g.Select(oi => oi.OrderId).Distinct().Count(),
-                AverageOrderValue = g.Select(oi => oi.OrderId).Distinct().Count() > 0
-                    ? g.Sum(oi => oi.Price * oi.Quantity) / g.Select(oi => oi.OrderId).Distinct().Count()
-                    : 0
-            })
-            .OrderBy(x => x.Date)
+            .OrderBy(x => x.Year)
             .ToListAsync();
 
-        return result;
-    }
+        return data.Select(x =>
+        {
+            var profit = x.Revenue - x.Cost;
 
-    public async Task<List<RevenueStatisticsDto>> GetRevenueByYearAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => oi.Order.CompletedAt.Value.Year)
-            .Select(g => new RevenueStatisticsDto
+            return new BusinessStatisticsDto
             {
-                Label = g.Key.ToString(),
-                Date = new DateTime(g.Key, 1, 1),
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.CostPrice) * oi.Quantity),
-                OrderCount = g.Select(oi => oi.OrderId).Distinct().Count(),
-                AverageOrderValue = g.Select(oi => oi.OrderId).Distinct().Count() > 0
-                    ? g.Sum(oi => oi.Price * oi.Quantity) / g.Select(oi => oi.OrderId).Distinct().Count()
-                    : 0
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-
-    public async Task<List<ImportCostStatisticsDto>> GetImportCostByDayAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.InventoryImportItems
-            .AsNoTracking()
-            .Where(imi => imi.Import.Status == "Hoàn tất" &&
-                   imi.Import.ApprovedAt.HasValue &&
-                   imi.Import.ApprovedAt.Value.Date >= fromDate.Date &&
-                   imi.Import.ApprovedAt.Value.Date <= toDate.Date)
-            .GroupBy(imi => imi.Import.ApprovedAt.Value.Date)
-            .Select(g => new ImportCostStatisticsDto
-            {
-                Label = g.Key.ToString("yyyy-MM-dd"),
-                Date = g.Key,
-                TotalCost = g.Sum(imi => imi.Quantity * imi.Price),
-                ImportCount = g.Select(imi => imi.ImportId).Distinct().Count(),
-                TotalQuantity = g.Sum(imi => imi.Quantity)
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-    public async Task<List<ImportCostStatisticsDto>> GetImportCostByWeekAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.InventoryImportItems
-            .AsNoTracking()
-            .Where(imi => imi.Import.Status == "Hoàn tất" &&
-                   imi.Import.ApprovedAt.HasValue &&
-                   imi.Import.ApprovedAt.Value.Date >= fromDate.Date &&
-                   imi.Import.ApprovedAt.Value.Date <= toDate.Date)
-            .GroupBy(imi => new
-            {
-                Year = imi.Import.ApprovedAt.Value.Year,
-                Week = GetWeekOfYear(imi.Import.ApprovedAt.Value)
-            })
-            .Select(g => new ImportCostStatisticsDto
-            {
-                Label = $"{g.Key.Year}-W{g.Key.Week}",
-                Date = g.Min(imi => imi.Import.ApprovedAt.Value),
-                TotalCost = g.Sum(imi => imi.Quantity * imi.Price),
-                ImportCount = g.Select(imi => imi.ImportId).Distinct().Count(),
-                TotalQuantity = g.Sum(imi => imi.Quantity)
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-    public async Task<List<ImportCostStatisticsDto>> GetImportCostByMonthAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.InventoryImportItems
-            .AsNoTracking()
-            .Where(imi => imi.Import.Status == "Hoàn tất" &&
-                   imi.Import.ApprovedAt.HasValue &&
-                   imi.Import.ApprovedAt.Value.Date >= fromDate.Date &&
-                   imi.Import.ApprovedAt.Value.Date <= toDate.Date)
-            .GroupBy(imi => new
-            {
-                Year = imi.Import.ApprovedAt.Value.Year,
-                Month = imi.Import.ApprovedAt.Value.Month
-            })
-            .Select(g => new ImportCostStatisticsDto
-            {
-                Label = $"{g.Key.Year}-{g.Key.Month:D2}",
-                Date = new DateTime(g.Key.Year, g.Key.Month, 1),
-                TotalCost = g.Sum(imi => imi.Quantity * imi.Price),
-                ImportCount = g.Select(imi => imi.ImportId).Distinct().Count(),
-                TotalQuantity = g.Sum(imi => imi.Quantity)
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-    public async Task<List<ImportCostStatisticsDto>> GetImportCostByQuarterAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.InventoryImportItems
-            .AsNoTracking()
-            .Where(imi => imi.Import.Status == "Hoàn tất" &&
-                   imi.Import.ApprovedAt.HasValue &&
-                   imi.Import.ApprovedAt.Value.Date >= fromDate.Date &&
-                   imi.Import.ApprovedAt.Value.Date <= toDate.Date)
-            .GroupBy(imi => new
-            {
-                Year = imi.Import.ApprovedAt.Value.Year,
-                Quarter = (imi.Import.ApprovedAt.Value.Month - 1) / 3 + 1
-            })
-            .Select(g => new ImportCostStatisticsDto
-            {
-                Label = $"{g.Key.Year}-Q{g.Key.Quarter}",
-                Date = new DateTime(g.Key.Year, (g.Key.Quarter - 1) * 3 + 1, 1),
-                TotalCost = g.Sum(imi => imi.Quantity * imi.Price),
-                ImportCount = g.Select(imi => imi.ImportId).Distinct().Count(),
-                TotalQuantity = g.Sum(imi => imi.Quantity)
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-    public async Task<List<ImportCostStatisticsDto>> GetImportCostByYearAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.InventoryImportItems
-            .AsNoTracking()
-            .Where(imi => imi.Import.Status == "Hoàn tất" &&
-                   imi.Import.ApprovedAt.HasValue &&
-                   imi.Import.ApprovedAt.Value.Date >= fromDate.Date &&
-                   imi.Import.ApprovedAt.Value.Date <= toDate.Date)
-            .GroupBy(imi => imi.Import.ApprovedAt.Value.Year)
-            .Select(g => new ImportCostStatisticsDto
-            {
-                Label = g.Key.ToString(),
-                Date = new DateTime(g.Key, 1, 1),
-                TotalCost = g.Sum(imi => imi.Quantity * imi.Price),
-                ImportCount = g.Select(imi => imi.ImportId).Distinct().Count(),
-                TotalQuantity = g.Sum(imi => imi.Quantity)
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-    #endregion
-
-    #region Profit Statistics
-
-    public async Task<List<ProfitStatisticsDto>> GetProfitByDayAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => oi.Order.CompletedAt.Value.Date)
-            .Select(g => new ProfitStatisticsDto
-            {
-                Label = g.Key.ToString("yyyy-MM-dd"),
-                Date = g.Key,
-                TotalRevenue = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalCost = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalProfit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                ProfitMarginPercentage = (g.Sum(oi => oi.Price * oi.Quantity) > 0)
-                    ? (g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity) / g.Sum(oi => oi.Price * oi.Quantity)) * 100
-                    : 0
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-    public async Task<List<ProfitStatisticsDto>> GetProfitByWeekAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => new
-            {
-                Year = oi.Order.CompletedAt.Value.Year,
-                Week = GetWeekOfYear(oi.Order.CompletedAt.Value)
-            })
-            .Select(g => new ProfitStatisticsDto
-            {
-                Label = $"{g.Key.Year}-W{g.Key.Week}",
-                Date = g.Min(oi => oi.Order.CompletedAt.Value),
-                TotalRevenue = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalCost = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalProfit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                ProfitMarginPercentage = (g.Sum(oi => oi.Price * oi.Quantity) > 0)
-                    ? (g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity) / g.Sum(oi => oi.Price * oi.Quantity)) * 100
-                    : 0
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-    public async Task<List<ProfitStatisticsDto>> GetProfitByMonthAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => new
-            {
-                Year = oi.Order.CompletedAt.Value.Year,
-                Month = oi.Order.CompletedAt.Value.Month
-            })
-            .Select(g => new ProfitStatisticsDto
-            {
-                Label = $"{g.Key.Year}-{g.Key.Month:D2}",
-                Date = new DateTime(g.Key.Year, g.Key.Month, 1),
-                TotalRevenue = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalCost = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalProfit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                ProfitMarginPercentage = (g.Sum(oi => oi.Price * oi.Quantity) > 0)
-                    ? (g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity) / g.Sum(oi => oi.Price * oi.Quantity)) * 100
-                    : 0
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-    public async Task<List<ProfitStatisticsDto>> GetProfitByQuarterAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => new
-            {
-                Year = oi.Order.CompletedAt.Value.Year,
-                Quarter = (oi.Order.CompletedAt.Value.Month - 1) / 3 + 1
-            })
-            .Select(g => new ProfitStatisticsDto
-            {
-                Label = $"{g.Key.Year}-Q{g.Key.Quarter}",
-                Date = new DateTime(g.Key.Year, (g.Key.Quarter - 1) * 3 + 1, 1),
-                TotalRevenue = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalCost = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalProfit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                ProfitMarginPercentage = (g.Sum(oi => oi.Price * oi.Quantity) > 0)
-                    ? (g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity) / g.Sum(oi => oi.Price * oi.Quantity)) * 100
-                    : 0
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
-    }
-
-    public async Task<List<ProfitStatisticsDto>> GetProfitByYearAsync(DateTime fromDate, DateTime toDate)
-    {
-        var result = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date >= fromDate.Date &&
-                   oi.Order.CompletedAt.Value.Date <= toDate.Date)
-            .GroupBy(oi => oi.Order.CompletedAt.Value.Year)
-            .Select(g => new ProfitStatisticsDto
-            {
-                Label = g.Key.ToString(),
-                Date = new DateTime(g.Key, 1, 1),
-                TotalRevenue = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalCost = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalProfit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                ProfitMarginPercentage = (g.Sum(oi => oi.Price * oi.Quantity) > 0)
-                    ? (g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity) / g.Sum(oi => oi.Price * oi.Quantity)) * 100
-                    : 0
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
-
-        return result;
+                Label = x.Year.ToString(),
+                Date = new DateTime(x.Year, 1, 1),
+                Revenue = x.Revenue,
+                Cost = x.Cost,
+                Profit = profit,
+                ExportCount = x.ExportCount
+            };
+        }).ToList();
     }
 
     #endregion
@@ -444,47 +224,51 @@ public class StatisticsRepository : IStatisticsRepository
     {
         var skip = (pageNumber - 1) * pageSize;
 
-        var result = await _context.Products
+        var result = await _context.OrderItems
             .AsNoTracking()
-            .Join(
-                _context.OrderItems.Where(oi => oi.Order.Status == "Hoàn tất"),
-                p => p.Id,
-                oi => oi.ProductId,
-                (p, oi) => new { Product = p, OrderItem = oi }
-            )
-            .GroupBy(x => new
+            .Where(oi => oi.Order.Status == CompletedStatus)
+            .GroupBy(oi => new
             {
-                ProductId = x.Product.Id,
-                ProductName = x.Product.Name,
-                CategoryName = x.Product.Category.Name
+                ProductId = oi.Product.Id,
+                ProductName = oi.Product.Name,
+                CategoryName = oi.Product.Category.Name
             })
             .Select(g => new ProductAnalyticsDto
             {
                 ProductId = g.Key.ProductId,
                 ProductName = g.Key.ProductName,
                 Category = g.Key.CategoryName,
-                TotalSoldQuantity = g.Sum(x => x.OrderItem.Quantity),
-                TotalRevenue = g.Sum(x => x.OrderItem.Price * x.OrderItem.Quantity),
-                TotalCost = g.Sum(x => x.OrderItem.Price * x.OrderItem.Quantity),
-                TotalProfit = g.Sum(x => (x.OrderItem.Price - x.OrderItem.Price) * x.OrderItem.Quantity),
-                ProfitMarginPercentage = g.Sum(x => x.OrderItem.Price * x.OrderItem.Quantity) > 0
-                    ? (g.Sum(x => (x.OrderItem.Price - x.OrderItem.Price) * x.OrderItem.Quantity) / g.Sum(x => x.OrderItem.Price * x.OrderItem.Quantity)) * 100
+                TotalSoldQuantity = g.Sum(x => x.Quantity),
+                TotalRevenue = g.Sum(x => x.Price * x.Quantity ?? 0),
+                TotalCost = g.Sum(x => x.CostPrice * x.Quantity),
+                TotalProfit = g.Sum(x => (x.Price - x.CostPrice) * x.Quantity ?? 0),
+                ProfitMarginPercentage = g.Sum(x => x.Price * x.Quantity) > 0
+                    ? (g.Sum(x => (x.Price - x.CostPrice) * x.Quantity) / g.Sum(x => x.Price * x.Quantity) ?? 0) * 100
                     : 0,
-                AverageSoldPrice = g.Count() > 0 ? g.Average(x => x.OrderItem.Price) : 0,
-                AveragePrice = g.Count() > 0 ? g.Average(x => x.OrderItem.Price) : 0
+                AverageSoldPrice = g.Average(x => x.Price) ?? 0,
+                AveragePrice = g.Average(x => x.Price) ?? 0
             })
+            .OrderByDescending(x => x.TotalRevenue)
             .Skip(skip)
             .Take(pageSize)
             .ToListAsync();
 
-        // Get inventory for each product
+        var productIds = result.Select(x => x.ProductId).ToList();
+
+        var inventories = await _context.Inventories
+            .AsNoTracking()
+            .Where(i => productIds.Contains(i.ProductId))
+            .Select(i => new
+            {
+                i.ProductId,
+                i.Quantity
+            })
+            .ToListAsync();
+
         foreach (var product in result)
         {
-            var inventory = await _context.Inventories
-                .AsNoTracking()
-                .FirstOrDefaultAsync(i => i.ProductId == product.ProductId);
-
-            product.CurrentInventoryQuantity = inventory?.Quantity ?? 0;
+            product.CurrentInventoryQuantity =
+                inventories.FirstOrDefault(i => i.ProductId == product.ProductId)?.Quantity ?? 0;
         }
 
         return result;
@@ -492,49 +276,70 @@ public class StatisticsRepository : IStatisticsRepository
 
     public async Task<ProductAnalyticsDto> GetProductAnalyticsByIdAsync(long productId)
     {
-        var product = await _context.Products
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == productId);
-
-        if (product == null)
-            return null;
-
         var analytics = await _context.OrderItems
             .AsNoTracking()
-            .Where(oi => oi.ProductId == productId && oi.Order.Status == "Hoàn tất")
-            .GroupBy(oi => new { oi.Product.Name })
+            .Where(oi => oi.ProductId == productId && oi.Order.Status == CompletedStatus)
+            .GroupBy(oi => new
+            {
+                ProductId = oi.Product.Id,
+                ProductName = oi.Product.Name,
+                CategoryName = oi.Product.Category.Name
+            })
             .Select(g => new ProductAnalyticsDto
             {
-                ProductId = productId,
-                ProductName = g.Key.Name,
-                Category = product.Category.Name,
+                ProductId = g.Key.ProductId,
+                ProductName = g.Key.ProductName,
+                Category = g.Key.CategoryName,
                 TotalSoldQuantity = g.Sum(oi => oi.Quantity),
-                TotalRevenue = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalCost = g.Sum(oi => oi.Price * oi.Quantity),
-                TotalProfit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
+                TotalRevenue = g.Sum(oi => oi.Price * oi.Quantity) ?? 0,
+                TotalCost = g.Sum(oi => oi.CostPrice * oi.Quantity),
+                TotalProfit = g.Sum(oi => (oi.Price - oi.CostPrice) * oi.Quantity) ?? 0,
                 ProfitMarginPercentage = g.Sum(oi => oi.Price * oi.Quantity) > 0
-                    ? (g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity) / g.Sum(oi => oi.Price * oi.Quantity)) * 100
+                    ? (g.Sum(oi => (oi.Price - oi.CostPrice) * oi.Quantity) / g.Sum(oi => oi.Price * oi.Quantity) ?? 0) * 100
                     : 0,
-                AverageSoldPrice = g.Average(oi => oi.Price),
-                AveragePrice = g.Average(oi => oi.Price)
+                AverageSoldPrice = g.Average(oi => oi.Price) ?? 0,
+                AveragePrice = g.Average(oi => oi.Price) ?? 0
             })
             .FirstOrDefaultAsync();
 
-        if (analytics != null)
+        if (analytics == null)
         {
-            var inventory = await _context.Inventories
+            var product = await _context.Products
                 .AsNoTracking()
-                .FirstOrDefaultAsync(i => i.ProductId == productId);
+                .Where(p => p.Id == productId)
+                .Select(p => new ProductAnalyticsDto
+                {
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    Category = p.Category.Name,
+                    TotalSoldQuantity = 0,
+                    TotalRevenue = 0,
+                    TotalCost = 0,
+                    TotalProfit = 0,
+                    ProfitMarginPercentage = 0,
+                    AverageSoldPrice = 0,
+                    AveragePrice = p.Price
+                })
+                .FirstOrDefaultAsync();
 
-            analytics.CurrentInventoryQuantity = inventory?.Quantity ?? 0;
+            if (product == null)
+                return null;
+
+            analytics = product;
         }
+
+        var inventory = await _context.Inventories
+            .AsNoTracking()
+            .FirstOrDefaultAsync(i => i.ProductId == productId);
+
+        analytics.CurrentInventoryQuantity = inventory?.Quantity ?? 0;
 
         return analytics;
     }
 
     public async Task<List<ProductAnalyticsDto>> GetLowStockProductsAsync(int threshold = 50)
     {
-        var result = await _context.Inventories
+        return await _context.Inventories
             .AsNoTracking()
             .Where(i => i.Quantity <= threshold)
             .Select(i => new ProductAnalyticsDto
@@ -544,9 +349,8 @@ public class StatisticsRepository : IStatisticsRepository
                 Category = i.Product.Category.Name,
                 CurrentInventoryQuantity = i.Quantity
             })
+            .OrderBy(i => i.CurrentInventoryQuantity)
             .ToListAsync();
-
-        return result;
     }
 
     #endregion
@@ -555,9 +359,9 @@ public class StatisticsRepository : IStatisticsRepository
 
     public async Task<List<TopProductDto>> GetTopSellingProductsAsync(int topCount = 10)
     {
-        var result = await _context.OrderItems
+        return await _context.OrderItems
             .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất")
+            .Where(oi => oi.Order.Status == CompletedStatus)
             .GroupBy(oi => new
             {
                 ProductId = oi.Product.Id,
@@ -569,21 +373,19 @@ public class StatisticsRepository : IStatisticsRepository
                 ProductId = g.Key.ProductId,
                 ProductName = g.Key.ProductName,
                 Category = g.Key.CategoryName,
-                Value = g.Sum(oi => oi.Price * oi.Quantity),
+                Value = g.Sum(oi => oi.Price * oi.Quantity ?? 0),
                 Quantity = g.Sum(oi => oi.Quantity)
             })
             .OrderByDescending(x => x.Quantity)
             .Take(topCount)
             .ToListAsync();
-
-        return result;
     }
 
     public async Task<List<TopProductDto>> GetTopProfitProductsAsync(int topCount = 10)
     {
-        var result = await _context.OrderItems
+        return await _context.OrderItems
             .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất")
+            .Where(oi => oi.Order.Status == CompletedStatus)
             .GroupBy(oi => new
             {
                 ProductId = oi.Product.Id,
@@ -595,14 +397,12 @@ public class StatisticsRepository : IStatisticsRepository
                 ProductId = g.Key.ProductId,
                 ProductName = g.Key.ProductName,
                 Category = g.Key.CategoryName,
-                Value = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
+                Value = g.Sum(oi => (oi.Price - oi.CostPrice) * oi.Quantity ?? 0),
                 Quantity = g.Sum(oi => oi.Quantity)
             })
             .OrderByDescending(x => x.Value)
             .Take(topCount)
             .ToListAsync();
-
-        return result;
     }
 
     #endregion
@@ -612,117 +412,58 @@ public class StatisticsRepository : IStatisticsRepository
     public async Task<DashboardSummaryDto> GetDashboardSummaryAsync()
     {
         var today = DateTime.Now.Date;
+        var tomorrow = today.AddDays(1);
         var yesterday = today.AddDays(-1);
         var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+        var firstDayOfNextMonth = firstDayOfMonth.AddMonths(1);
         var firstDayOfLastMonth = firstDayOfMonth.AddMonths(-1);
 
-        // Today's revenue and profit
-        var todayStats = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date == today)
-            .GroupBy(_ => 1)
-            .Select(g => new
-            {
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity)
-            })
-            .FirstOrDefaultAsync();
+        var todayStats = await GetSalesSummaryAsync(today, tomorrow);
+        var yesterdayStats = await GetSalesSummaryAsync(yesterday, today);
+        var currentMonthStats = await GetSalesSummaryAsync(firstDayOfMonth, firstDayOfNextMonth);
+        var previousMonthStats = await GetSalesSummaryAsync(firstDayOfLastMonth, firstDayOfMonth);
 
-        // Yesterday's revenue and profit
-        var yesterdayStats = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value.Date == yesterday)
-            .GroupBy(_ => 1)
-            .Select(g => new
-            {
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity)
-            })
-            .FirstOrDefaultAsync();
-
-        // Current month revenue and profit
-        var currentMonthStats = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value >= firstDayOfMonth &&
-                   oi.Order.CompletedAt.Value.Date <= today)
-            .GroupBy(_ => 1)
-            .Select(g => new
-            {
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity)
-            })
-            .FirstOrDefaultAsync();
-
-        // Previous month revenue and profit
-        var previousMonthStats = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value >= firstDayOfLastMonth &&
-                   oi.Order.CompletedAt.Value < firstDayOfMonth)
-            .GroupBy(_ => 1)
-            .Select(g => new
-            {
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity)
-            })
-            .FirstOrDefaultAsync();
-
-        // Order counts
         var totalOrders = await _context.Orders.CountAsync();
-        var completedOrders = await _context.Orders.CountAsync(o => o.Status == "Hoàn tất");
-        var cancelledOrders = await _context.Orders.CountAsync(o => o.Status == "CANCELLED");
-        var pendingOrders = await _context.Orders.CountAsync(o => o.Status != "Hoàn tất" && o.Status != "CANCELLED");
+        var completedOrders = await _context.Orders.CountAsync(o => o.Status == CompletedStatus);
+        var cancelledOrders = await _context.Orders.CountAsync(o => o.Status == CancelledStatus);
+        var pendingOrders = await _context.Orders.CountAsync(o => o.Status != CompletedStatus && o.Status != CancelledStatus);
 
-        // Top products
         var topSelling = await GetTopSellingProductsAsync(10);
         var topProfit = await GetTopProfitProductsAsync(10);
 
-        // Low stock products
         var lowStockCount = await _context.Inventories
             .AsNoTracking()
             .CountAsync(i => i.Quantity <= 50);
 
-        var summary = new DashboardSummaryDto
+        return new DashboardSummaryDto
         {
-            TodayRevenue = todayStats?.Revenue ?? 0,
-            TodayProfit = todayStats?.Profit ?? 0,
-            TodayRevenuePreviousDay = yesterdayStats?.Revenue ?? 0,
-            TodayProfitPreviousDay = yesterdayStats?.Profit ?? 0,
+            TodayRevenue = todayStats.Revenue,
+            TodayProfit = todayStats.Profit,
+            TodayRevenuePreviousDay = yesterdayStats.Revenue,
+            TodayProfitPreviousDay = yesterdayStats.Profit,
 
             TotalOrders = totalOrders,
             CompletedOrders = completedOrders,
             CancelledOrders = cancelledOrders,
             PendingOrders = pendingOrders,
 
-            MonthlyRevenue = currentMonthStats?.Revenue ?? 0,
-            MonthlyProfit = currentMonthStats?.Profit ?? 0,
-            MonthlyRevenuePreviousMonth = previousMonthStats?.Revenue ?? 0,
-            MonthlyProfitPreviousMonth = previousMonthStats?.Profit ?? 0,
+            MonthlyRevenue = currentMonthStats.Revenue,
+            MonthlyProfit = currentMonthStats.Profit,
+            MonthlyRevenuePreviousMonth = previousMonthStats.Revenue,
+            MonthlyProfitPreviousMonth = previousMonthStats.Profit,
 
             TopSellingProducts = topSelling,
             TopProfitProducts = topProfit,
             TotalLowStockProducts = lowStockCount,
 
-            RevenueGrowthPercentage = (currentMonthStats?.Revenue ?? 0) > 0 && (previousMonthStats?.Revenue ?? 0) > 0
-                ? (((currentMonthStats.Revenue - previousMonthStats.Revenue) / previousMonthStats.Revenue) * 100)
+            RevenueGrowthPercentage = previousMonthStats.Revenue > 0
+                ? ((currentMonthStats.Revenue - previousMonthStats.Revenue) / previousMonthStats.Revenue) * 100
                 : 0,
-            ProfitGrowthPercentage = (currentMonthStats?.Profit ?? 0) > 0 && (previousMonthStats?.Profit ?? 0) > 0
-                ? (((currentMonthStats.Profit - previousMonthStats.Profit) / previousMonthStats.Profit) * 100)
+
+            ProfitGrowthPercentage = previousMonthStats.Profit > 0
+                ? ((currentMonthStats.Profit - previousMonthStats.Profit) / previousMonthStats.Profit) * 100
                 : 0
         };
-
-        return summary;
     }
 
     #endregion
@@ -731,23 +472,27 @@ public class StatisticsRepository : IStatisticsRepository
 
     public async Task<List<CategoricalRevenueDto>> GetRevenueByCategoryAsync(DateTime? fromDate = null, DateTime? toDate = null)
     {
-        fromDate ??= DateTime.Now.AddMonths(-1);
-        toDate ??= DateTime.Now;
+        var startDate = (fromDate ?? DateTime.Now.AddMonths(-1)).Date;
+        var endDate = (toDate ?? DateTime.Now).Date.AddDays(1);
 
         var result = await _context.OrderItems
             .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value >= fromDate &&
-                   oi.Order.CompletedAt.Value <= toDate)
-            .GroupBy(oi => new { oi.Product.Category.Id, oi.Product.Category.Name })
+            .Where(oi =>
+                oi.Order.Status == CompletedStatus &&
+                oi.Order.CompletedAt.HasValue &&
+                oi.Order.CompletedAt.Value >= startDate &&
+                oi.Order.CompletedAt.Value < endDate)
+            .GroupBy(oi => new
+            {
+                CategoryId = oi.Product.Category.Id,
+                CategoryName = oi.Product.Category.Name
+            })
             .Select(g => new
             {
-                CategoryId = g.Key.Id,
-                CategoryName = g.Key.Name,
+                g.Key.CategoryId,
+                g.Key.CategoryName,
                 Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
+                Profit = g.Sum(oi => (oi.Price - oi.CostPrice) * oi.Quantity),
                 ProductCount = g.Select(oi => oi.ProductId).Distinct().Count(),
                 TotalQuantitySold = g.Sum(oi => oi.Quantity)
             })
@@ -760,11 +505,11 @@ public class StatisticsRepository : IStatisticsRepository
             {
                 CategoryId = r.CategoryId,
                 CategoryName = r.CategoryName,
-                Revenue = r.Revenue,
-                Profit = r.Profit,
+                Revenue = r.Revenue ?? 0,
+                Profit = r.Profit ?? 0,
                 ProductCount = r.ProductCount,
                 TotalQuantitySold = r.TotalQuantitySold,
-                PercentageOfTotal = totalRevenue > 0 ? (r.Revenue / totalRevenue) * 100 : 0
+                PercentageOfTotal = (totalRevenue ?? 0) > 0 ? ((r.Revenue ?? 0) / (totalRevenue ?? 1)) * 100 : 0
             })
             .OrderByDescending(x => x.Revenue)
             .ToList();
@@ -776,62 +521,34 @@ public class StatisticsRepository : IStatisticsRepository
 
     public async Task<ComparisonStatisticsDto> CompareCurrentVsPreviousMonthAsync()
     {
-        var today = DateTime.Now;
+        var today = DateTime.Now.Date;
         var currentMonthStart = new DateTime(today.Year, today.Month, 1);
+        var nextMonthStart = currentMonthStart.AddMonths(1);
         var previousMonthStart = currentMonthStart.AddMonths(-1);
-        var previousMonthEnd = currentMonthStart.AddDays(-1);
 
-        var currentMonthData = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value >= currentMonthStart)
-            .GroupBy(_ => 1)
-            .Select(g => new
-            {
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                Orders = g.Select(oi => oi.OrderId).Distinct().Count()
-            })
-            .FirstOrDefaultAsync();
-
-        var previousMonthData = await _context.OrderItems
-            .AsNoTracking()
-            .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                   oi.Order.CompletedAt.HasValue &&
-                   oi.Order.CompletedAt.Value >= previousMonthStart &&
-                   oi.Order.CompletedAt.Value <= previousMonthEnd)
-            .GroupBy(_ => 1)
-            .Select(g => new
-            {
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.Price * oi.Quantity),
-                Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                Orders = g.Select(oi => oi.OrderId).Distinct().Count()
-            })
-            .FirstOrDefaultAsync();
-
-        var currentRevenue = currentMonthData?.Revenue ?? 0;
-        var previousRevenue = previousMonthData?.Revenue ?? 0;
-        var currentProfit = currentMonthData?.Profit ?? 0;
-        var previousProfit = previousMonthData?.Profit ?? 0;
+        var currentMonthData = await GetSalesSummaryWithOrdersAsync(currentMonthStart, nextMonthStart);
+        var previousMonthData = await GetSalesSummaryWithOrdersAsync(previousMonthStart, currentMonthStart);
 
         return new ComparisonStatisticsDto
         {
             Label = $"{currentMonthStart.Year}-{currentMonthStart.Month:D2}",
-            CurrentPeriodRevenue = currentRevenue,
-            PreviousPeriodRevenue = previousRevenue,
-            RevenueChange = currentRevenue - previousRevenue,
-            RevenueChangePercentage = previousRevenue > 0 ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 : 0,
 
-            CurrentPeriodProfit = currentProfit,
-            PreviousPeriodProfit = previousProfit,
-            ProfitChange = currentProfit - previousProfit,
-            ProfitChangePercentage = previousProfit > 0 ? ((currentProfit - previousProfit) / previousProfit) * 100 : 0,
+            CurrentPeriodRevenue = currentMonthData.Revenue,
+            PreviousPeriodRevenue = previousMonthData.Revenue,
+            RevenueChange = currentMonthData.Revenue - previousMonthData.Revenue,
+            RevenueChangePercentage = previousMonthData.Revenue > 0
+                ? ((currentMonthData.Revenue - previousMonthData.Revenue) / previousMonthData.Revenue) * 100
+                : 0,
 
-            CurrentPeriodOrders = currentMonthData?.Orders ?? 0,
-            PreviousPeriodOrders = previousMonthData?.Orders ?? 0
+            CurrentPeriodProfit = currentMonthData.Profit,
+            PreviousPeriodProfit = previousMonthData.Profit,
+            ProfitChange = currentMonthData.Profit - previousMonthData.Profit,
+            ProfitChangePercentage = previousMonthData.Profit > 0
+                ? ((currentMonthData.Profit - previousMonthData.Profit) / previousMonthData.Profit) * 100
+                : 0,
+
+            CurrentPeriodOrders = currentMonthData.Orders,
+            PreviousPeriodOrders = previousMonthData.Orders
         };
     }
 
@@ -845,60 +562,34 @@ public class StatisticsRepository : IStatisticsRepository
         for (int month = 1; month <= 12; month++)
         {
             var currentMonthStart = new DateTime(currentYear, month, 1);
-            var currentMonthEnd = currentMonthStart.AddMonths(1).AddDays(-1);
+            var currentMonthEnd = currentMonthStart.AddMonths(1);
+
             var previousMonthStart = new DateTime(previousYear, month, 1);
-            var previousMonthEnd = previousMonthStart.AddMonths(1).AddDays(-1);
+            var previousMonthEnd = previousMonthStart.AddMonths(1);
 
-            var currentMonthData = await _context.OrderItems
-                .AsNoTracking()
-                .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                       oi.Order.CompletedAt.HasValue &&
-                       oi.Order.CompletedAt.Value >= currentMonthStart &&
-                       oi.Order.CompletedAt.Value <= currentMonthEnd)
-                .GroupBy(_ => 1)
-                .Select(g => new
-                {
-                    Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                    Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                    Orders = g.Select(oi => oi.OrderId).Distinct().Count()
-                })
-                .FirstOrDefaultAsync();
-
-            var previousMonthData = await _context.OrderItems
-                .AsNoTracking()
-                .Where(oi => oi.Order.Status == "Hoàn tất" &&
-                       oi.Order.CompletedAt.HasValue &&
-                       oi.Order.CompletedAt.Value >= previousMonthStart &&
-                       oi.Order.CompletedAt.Value <= previousMonthEnd)
-                .GroupBy(_ => 1)
-                .Select(g => new
-                {
-                    Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                    Profit = g.Sum(oi => (oi.Price - oi.Price) * oi.Quantity),
-                    Orders = g.Select(oi => oi.OrderId).Distinct().Count()
-                })
-                .FirstOrDefaultAsync();
-
-            var currentRevenue = currentMonthData?.Revenue ?? 0;
-            var previousRevenue = previousMonthData?.Revenue ?? 0;
-            var currentProfit = currentMonthData?.Profit ?? 0;
-            var previousProfit = previousMonthData?.Profit ?? 0;
+            var currentMonthData = await GetSalesSummaryWithOrdersAsync(currentMonthStart, currentMonthEnd);
+            var previousMonthData = await GetSalesSummaryWithOrdersAsync(previousMonthStart, previousMonthEnd);
 
             result.Add(new ComparisonStatisticsDto
             {
                 Label = $"{month:D2}",
-                CurrentPeriodRevenue = currentRevenue,
-                PreviousPeriodRevenue = previousRevenue,
-                RevenueChange = currentRevenue - previousRevenue,
-                RevenueChangePercentage = previousRevenue > 0 ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 : 0,
 
-                CurrentPeriodProfit = currentProfit,
-                PreviousPeriodProfit = previousProfit,
-                ProfitChange = currentProfit - previousProfit,
-                ProfitChangePercentage = previousProfit > 0 ? ((currentProfit - previousProfit) / previousProfit) * 100 : 0,
+                CurrentPeriodRevenue = currentMonthData.Revenue,
+                PreviousPeriodRevenue = previousMonthData.Revenue,
+                RevenueChange = currentMonthData.Revenue - previousMonthData.Revenue,
+                RevenueChangePercentage = previousMonthData.Revenue > 0
+                    ? ((currentMonthData.Revenue - previousMonthData.Revenue) / previousMonthData.Revenue) * 100
+                    : 0,
 
-                CurrentPeriodOrders = currentMonthData?.Orders ?? 0,
-                PreviousPeriodOrders = previousMonthData?.Orders ?? 0
+                CurrentPeriodProfit = currentMonthData.Profit,
+                PreviousPeriodProfit = previousMonthData.Profit,
+                ProfitChange = currentMonthData.Profit - previousMonthData.Profit,
+                ProfitChangePercentage = previousMonthData.Profit > 0
+                    ? ((currentMonthData.Profit - previousMonthData.Profit) / previousMonthData.Profit) * 100
+                    : 0,
+
+                CurrentPeriodOrders = currentMonthData.Orders,
+                PreviousPeriodOrders = previousMonthData.Orders
             });
         }
 
@@ -909,11 +600,77 @@ public class StatisticsRepository : IStatisticsRepository
 
     #region Helper Methods
 
+    private static ProfitStatisticsDto ToProfitStatisticsDto(string label, DateTime date, decimal revenue, decimal cost)
+    {
+        var profit = revenue - cost;
+
+        return new ProfitStatisticsDto
+        {
+            Label = label,
+            Date = date,
+            TotalRevenue = revenue,
+            TotalCost = cost,
+            TotalProfit = profit,
+            ProfitMarginPercentage = revenue > 0 ? (profit / revenue) * 100 : 0
+        };
+    }
+
+    private async Task<(decimal Revenue, decimal Cost, decimal Profit)> GetSalesSummaryAsync(DateTime startDate, DateTime endDate)
+    {
+        var data = await _context.OrderItems
+            .AsNoTracking()
+            .Where(oi =>
+                oi.Order.Status == CompletedStatus &&
+                oi.Order.CompletedAt.HasValue &&
+                oi.Order.CompletedAt.Value >= startDate &&
+                oi.Order.CompletedAt.Value < endDate)
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
+                Cost = g.Sum(oi => oi.CostPrice * oi.Quantity)
+            })
+            .FirstOrDefaultAsync();
+
+        var revenue = data?.Revenue ?? 0;
+        var cost = data?.Cost ?? 0;
+
+        return (revenue, cost, revenue - cost);
+    }
+
+    private async Task<(decimal Revenue, decimal Cost, decimal Profit, int Orders)> GetSalesSummaryWithOrdersAsync(DateTime startDate, DateTime endDate)
+    {
+        var data = await _context.OrderItems
+            .AsNoTracking()
+            .Where(oi =>
+                oi.Order.Status == CompletedStatus &&
+                oi.Order.CompletedAt.HasValue &&
+                oi.Order.CompletedAt.Value >= startDate &&
+                oi.Order.CompletedAt.Value < endDate)
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
+                Cost = g.Sum(oi => oi.CostPrice * oi.Quantity),
+                Orders = g.Select(oi => oi.OrderId).Distinct().Count()
+            })
+            .FirstOrDefaultAsync();
+
+        var revenue = data?.Revenue ?? 0;
+        var cost = data?.Cost ?? 0;
+        var orders = data?.Orders ?? 0;
+
+        return (revenue, cost, revenue - cost, orders);
+    }
+
     private static int GetWeekOfYear(DateTime date)
     {
-        var culture = System.Globalization.CultureInfo.CurrentCulture;
-        var calendar = culture.Calendar;
-        return calendar.GetWeekOfYear(date, culture.DateTimeFormat.CalendarWeekRule, DayOfWeek.Monday);
+        var culture = CultureInfo.CurrentCulture;
+        return culture.Calendar.GetWeekOfYear(
+            date,
+            culture.DateTimeFormat.CalendarWeekRule,
+            DayOfWeek.Monday
+        );
     }
 
     #endregion

@@ -58,13 +58,17 @@ public class InventoryDocumentService : IInventoryDocumentService
 
     private async Task<long> CreateImportInternal(CreateImportRequest request, long userId)
     {
+        var now = DateTime.Now;
+
         var import = new InventoryImport
         {
             Code = GenerateCode("IMP"),
             SupplierId = request.SupplierId,
             Note = request.Note,
             CreatedBy = userId,
-            CreatedAt = DateTime.Now
+            CreatedAt = now,
+            ApprovedAt = now,
+            Status = "COMPLETED"
         };
 
         _context.InventoryImports.Add(import);
@@ -74,12 +78,26 @@ public class InventoryDocumentService : IInventoryDocumentService
 
         foreach (var item in request.Items)
         {
-            _context.InventoryImportItems.Add(new InventoryImportItem
+            var importItem = new InventoryImportItem
             {
                 ImportId = import.Id,
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
-                Price = item.Price
+                Price = item.Price,
+                TotalCost = item.Price * item.Quantity
+            };
+
+            _context.InventoryImportItems.Add(importItem);
+            await _context.SaveChangesAsync();
+
+            _context.InventoryBatches.Add(new InventoryBatch
+            {
+                ProductId = item.ProductId,
+                ImportItemId = importItem.Id,
+                OriginalQuantity = item.Quantity,
+                RemainingQuantity = item.Quantity,
+                CostPrice = item.Price,
+                CreatedAt = now
             });
 
             var inventory = await GetOrCreateInventory(item.ProductId);
@@ -96,8 +114,8 @@ public class InventoryDocumentService : IInventoryDocumentService
                 QuantityAfter = inventory.Quantity,
                 ReferenceId = $"IMP_{import.Id}",
                 Note = request.Note,
-                CreateAt = DateTime.Now,
-                Price = item.Price,
+                CreateAt = now,
+                Price = item.Price
             });
 
             total += item.Quantity * item.Price;
@@ -112,6 +130,8 @@ public class InventoryDocumentService : IInventoryDocumentService
 
     private async Task<long> CreateExportInternal(CreateExportRequest request, long userId)
     {
+        var now = DateTime.Now;
+
         var export = new InventoryExport
         {
             Code = GenerateCode("EXP"),
@@ -119,7 +139,9 @@ public class InventoryDocumentService : IInventoryDocumentService
             ReferenceId = request.ReferenceId,
             Note = request.Note,
             CreatedBy = userId,
-            CreatedAt = DateTime.Now
+            CreatedAt = now,
+            Status = request.Status ?? "COMPLETED",
+            ApprovedAt = request.Status == "COMPLETED" ? now : null
         };
 
         _context.InventoryExports.Add(export);
@@ -137,20 +159,64 @@ public class InventoryDocumentService : IInventoryDocumentService
             int before = inventory.Quantity;
             inventory.Quantity -= item.Quantity;
 
-            var lastImport = await _context.InventoryImportItems
-                .Where(x => x.ProductId == item.ProductId)
-                .OrderByDescending(x => x.Id)
-                .FirstOrDefaultAsync();
-
-            decimal cost = lastImport?.Price ?? 0;
-
-            _context.InventoryExportItems.Add(new InventoryExportItem
+            var exportItem = new InventoryExportItem
             {
                 ExportId = export.Id,
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
-                Price = item.Price
-            });
+                Price = item.Price,
+                TotalAmount = item.Price * item.Quantity
+            };
+
+            _context.InventoryExportItems.Add(exportItem);
+            await _context.SaveChangesAsync();
+
+            int remainingToExport = item.Quantity;
+
+            decimal totalCost = 0;
+
+            var batches = await _context.InventoryBatches
+                .Where(x =>
+                    x.ProductId == item.ProductId &&
+                    x.RemainingQuantity > 0)
+                .OrderBy(x => x.CreatedAt)
+                .ThenBy(x => x.Id)
+                .ToListAsync();
+
+            foreach (var batch in batches)
+            {
+                if (remainingToExport <= 0)
+                    break;
+
+                int takeQuantity = Math.Min(
+                    batch.RemainingQuantity,
+                    remainingToExport);
+
+                batch.RemainingQuantity -= takeQuantity;
+
+                remainingToExport -= takeQuantity;
+
+                totalCost += takeQuantity * batch.CostPrice;
+
+                _context.InventoryExportItemBatches.Add(
+                    new InventoryExportItemBatch
+                    {
+                        ExportItemId = exportItem.Id,
+                        BatchId = batch.Id,
+                        Quantity = takeQuantity,
+                        CostPrice = batch.CostPrice
+                    });
+            }
+
+            if (remainingToExport > 0)
+                throw new Exception(
+                    $"Không đủ batch tồn kho cho product {item.ProductId}");
+
+            decimal averageCost = item.Quantity > 0
+                ? totalCost / item.Quantity
+                : 0;
+
+            exportItem.CostPrice = averageCost;
 
             _context.InventoryLogs.Add(new InventoryLog
             {
@@ -161,8 +227,8 @@ public class InventoryDocumentService : IInventoryDocumentService
                 QuantityAfter = inventory.Quantity,
                 ReferenceId = $"EXP_{export.Id}",
                 Note = request.Note,
-                CreateAt = DateTime.Now,
-                Price = cost
+                CreateAt = now,
+                Price = averageCost
             });
 
             total += item.Quantity * item.Price;

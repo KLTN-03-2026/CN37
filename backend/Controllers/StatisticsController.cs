@@ -7,7 +7,7 @@ namespace backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles="ADMIN")]
+[Authorize(Roles = "ADMIN")]
 public class StatisticsController : ControllerBase
 {
     private readonly IStatisticsService _statisticsService;
@@ -15,6 +15,22 @@ public class StatisticsController : ControllerBase
     public StatisticsController(IStatisticsService statisticsService)
     {
         _statisticsService = statisticsService;
+    }
+
+    [HttpGet("info")]
+    public async Task<IActionResult> GetBusinessStatistics(
+    [FromQuery] string type = "daily",
+    [FromQuery] DateTime? fromDate = null,
+    [FromQuery] DateTime? toDate = null)
+    {
+        var result = await _statisticsService.GetBusinessStatisticsAsync(type, fromDate, toDate);
+
+        return Ok(new
+        {
+            success = true,
+            data = result,
+            message = "Business statistics retrieved successfully"
+        });
     }
 
     /// <summary>
@@ -40,96 +56,6 @@ public class StatisticsController : ControllerBase
             {
                 success = false,
                 message = $"Error retrieving dashboard: {ex.Message}"
-            });
-        }
-    }
-
-    /// <summary>
-    /// Get revenue statistics by type (daily/weekly/monthly/quarterly/yearly)
-    /// GET /api/statistics/revenue?type=daily&fromDate=2026-01-01&toDate=2026-12-31
-    /// </summary>
-    [HttpGet("revenue")]
-    public async Task<IActionResult> GetRevenueStatistics(
-        [FromQuery] string type = "daily",
-        [FromQuery] DateTime? fromDate = null,
-        [FromQuery] DateTime? toDate = null)
-    {
-        try
-        {
-            var result = await _statisticsService.GetRevenueStatisticsAsync(type, fromDate, toDate);
-            return Ok(new
-            {
-                success = true,
-                data = result,
-                message = "Revenue statistics retrieved successfully"
-            });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new
-            {
-                success = false,
-                message = $"Error retrieving revenue statistics: {ex.Message}"
-            });
-        }
-    }
-
-    /// <summary>
-    /// Get profit statistics by type (daily/weekly/monthly/quarterly/yearly)
-    /// GET /api/statistics/profit?type=monthly&fromDate=2026-01-01&toDate=2026-12-31
-    /// </summary>
-    [HttpGet("profit")]
-    public async Task<IActionResult> GetProfitStatistics(
-        [FromQuery] string type = "daily",
-        [FromQuery] DateTime? fromDate = null,
-        [FromQuery] DateTime? toDate = null)
-    {
-        try
-        {
-            var result = await _statisticsService.GetProfitStatisticsAsync(type, fromDate, toDate);
-            return Ok(new
-            {
-                success = true,
-                data = result,
-                message = "Profit statistics retrieved successfully"
-            });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new
-            {
-                success = false,
-                message = $"Error retrieving profit statistics: {ex.Message}"
-            });
-        }
-    }
-
-    /// <summary>
-    /// Get import cost statistics by type (daily/weekly/monthly/quarterly/yearly)
-    /// GET /api/statistics/import-cost?type=monthly&fromDate=2026-01-01&toDate=2026-12-31
-    /// </summary>
-    [HttpGet("import-cost")]
-    public async Task<IActionResult> GetImportCostStatistics(
-        [FromQuery] string type = "daily",
-        [FromQuery] DateTime? fromDate = null,
-        [FromQuery] DateTime? toDate = null)
-    {
-        try
-        {
-            var result = await _statisticsService.GetImportCostStatisticsAsync(type, fromDate, toDate);
-            return Ok(new
-            {
-                success = true,
-                data = result,
-                message = "Import cost statistics retrieved successfully"
-            });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new
-            {
-                success = false,
-                message = $"Error retrieving import cost statistics: {ex.Message}"
             });
         }
     }
@@ -392,7 +318,7 @@ public class StatisticsController : ControllerBase
         try
         {
             var fileContent = await _statisticsService.ExportStatisticsToExcelAsync(request);
-            return File(fileContent, 
+            return File(fileContent,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 $"statistics_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
         }
@@ -424,7 +350,7 @@ public class StatisticsController : ControllerBase
         try
         {
             var fileContent = await _statisticsService.ExportStatisticsToPdfAsync(request);
-            return File(fileContent, 
+            return File(fileContent,
                 "application/pdf",
                 $"statistics_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
         }

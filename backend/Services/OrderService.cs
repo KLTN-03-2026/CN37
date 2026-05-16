@@ -44,7 +44,7 @@ public class OrderService : IOrderService
                         .FirstOrDefault()
                 }).ToListAsync();
 
-            decimal totalAmount = 0;
+            decimal? totalAmount = 0;
             var orderItems = new List<OrderItem>();
 
             foreach (var item in request.Items)
@@ -61,7 +61,7 @@ public class OrderService : IOrderService
                     .FirstOrDefault(x => x.ProductId == item.ProductId)
                     ?.CostPrice ?? 0;
 
-                var price = product.Price;
+                var price = product.DiscountPrice;
                 totalAmount += price * item.Quantity;
 
                 orderItems.Add(new OrderItem
@@ -77,7 +77,7 @@ public class OrderService : IOrderService
             {
                 UserId = request.UserId,
                 AddressId = request.AddressId,
-                TotalAmount = totalAmount,
+                TotalAmount = totalAmount ?? 0,
                 Note = request.Note,
                 Status = "Chờ xác nhận",
                 PaymentMethod = request.PaymentMethod,
@@ -96,7 +96,7 @@ public class OrderService : IOrderService
             {
                 OrderId = order.Id,
                 PaymentMethod = request.PaymentMethod,
-                Amount = totalAmount,
+                Amount = totalAmount ?? 0,
                 Status = "Pending"
             };
 
@@ -126,11 +126,12 @@ public class OrderService : IOrderService
                 ExportType = "ORDER",
                 ReferenceId = order.Id,
                 Note = $"Xuất kho cho đơn hàng #{order.Id}",
+                Status = "PENDING",
                 Items = request.Items.Select(i => new ExportItemDto
                 {
                     ProductId = i.ProductId,
                     Quantity = i.Quantity,
-                    Price = products.FirstOrDefault(p => p.Id == i.ProductId)?.Price ?? 0
+                    Price = products.FirstOrDefault(p => p.Id == i.ProductId)?.DiscountPrice ?? 0
                 }).ToList()
             };
             await _service.CreateExportAsync(exportRequest, request.UserId);
@@ -184,7 +185,7 @@ public class OrderService : IOrderService
                     Slug = i.Product.Slug,
                     ProductName = i.Product.Name,
                     Thumbnail = i.Product.Thumbnail,
-                    Price = i.Price,
+                    Price = i.Price ?? 0,
                     Quantity = i.Quantity,
                     IsReview = i.IsReview,
                 }).ToList()
@@ -222,7 +223,7 @@ public class OrderService : IOrderService
                 {
                     ProductId = i.ProductId,
                     Quantity = i.Quantity,
-                    Price = i.Price // hoặc lấy cost chuẩn
+                    Price = i.Price ?? 0 // hoặc lấy cost chuẩn
                 }).ToList()
             };
 
@@ -341,7 +342,7 @@ public class OrderService : IOrderService
                     ProductId = i.ProductId,
                     ProductName = i.Product.Name,
                     Thumbnail = i.Product.Thumbnail,
-                    Price = i.Price,
+                    Price = i.Price ?? 0,
                     Quantity = i.Quantity
                 }).ToList()
             })
@@ -372,7 +373,7 @@ public class OrderService : IOrderService
             {
                 ProductName = i.Product.Name,
                 Thumbnail = i.Product.Thumbnail,
-                Price = i.Price,
+                Price = i.Price ?? 0,
                 Quantity = i.Quantity
             }).ToList()
         };
@@ -401,6 +402,17 @@ public class OrderService : IOrderService
         {
             order.Status = newStatus;
             order.CompletedAt = DateTime.Now;
+            var inventoryExport = await _context.InventoryExports
+                .FirstOrDefaultAsync(x =>
+                    x.ExportType == "ORDER" &&
+                    x.ReferenceId == order.Id);
+
+            if (inventoryExport == null)
+                throw new Exception($"Không tìm thấy phiếu xuất kho cho đơn hàng #{order.Id}");
+
+            inventoryExport.Status = "COMPLETED";
+            inventoryExport.ApprovedAt = DateTime.Now;
+            inventoryExport.ApprovedBy = order.UserId; 
         }
         else
         {

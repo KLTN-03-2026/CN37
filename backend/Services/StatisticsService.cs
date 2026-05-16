@@ -13,93 +13,64 @@ public class StatisticsService : IStatisticsService
         _statisticsRepository = statisticsRepository;
     }
 
-    public async Task<StatisticsResponseDto<RevenueStatisticsDto>> GetRevenueStatisticsAsync(
-        string type, DateTime? fromDate = null, DateTime? toDate = null)
+    public async Task<StatisticsResponseDto<BusinessStatisticsDto>> GetBusinessStatisticsAsync(
+        string type,
+        DateTime? fromDate = null,
+        DateTime? toDate = null)
     {
-        fromDate ??= DateTime.Now.AddMonths(-1);
-        toDate ??= DateTime.Now;
+        var normalizedType = type.ToLower();
 
-        List<RevenueStatisticsDto> data = type.ToLower() switch
+        if (!fromDate.HasValue || !toDate.HasValue)
         {
-            "daily" => await _statisticsRepository.GetRevenueByDayAsync(fromDate.Value, toDate.Value),
-            "weekly" => await _statisticsRepository.GetRevenueByWeekAsync(fromDate.Value, toDate.Value),
-            "monthly" => await _statisticsRepository.GetRevenueByMonthAsync(fromDate.Value, toDate.Value),
-            "quarterly" => await _statisticsRepository.GetRevenueByQuarterAsync(fromDate.Value, toDate.Value),
-            "yearly" => await _statisticsRepository.GetRevenueByYearAsync(fromDate.Value, toDate.Value),
-            _ => await _statisticsRepository.GetRevenueByDayAsync(fromDate.Value, toDate.Value)
+            switch (normalizedType)
+            {
+                case "daily":
+                    fromDate = DateTime.Now.Date;
+                    toDate = DateTime.Now.Date;
+                    break;
+
+                case "monthly":
+                    fromDate = DateTime.Now.AddMonths(-11).Date;
+                    toDate = DateTime.Now.Date;
+                    break;
+
+                case "quarterly":
+                    fromDate = DateTime.Now.AddYears(-1).Date;
+                    toDate = DateTime.Now.Date;
+                    break;
+
+                case "yearly":
+                    fromDate = DateTime.Now.AddYears(-4).Date;
+                    toDate = DateTime.Now.Date;
+                    break;
+
+                default:
+                    fromDate = DateTime.Now.Date;
+                    toDate = DateTime.Now.Date;
+                    break;
+            }
+        }
+
+        var data = normalizedType switch
+        {
+            "daily" => await _statisticsRepository.GetStatisticsByDayAsync(fromDate.Value, toDate.Value),
+            "monthly" => await _statisticsRepository.GetStatisticsByMonthAsync(fromDate.Value, toDate.Value),
+            "quarterly" => await _statisticsRepository.GetStatisticsByQuarterAsync(fromDate.Value, toDate.Value),
+            "yearly" => await _statisticsRepository.GetStatisticsByYearAsync(fromDate.Value, toDate.Value),
+            _ => await _statisticsRepository.GetStatisticsByDayAsync(fromDate.Value, toDate.Value)
         };
 
-        var totalRevenue = data.Sum(x => x.Revenue);
-        var averageRevenue = data.Count > 0 ? data.Average(x => x.Revenue) : 0;
-        var growthPercentage = CalculateGrowthPercentage(data, x => x.Revenue);
-
-        return new StatisticsResponseDto<RevenueStatisticsDto>
+        return new StatisticsResponseDto<BusinessStatisticsDto>
         {
             Data = data,
-            TotalAmount = totalRevenue,
-            AverageAmount = averageRevenue,
-            Count = data.Count,
-            GrowthPercentage = growthPercentage
-        };
-    }
+            TotalRevenue = data.Sum(x => x.Revenue),
+            TotalCost = data.Sum(x => x.Cost),
+            TotalProfit = data.Sum(x => x.Profit),
 
-    public async Task<StatisticsResponseDto<ImportCostStatisticsDto>> GetImportCostStatisticsAsync(
-        string type, DateTime? fromDate = null, DateTime? toDate = null)
-    {
-        fromDate ??= DateTime.Now.AddMonths(-1);
-        toDate ??= DateTime.Now;
+            AverageRevenue = data.Count > 0 ? data.Average(x => x.Revenue) : 0,
+            AverageProfit = data.Count > 0 ? data.Average(x => x.Profit) : 0,
 
-        List<ImportCostStatisticsDto> data = type.ToLower() switch
-        {
-            "daily" => await _statisticsRepository.GetImportCostByDayAsync(fromDate.Value, toDate.Value),
-            "weekly" => await _statisticsRepository.GetImportCostByWeekAsync(fromDate.Value, toDate.Value),
-            "monthly" => await _statisticsRepository.GetImportCostByMonthAsync(fromDate.Value, toDate.Value),
-            "quarterly" => await _statisticsRepository.GetImportCostByQuarterAsync(fromDate.Value, toDate.Value),
-            "yearly" => await _statisticsRepository.GetImportCostByYearAsync(fromDate.Value, toDate.Value),
-            _ => await _statisticsRepository.GetImportCostByDayAsync(fromDate.Value, toDate.Value)
-        };
-
-        var totalCost = data.Sum(x => x.TotalCost);
-        var averageCost = data.Count > 0 ? data.Average(x => x.TotalCost) : 0;
-        var growthPercentage = CalculateGrowthPercentage(data, x => x.TotalCost);
-
-        return new StatisticsResponseDto<ImportCostStatisticsDto>
-        {
-            Data = data,
-            TotalAmount = totalCost,
-            AverageAmount = averageCost,
-            Count = data.Count,
-            GrowthPercentage = growthPercentage
-        };
-    }
-
-    public async Task<StatisticsResponseDto<ProfitStatisticsDto>> GetProfitStatisticsAsync(
-        string type, DateTime? fromDate = null, DateTime? toDate = null)
-    {
-        fromDate ??= DateTime.Now.AddMonths(-1);
-        toDate ??= DateTime.Now;
-
-        List<ProfitStatisticsDto> data = type.ToLower() switch
-        {
-            "daily" => await _statisticsRepository.GetProfitByDayAsync(fromDate.Value, toDate.Value),
-            "weekly" => await _statisticsRepository.GetProfitByWeekAsync(fromDate.Value, toDate.Value),
-            "monthly" => await _statisticsRepository.GetProfitByMonthAsync(fromDate.Value, toDate.Value),
-            "quarterly" => await _statisticsRepository.GetProfitByQuarterAsync(fromDate.Value, toDate.Value),
-            "yearly" => await _statisticsRepository.GetProfitByYearAsync(fromDate.Value, toDate.Value),
-            _ => await _statisticsRepository.GetProfitByDayAsync(fromDate.Value, toDate.Value)
-        };
-
-        var totalProfit = data.Sum(x => x.TotalProfit);
-        var averageProfit = data.Count > 0 ? data.Average(x => x.TotalProfit) : 0;
-        var growthPercentage = CalculateGrowthPercentage(data, x => x.TotalProfit);
-
-        return new StatisticsResponseDto<ProfitStatisticsDto>
-        {
-            Data = data,
-            TotalAmount = totalProfit,
-            AverageAmount = averageProfit,
-            Count = data.Count,
-            GrowthPercentage = growthPercentage
+            Count = data.Count
         };
     }
 

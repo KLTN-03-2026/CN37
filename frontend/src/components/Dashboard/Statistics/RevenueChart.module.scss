@@ -58,6 +58,44 @@
   }
 }
 
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 20px 0;
+}
+
+.summaryCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+
+  p {
+    margin: 0 0 8px;
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+  }
+}
+
+.chartBox {
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .summaryCards {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .chartContainer {
     padding: 16px;

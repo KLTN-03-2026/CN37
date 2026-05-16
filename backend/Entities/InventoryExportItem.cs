@@ -11,7 +11,9 @@ public class InventoryExportItem
     public int Quantity { get; set; }
 
     public decimal Price { get; set; } = 0;
-    // public decimal cPrice { get; set; }
+    public decimal CostPrice { get; set; }
 
-    public decimal TotalAmount => Quantity * Price;
+    public decimal TotalAmount { get; set; }
+    public ICollection<InventoryExportItemBatch> ExportItemBatches { get; set; }
+    = new List<InventoryExportItemBatch>();
 }

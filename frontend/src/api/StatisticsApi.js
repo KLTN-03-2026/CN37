@@ -1,5 +1,25 @@
 import api from "./AxiosClient";
 
+// Business Statistics FIFO
+export const getBusinessStatistics = async (
+  type = "daily",
+  fromDate = null,
+  toDate = null
+) => {
+  const params = new URLSearchParams();
+
+  params.append("type", type);
+
+  if (fromDate) params.append("fromDate", fromDate);
+  if (toDate) params.append("toDate", toDate);
+
+  const url = `/statistics/info?${params.toString()}`;
+  console.log("GET:", url);
+
+  const res = await api.get(url);
+  return res.data;
+};
+
 // Dashboard
 export const getDashboardSummary = async () => {
     const res = await api.get(`/statistics/dashboard`);
@@ -8,22 +28,22 @@ export const getDashboardSummary = async () => {
 
 // Revenue Statistics
 export const getRevenueStatistics = async (
-    type = "daily",
-    fromDate = null,
-    toDate = null
+  type = "daily",
+  fromDate = null,
+  toDate = null
 ) => {
-    const params = new URLSearchParams();
+  const params = new URLSearchParams();
 
-    params.append("type", type);
+  params.append("type", type);
 
-    if (fromDate) params.append("fromDate", fromDate);
-    if (toDate) params.append("toDate", toDate);
+  if (fromDate) params.append("fromDate", fromDate);
+  if (toDate) params.append("toDate", toDate);
 
-    const res = await api.get(
-        `/statistics/revenue?${params.toString()}`
-    );
+  const url = `/statistics/revenue?${params.toString()}`;
+  console.log("GET:", url);
 
-    return res.data;
+  const res = await api.get(url);
+  return res.data;
 };
 
 // Profit Statistics
@@ -48,22 +68,22 @@ export const getProfitStatistics = async (
 
 // Import Cost Statistics
 export const getImportCostStatistics = async (
-    type = "daily",
-    fromDate = null,
-    toDate = null
+  type = "daily",
+  fromDate = null,
+  toDate = null
 ) => {
-    const params = new URLSearchParams();
+  const params = new URLSearchParams();
 
-    params.append("type", type);
+  params.append("type", type);
 
-    if (fromDate) params.append("fromDate", fromDate);
-    if (toDate) params.append("toDate", toDate);
+  if (fromDate) params.append("fromDate", fromDate);
+  if (toDate) params.append("toDate", toDate);
 
-    const res = await api.get(
-        `/statistics/import-cost?${params.toString()}`
-    );
+  const url = `/statistics/import-cost?${params.toString()}`;
+  console.log("GET:", url);
 
-    return res.data;
+  const res = await api.get(url);
+  return res.data;
 };
 
 // Product Analytics

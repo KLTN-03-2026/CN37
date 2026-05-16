@@ -97,6 +97,7 @@ builder.Services.AddScoped<IHybridSearchService,HybridSearchService>();
 builder.Services.AddScoped<IConversationMemoryService,ConversationMemoryService>();
 builder.Services.AddScoped<IRecommendationService,RecommendationService>();
 
+
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection("JwtOptions"));
 

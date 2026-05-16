@@ -42,6 +42,8 @@ public class AppDbContext : DbContext
     public DbSet<ReviewImage> ReviewImages { get; set; }
     public DbSet<ReviewReply> ReviewReplies { get; set; }
     public DbSet<ProductView> ProductViews { get; set; }
+    public DbSet<InventoryBatch> InventoryBatches { get; set; }
+    public DbSet<InventoryExportItemBatch> InventoryExportItemBatches { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -496,6 +498,7 @@ public class AppDbContext : DbContext
 
             entity.Property(x => x.Quantity).HasColumnName("quantity");
             entity.Property(x => x.Price).HasColumnName("cost_price").HasColumnType("decimal(12,2)");
+            entity.Property(x => x.TotalCost).HasColumnName("total_cost").HasColumnType("decimal(12,2)");
 
             entity.HasOne(x => x.Import)
                 .WithMany(x => x.Items)
@@ -556,9 +559,13 @@ public class AppDbContext : DbContext
                 .HasColumnType("decimal(12,2)")
                 .IsRequired();
 
-            // entity.Property(x => x.)
-            //     .HasColumnName("cost_price")
-            //     .HasColumnType("decimal(12,2)");
+            entity.Property(x => x.CostPrice)
+                .HasColumnName("cost_price")
+                .HasColumnType("decimal(12,2)");
+
+            entity.Property(x => x.TotalAmount)
+                .HasColumnName("total_amount")
+                .HasColumnType("decimal(12,2)");
 
             entity.HasOne(x => x.Export)
                 .WithMany(x => x.Items)
@@ -568,6 +575,10 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Product)
                 .WithMany()
                 .HasForeignKey(x => x.ProductId);
+
+            entity.HasMany(x => x.ExportItemBatches)
+    .WithOne(x => x.ExportItem)
+    .HasForeignKey(x => x.ExportItemId);
         });
 
         modelBuilder.Entity<AiChatSession>(entity =>
@@ -807,6 +818,70 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<InventoryBatch>(entity =>
+        {
+            entity.ToTable("inventory_batches");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.ProductId)
+                .HasColumnName("product_id");
+
+            entity.Property(x => x.ImportItemId)
+                .HasColumnName("import_item_id");
+
+            entity.Property(x => x.OriginalQuantity)
+                .HasColumnName("original_quantity");
+
+            entity.Property(x => x.RemainingQuantity)
+                .HasColumnName("remaining_quantity");
+
+            entity.Property(x => x.CostPrice)
+                .HasColumnName("cost_price")
+                .HasColumnType("decimal(12,2)");
+
+            entity.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(x => x.Product)
+                .WithMany()
+                .HasForeignKey(x => x.ProductId);
+
+            entity.HasOne(x => x.ImportItem)
+                .WithMany()
+                .HasForeignKey(x => x.ImportItemId);
+        });
+
+        modelBuilder.Entity<InventoryExportItemBatch>(entity =>
+        {
+            entity.ToTable("inventory_export_item_batches");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.ExportItemId)
+                .HasColumnName("export_item_id");
+
+            entity.Property(x => x.BatchId)
+                .HasColumnName("batch_id");
+
+            entity.Property(x => x.Quantity)
+                .HasColumnName("quantity");
+
+            entity.Property(x => x.CostPrice)
+                .HasColumnName("cost_price")
+                .HasColumnType("decimal(12,2)");
+
+            entity.HasOne(x => x.ExportItem)
+                .WithMany(x => x.ExportItemBatches)
+                .HasForeignKey(x => x.ExportItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.Batch)
+                .WithMany(x => x.ExportItemBatches)
+                .HasForeignKey(x => x.BatchId);
         });
     }
 }

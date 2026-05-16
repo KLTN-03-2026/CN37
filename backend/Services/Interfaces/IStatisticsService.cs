@@ -4,17 +4,22 @@ namespace backend.Services.Interfaces;
 
 public interface IStatisticsService
 {
+
+     Task<StatisticsResponseDto<BusinessStatisticsDto>> GetBusinessStatisticsAsync(
+        string type,
+        DateTime? fromDate = null,
+        DateTime? toDate = null);
     // Revenue Statistics
-    Task<StatisticsResponseDto<RevenueStatisticsDto>> GetRevenueStatisticsAsync(
-        string type, DateTime? fromDate = null, DateTime? toDate = null);
+    // Task<StatisticsResponseDto<RevenueStatisticsDto>> GetRevenueStatisticsAsync(
+    //     string type, DateTime? fromDate = null, DateTime? toDate = null);
     
-    // Import Cost Statistics
-    Task<StatisticsResponseDto<ImportCostStatisticsDto>> GetImportCostStatisticsAsync(
-        string type, DateTime? fromDate = null, DateTime? toDate = null);
+    // // Import Cost Statistics
+    // Task<StatisticsResponseDto<ImportCostStatisticsDto>> GetImportCostStatisticsAsync(
+    //     string type, DateTime? fromDate = null, DateTime? toDate = null);
     
-    // Profit Statistics
-    Task<StatisticsResponseDto<ProfitStatisticsDto>> GetProfitStatisticsAsync(
-        string type, DateTime? fromDate = null, DateTime? toDate = null);
+    // // Profit Statistics
+    // Task<StatisticsResponseDto<ProfitStatisticsDto>> GetProfitStatisticsAsync(
+    //     string type, DateTime? fromDate = null, DateTime? toDate = null);
     
     // Product Analytics
     Task<PaginatedStatisticsDto<ProductAnalyticsDto>> GetProductAnalyticsAsync(
