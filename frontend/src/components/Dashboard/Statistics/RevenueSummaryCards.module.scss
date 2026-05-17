@@ -1,0 +1,90 @@
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summaryCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #eef0f3;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  p {
+    margin: 16px 0 6px;
+    font-size: 14px;
+    color: #6b7280;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+  }
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(89, 194, 65, 0.12);
+  color: #59c241;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardChange {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.positive {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+}
+
+.negative {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.compareText {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+@media (max-width: 1024px) {
+  .summaryCards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .summaryCards {
+    grid-template-columns: 1fr;
+  }
+}

@@ -135,19 +135,19 @@ const StatisticsDashboard = () => {
           className={`${styles.tab} ${activeTab === "overview" ? styles.active : ""}`}
           onClick={() => setActiveTab("overview")}
         >
-          📈 Overview
+          📈 Tổng quan
         </button>
         <button
           className={`${styles.tab} ${activeTab === "products" ? styles.active : ""}`}
           onClick={() => setActiveTab("products")}
         >
-          🛍️ Products
+          🛍️ Sản Phẩm
         </button>
         <button
           className={`${styles.tab} ${activeTab === "categories" ? styles.active : ""}`}
           onClick={() => setActiveTab("categories")}
         >
-          📁 Categories
+          📁 Danh mục
         </button>
       </div>
 

@@ -39,42 +39,43 @@ public class StatisticsRepository : IStatisticsRepository
             })
             .Select(g => new
             {
-                g.Key.Year,
-                g.Key.Month,
-                g.Key.Day,
-
+                Date = new DateTime(g.Key.Year, g.Key.Month, g.Key.Day),
                 Revenue = g.Sum(x => x.Price * x.Quantity),
-
                 Cost = g.SelectMany(x => x.ExportItemBatches)
                     .Sum(b => b.CostPrice * b.Quantity),
-
                 ExportCount = g.Select(x => x.ExportId).Distinct().Count()
             })
-            .OrderBy(x => x.Year)
-            .ThenBy(x => x.Month)
-            .ThenBy(x => x.Day)
             .ToListAsync();
 
-        return data.Select(x =>
-        {
-            var profit = x.Revenue - x.Cost;
+        var dataMap = data.ToDictionary(x => x.Date.Date);
 
-            return new BusinessStatisticsDto
+        var result = new List<BusinessStatisticsDto>();
+
+        for (var date = startDate; date < endDate; date = date.AddDays(1))
+        {
+            dataMap.TryGetValue(date.Date, out var item);
+
+            var revenue = item?.Revenue ?? 0;
+            var cost = item?.Cost ?? 0;
+
+            result.Add(new BusinessStatisticsDto
             {
-                Label = $"{x.Year}-{x.Month:D2}-{x.Day:D2}",
-                Date = new DateTime(x.Year, x.Month, x.Day),
-                Revenue = x.Revenue,
-                Cost = x.Cost,
-                Profit = profit,
-                ExportCount = x.ExportCount
-            };
-        }).ToList();
+                Label = date.ToString("yyyy-MM-dd"),
+                Date = date,
+                Revenue = revenue,
+                Cost = cost,
+                Profit = revenue - cost,
+                ExportCount = item?.ExportCount ?? 0
+            });
+        }
+
+        return result;
     }
 
     public async Task<List<BusinessStatisticsDto>> GetStatisticsByMonthAsync(DateTime fromDate, DateTime toDate)
     {
-        var startDate = fromDate.Date;
-        var endDate = toDate.Date.AddDays(1);
+        var startDate = new DateTime(fromDate.Year, fromDate.Month, 1);
+        var endDate = new DateTime(toDate.Year, toDate.Month, 1).AddMonths(1);
 
         var data = await _context.InventoryExportItems
             .AsNoTracking()
@@ -91,34 +92,40 @@ public class StatisticsRepository : IStatisticsRepository
             })
             .Select(g => new
             {
-                g.Key.Year,
-                g.Key.Month,
-
+                Year = g.Key.Year,
+                Month = g.Key.Month,
                 Revenue = g.Sum(x => x.Price * x.Quantity),
-
                 Cost = g.SelectMany(x => x.ExportItemBatches)
                     .Sum(b => b.CostPrice * b.Quantity),
-
                 ExportCount = g.Select(x => x.ExportId).Distinct().Count()
             })
-            .OrderBy(x => x.Year)
-            .ThenBy(x => x.Month)
             .ToListAsync();
 
-        return data.Select(x =>
-        {
-            var profit = x.Revenue - x.Cost;
+        var dataMap = data.ToDictionary(
+            x => new DateTime(x.Year, x.Month, 1)
+        );
 
-            return new BusinessStatisticsDto
+        var result = new List<BusinessStatisticsDto>();
+
+        for (var date = startDate; date < endDate; date = date.AddMonths(1))
+        {
+            dataMap.TryGetValue(date, out var item);
+
+            var revenue = item?.Revenue ?? 0;
+            var cost = item?.Cost ?? 0;
+
+            result.Add(new BusinessStatisticsDto
             {
-                Label = $"{x.Year}-{x.Month:D2}",
-                Date = new DateTime(x.Year, x.Month, 1),
-                Revenue = x.Revenue,
-                Cost = x.Cost,
-                Profit = profit,
-                ExportCount = x.ExportCount
-            };
-        }).ToList();
+                Label = date.ToString("yyyy-MM"),
+                Date = date,
+                Revenue = revenue,
+                Cost = cost,
+                Profit = revenue - cost,
+                ExportCount = item?.ExportCount ?? 0
+            });
+        }
+
+        return result;
     }
 
     public async Task<List<BusinessStatisticsDto>> GetStatisticsByQuarterAsync(DateTime fromDate, DateTime toDate)
@@ -638,29 +645,36 @@ public class StatisticsRepository : IStatisticsRepository
         return (revenue, cost, revenue - cost);
     }
 
-    private async Task<(decimal Revenue, decimal Cost, decimal Profit, int Orders)> GetSalesSummaryWithOrdersAsync(DateTime startDate, DateTime endDate)
+    private async Task<(decimal Revenue, decimal Profit, int Orders)> GetSalesSummaryWithOrdersAsync(
+     DateTime fromDate,
+     DateTime toDate)
     {
-        var data = await _context.OrderItems
+        var data = await _context.InventoryExportItems
             .AsNoTracking()
-            .Where(oi =>
-                oi.Order.Status == CompletedStatus &&
-                oi.Order.CompletedAt.HasValue &&
-                oi.Order.CompletedAt.Value >= startDate &&
-                oi.Order.CompletedAt.Value < endDate)
-            .GroupBy(_ => 1)
-            .Select(g => new
+            .Where(x =>
+                x.Export.ExportType == "ORDER" &&
+                x.Export.Status == "COMPLETED" &&
+                x.Export.ApprovedAt.HasValue &&
+                x.Export.ApprovedAt.Value >= fromDate &&
+                x.Export.ApprovedAt.Value < toDate)
+            .Select(x => new
             {
-                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
-                Cost = g.Sum(oi => oi.CostPrice * oi.Quantity),
-                Orders = g.Select(oi => oi.OrderId).Distinct().Count()
+                Revenue = x.Price * x.Quantity,
+
+                Cost = x.ExportItemBatches.Any()
+                    ? x.ExportItemBatches.Sum(b => b.CostPrice * b.Quantity)
+                    : x.CostPrice * x.Quantity,
+
+                ExportId = x.ExportId
             })
-            .FirstOrDefaultAsync();
+            .ToListAsync();
 
-        var revenue = data?.Revenue ?? 0;
-        var cost = data?.Cost ?? 0;
-        var orders = data?.Orders ?? 0;
+        var revenue = data.Sum(x => x.Revenue);
+        var cost = data.Sum(x => x.Cost);
+        var profit = revenue - cost;
+        var orders = data.Select(x => x.ExportId).Distinct().Count();
 
-        return (revenue, cost, revenue - cost, orders);
+        return (revenue, profit, orders);
     }
 
     private static int GetWeekOfYear(DateTime date)

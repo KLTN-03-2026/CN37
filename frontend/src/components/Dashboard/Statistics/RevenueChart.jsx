@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 import styles from "./RevenueChart.module.scss";
-import { getBusinessStatistics } from "../../../api/StatisticsApi";
+import {
+  compareCurrentVsPreviousMonth,
+  getBusinessStatistics,
+} from "../../../api/StatisticsApi";
+import RevenueSummaryCards from "./RevenueSummaryCards";
+import RevenueLineChart from "./RevenueLineChart";
+import RevenueFilterBar from "./RevenueFilterBar";
 
 const RevenueChart = () => {
   const [data, setData] = useState([]);
@@ -18,24 +14,93 @@ const RevenueChart = () => {
     totalRevenue: 0,
     totalCost: 0,
     totalProfit: 0,
+    totalOrders: 0,
+    revenueChange: 0,
+    costChange: 0,
+    profitChange: 0,
+    ordersChange: 0,
   });
 
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [chartData, setChartData] = useState([]);
+  const [branch, setBranch] = useState("all");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [type, setType] = useState("daily");
 
   useEffect(() => {
-    fetchStatisticsData();
-  }, [type]);
+    const [fromDate, toDate] = dateRange;
+
+    if ((fromDate && toDate) || (!fromDate && !toDate)) {
+      fetchStatisticsData();
+      fetchChartData();
+    }
+  }, [type, dateRange]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchStatisticsData();
+    setIsRefreshing(false);
+  };
+
+  const formatDateForApi = (date) => {
+    if (!date) return null;
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const getChartDefaultRange = (type) => {
+    const now = new Date();
+
+    if (type === "daily") {
+      return {
+        fromDate: formatDateForApi(
+          new Date(now.getFullYear(), now.getMonth(), 1),
+        ),
+        toDate: formatDateForApi(now),
+      };
+    }
+
+    return {
+      fromDate: formatDateForApi(dateRange[0]),
+      toDate: formatDateForApi(dateRange[1]),
+    };
+  };
+
+  const fetchChartData = async () => {
+    const range = getChartDefaultRange(type);
+
+    const response = await getBusinessStatistics(
+      type,
+      range.fromDate,
+      range.toDate,
+    );
+
+    if (response.success) {
+      setChartData(response.data?.data || []);
+    }
+  };
 
   const fetchStatisticsData = async () => {
     try {
       setLoading(true);
 
-      const response = await getBusinessStatistics(type);
+      const fromDate = formatDateForApi(dateRange[0]);
+      const toDate = formatDateForApi(dateRange[1]);
 
-      if (response.success) {
-        const result = response.data;
+      const [businessResponse, compareResponse] = await Promise.all([
+        getBusinessStatistics(type, fromDate, toDate),
+        compareCurrentVsPreviousMonth(),
+      ]);
+
+      if (businessResponse.success) {
+        const result = businessResponse.data;
+        const compare = compareResponse.data;
 
         setData(result?.data || []);
 
@@ -43,11 +108,28 @@ const RevenueChart = () => {
           totalRevenue: result?.totalRevenue || 0,
           totalCost: result?.totalCost || 0,
           totalProfit: result?.totalProfit || 0,
+          totalOrders: result?.data?.reduce(
+            (sum, item) => sum + (item.exportCount || 0),
+            0,
+          ),
+
+          revenueChange: compare?.revenueChangePercentage || 0,
+          profitChange: compare?.profitChangePercentage || 0,
+          ordersChange:
+            compare?.previousPeriodOrders > 0
+              ? ((compare.currentPeriodOrders - compare.previousPeriodOrders) /
+                  compare.previousPeriodOrders) *
+                100
+              : 0,
+
+          costChange: 0,
         });
 
         setError(null);
       } else {
-        setError(response.message || "Failed to load business statistics");
+        setError(
+          businessResponse.message || "Failed to load business statistics",
+        );
       }
     } catch (err) {
       setError("Failed to load statistics data");
@@ -68,106 +150,33 @@ const RevenueChart = () => {
     return `${((value || 0) / 1000000).toFixed(1)}M`;
   };
 
-  if (loading) return <div className={styles.loading}>Loading...</div>;
   if (error) return <div className={styles.error}>{error}</div>;
 
   return (
     <div className={styles.chartContainer}>
-      <div className={styles.header}>
-        <h2>Thống kê kinh doanh FIFO</h2>
+      <RevenueFilterBar
+        type={type}
+        setType={setType}
+        branch={branch}
+        setBranch={setBranch}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        onRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
+      />
 
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          className={styles.typeSelector}
-        >
-          <option value="daily">Theo ngày</option>
-          <option value="monthly">Theo tháng</option>
-          <option value="quarterly">Theo quý</option>
-          <option value="yearly">Theo năm</option>
-        </select>
-      </div>
+      {loading && (
+        <div className={styles.loadingOverlay}>Đang tải dữ liệu...</div>
+      )}
 
-      <div className={styles.summaryCards}>
-        <div className={styles.summaryCard}>
-          <p>Tổng doanh thu</p>
-          <h3>{formatCurrency(summary.totalRevenue)}</h3>
-        </div>
+      <RevenueSummaryCards summary={summary} formatCurrency={formatCurrency} filterType={type}/>
 
-        <div className={styles.summaryCard}>
-          <p>Tổng giá vốn FIFO</p>
-          <h3>{formatCurrency(summary.totalCost)}</h3>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <p>Tổng lợi nhuận</p>
-          <h3>{formatCurrency(summary.totalProfit)}</h3>
-        </div>
-      </div>
-
-      <div className={styles.chartBox}>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart
-            data={data}
-            margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-
-            <XAxis
-              dataKey="label"
-              stroke="#6b7280"
-              style={{ fontSize: "12px" }}
-            />
-
-            <YAxis
-              stroke="#6b7280"
-              style={{ fontSize: "12px" }}
-              tickFormatter={formatChartCurrency}
-            />
-
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#fff",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
-              }}
-              formatter={(value) => formatCurrency(value)}
-            />
-
-            <Legend />
-
-            <Line
-              name="Doanh thu"
-              type="monotone"
-              dataKey="revenue"
-              stroke="#59c241"
-              strokeWidth={2}
-              dot={{ fill: "#59c241", r: 5 }}
-              activeDot={{ r: 7 }}
-            />
-
-            <Line
-              name="Giá vốn FIFO"
-              type="monotone"
-              dataKey="cost"
-              stroke="#f97316"
-              strokeWidth={2}
-              dot={{ fill: "#f97316", r: 5 }}
-              activeDot={{ r: 7 }}
-            />
-
-            <Line
-              name="Lợi nhuận"
-              type="monotone"
-              dataKey="profit"
-              stroke="#3b82f6"
-              strokeWidth={2}
-              dot={{ fill: "#3b82f6", r: 5 }}
-              activeDot={{ r: 7 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <RevenueLineChart
+        data={chartData}
+        type={type}
+        formatCurrency={formatCurrency}
+        formatChartCurrency={formatChartCurrency}
+      />
     </div>
   );
 };

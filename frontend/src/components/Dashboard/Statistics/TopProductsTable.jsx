@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styles from "./TopProductsTable.module.scss";
-import { getTopProfitProducts, getTopSellingProducts } from "../../../api/StatisticsApi";
+import {
+  getTopProfitProducts,
+  getTopSellingProducts,
+} from "../../../api/StatisticsApi";
 
 const TopProductsTable = ({ type = "selling" }) => {
   const [data, setData] = useState([]);
@@ -14,15 +17,22 @@ const TopProductsTable = ({ type = "selling" }) => {
   const fetchTopProducts = async () => {
     try {
       setLoading(true);
+
       let response;
+
       if (type === "selling") {
         response = await getTopSellingProducts(10);
       } else {
         response = await getTopProfitProducts(10);
       }
-      if (response.data.success) {
-        setData(response.data.data);
+
+      console.log("Top products response:", response);
+
+      if (response.success) {
+        setData(response.data);
         setError(null);
+      } else {
+        setError("Không lấy được dữ liệu");
       }
     } catch (err) {
       setError("Failed to load data");
@@ -40,15 +50,15 @@ const TopProductsTable = ({ type = "selling" }) => {
     }).format(value);
   };
 
-  if (loading)
-    return <div className={styles.loading}>Loading...</div>;
-  if (error)
-    return <div className={styles.error}>{error}</div>;
+  if (loading) return <div className={styles.loading}>Loading...</div>;
+  if (error) return <div className={styles.error}>{error}</div>;
 
   return (
     <div className={styles.tableContainer}>
       <h2>
-        {type === "selling" ? "Top 10 Selling Products" : "Top 10 Profit Products"}
+        {type === "selling"
+          ? "Top 10 Selling Products"
+          : "Top 10 Profit Products"}
       </h2>
 
       <table className={styles.table}>
@@ -67,7 +77,9 @@ const TopProductsTable = ({ type = "selling" }) => {
               <td className={styles.rank}>#{index + 1}</td>
               <td className={styles.productName}>{item.productName}</td>
               <td className={styles.category}>{item.category}</td>
-              <td className={styles.quantity}>{item.quantity.toLocaleString()}</td>
+              <td className={styles.quantity}>
+                {item.quantity.toLocaleString()}
+              </td>
               <td className={styles.value}>{formatCurrency(item.value)}</td>
             </tr>
           ))}
