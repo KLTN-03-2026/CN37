@@ -15,7 +15,11 @@ function NotificationBell({ userId }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setNotifications([]);
+      setOpen(false);
+      return;
+    }
 
     const loadNotifications = async () => {
       try {

@@ -14,11 +14,15 @@ const cx = classNames.bind(styles);
 
 function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const checkAuth = () => {
       const roles = getRolesFromToken();
+      const user = getUserFromToken();
+
       setIsAdmin(roles.includes("ADMIN"));
+      setUserId(user?.userId || null);
     };
 
     checkAuth();
@@ -30,7 +34,6 @@ function Header() {
     };
   }, []);
 
-  const userId = getUserFromToken()?.userId || null;
 
   return (
     <header className={cx("header")}>
@@ -40,7 +43,7 @@ function Header() {
         <SearchBar />
 
         <div className={cx("actions")}>
-          <NotificationBell userId={userId} />
+          {userId && <NotificationBell userId={userId} />}
           <UserButton />
           <CartButton />
           {/* 🔥 NÚT ADMIN */}
