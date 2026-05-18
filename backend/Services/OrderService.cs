@@ -529,6 +529,7 @@ public class OrderService : IOrderService
 
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
+            Console.WriteLine($"SEND TO GROUP: user_{order.UserId}");
             await _hubContext.Clients
                 .Group($"user_{order.UserId}")
                 .SendAsync("ReceiveNotification", notification);

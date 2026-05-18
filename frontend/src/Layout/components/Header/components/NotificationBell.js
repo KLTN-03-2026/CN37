@@ -33,7 +33,7 @@ function NotificationBell({ userId }) {
     if (!userId) return;
 
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:5235/notificationHub")
+      .withUrl("http://localhost:5235/notificationHub")
       .withAutomaticReconnect()
       .build();
 

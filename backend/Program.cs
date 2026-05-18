@@ -41,28 +41,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ClockSkew = TimeSpan.Zero
     };
 });
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReact",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:3000")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
-});
+
 builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
+
+builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<Fido2>(sp =>
 {
@@ -139,19 +132,22 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
-app.UseCors("AllowReact");
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-app.UseStaticFiles();
-app.UseCors("ReactApp");
-app.MapHub<NotificationHub>("/notificationHub");
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+app.UseStaticFiles();
+app.UseRouting();
+
+app.UseCors("ReactApp");
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+app.MapHub<NotificationHub>("/notificationHub");
+
 
 app.UseHttpsRedirection();
 
