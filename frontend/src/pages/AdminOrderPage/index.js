@@ -7,6 +7,8 @@ import {
   getAdminOrders,
   getAdminCountByStatus,
 } from "../../api/OrderApi";
+import { confirmRefund, getRefundDetails } from "../../api/RefundApi";
+
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { notifyError, notifySuccess } from "../../components/Nofitication";
 
@@ -15,6 +17,7 @@ import OrderTabs from "../MyOrderPage/components/OrderTabs";
 import OrderList from "./components/OrderList";
 import EmptyState from "../MyOrderPage/components/EmptyState";
 import OrderSearch from "./components/OrderSearch";
+import AdminRefundModal from "./components/AdminRefundModal";
 
 const cx = classNames.bind(styles);
 
@@ -25,6 +28,33 @@ export default function MyOrderPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [countByStatus, setCountByStatus] = useState({});
+  const [selectedRefundOrder, setSelectedRefundOrder] = useState(null);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundLoading, setRefundLoading] = useState(false);
+  const [refundRequests, setRefundRequests] = useState([]);
+
+  const handleOpenRefund = (order) => {
+    const refund = refundRequests.find(
+      (x) => x.orderId === order.id && x.status === "Pending",
+    );
+
+    if (!refund) {
+      notifyError("Không tìm thấy yêu cầu hoàn tiền của đơn hàng này");
+      return;
+    }
+
+    setSelectedRefundOrder({
+      id: refund.id,
+      amount: refund.amount,
+      bankName: refund.bankName,
+      bankLogo: refund.bankLogo,
+      bankAccountNumber: refund.bankAccountNumber,
+      bankAccountName: refund.bankAccountName,
+      reason: refund.reason,
+    });
+
+    setShowRefundModal(true);
+  };
 
   const fetchOrders = async () => {
     const res = await getAdminOrders({ status, keyword });
@@ -40,6 +70,11 @@ export default function MyOrderPage() {
     });
 
     setCountByStatus(map);
+  };
+
+  const fetchRefundRequests = async () => {
+    const res = await getRefundDetails();
+    setRefundRequests(res.data);
   };
 
   const handleCancelOrder = async (orderId) => {
@@ -76,7 +111,7 @@ export default function MyOrderPage() {
     setOrders(res.data);
     if (res.data.length === 0) {
       notifyError("Không tìm thấy đơn hàng nào phù hợp");
-    } else{
+    } else {
       notifySuccess(`Tìm thấy ${res.data.length} đơn hàng phù hợp`);
     }
   };
@@ -86,9 +121,35 @@ export default function MyOrderPage() {
     setShowConfirm(true);
   };
 
+  const handleConfirmRefund = async (refundId) => {
+    try {
+      setRefundLoading(true);
+
+      await confirmRefund(refundId);
+
+      notifySuccess("Đã xác nhận hoàn tiền thành công");
+
+      setShowRefundModal(false);
+      setSelectedRefundOrder(null);
+
+      fetchOrders();
+      fetchCounts();
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "Xác nhận hoàn tiền thất bại";
+
+      notifyError(message);
+    } finally {
+      setRefundLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
     fetchCounts();
+    fetchRefundRequests();
   }, [status, keyword]);
 
   return (
@@ -110,11 +171,19 @@ export default function MyOrderPage() {
               orders={orders}
               onCancel={handleAskCancel}
               onEditStatus={handleEditStatus}
+              onOpenRefund={handleOpenRefund}
               refresh={fetchOrders}
             />
           )}
         </div>
       </div>
+      <AdminRefundModal
+        open={showRefundModal}
+        onClose={() => setShowRefundModal(false)}
+        refund={selectedRefundOrder}
+        loading={refundLoading}
+        onConfirm={handleConfirmRefund}
+      />
       <ConfirmDialog
         open={showConfirm}
         title="Hủy đơn hàng"

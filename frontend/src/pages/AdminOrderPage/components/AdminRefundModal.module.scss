@@ -1,0 +1,178 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(17, 24, 39, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal {
+  width: 100%;
+  max-width: 560px;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
+}
+
+.header {
+  padding: 18px 22px;
+  border-bottom: 1px solid #edf0f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  button {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: #f3f4f6;
+    font-size: 24px;
+    cursor: pointer;
+
+    &:hover {
+      background: #e5e7eb;
+    }
+  }
+}
+
+.body {
+  padding: 22px;
+}
+
+.amountBox {
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  margin-bottom: 16px;
+
+  span {
+    display: block;
+    color: #9a3412;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  b {
+    color: #ea580c;
+    font-size: 24px;
+    font-weight: 900;
+  }
+}
+
+.bankCard {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid #b7eb8f;
+  background: #fbfff8;
+  margin-bottom: 16px;
+
+  img {
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    border-radius: 14px;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid #edf0f2;
+  }
+}
+
+.bankInfo {
+  h4 {
+    margin: 0 0 6px;
+    color: #111827;
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 4px 0;
+    color: #6b7280;
+    font-size: 14px;
+
+    b {
+      color: #111827;
+    }
+  }
+}
+
+.reason {
+  padding: 14px;
+  border-radius: 14px;
+  background: #f9fafb;
+  border: 1px solid #edf0f2;
+  margin-bottom: 16px;
+
+  span {
+    display: block;
+    font-weight: 800;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin: 0;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+}
+
+.note {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancelBtn,
+.confirmBtn {
+  min-width: 130px;
+  height: 42px;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.confirmBtn {
+  background: #59c241;
+  border: none;
+  color: #fff;
+
+  &:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+}

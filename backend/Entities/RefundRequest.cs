@@ -16,6 +16,7 @@ public class RefundRequest
     public string BankName { get; set; }
     public string BankAccountNumber { get; set; }
     public string BankAccountName { get; set; }
+    public string? BankLogo { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? RefundedAt { get; set; }

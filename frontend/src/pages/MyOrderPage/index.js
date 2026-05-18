@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import classNames from "classnames/bind";
 import styles from "./MyOrderPage.module.scss";
+
 import {
   getOrders,
   cancelOrder,
@@ -14,8 +15,13 @@ import OrderTabs from "./components/OrderTabs";
 import OrderSearch from "./components/OrderSearch";
 import OrderList from "./components/OrderList";
 import EmptyState from "./components/EmptyState";
+import RefundModal from "./components/RefundModal";
+
 import { useNavigate } from "react-router-dom";
 import { createReview } from "../../api/ReviewApi";
+import { createRefundRequest } from "../../api/RefundApi";
+import { getBankAccounts } from "../../api/BankAccountApi";
+import { set } from "date-fns";
 
 const cx = classNames.bind(styles);
 
@@ -35,6 +41,13 @@ export default function MyOrderPage() {
   const [rating, setRating] = useState(5);
   const [previewImages, setPreviewImages] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const [cancelOptions, setCancelOptions] = useState(null);
+
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [bankAccounts, setBankAccounts] = useState([]);
+  const [selectedBankId, setSelectedBankId] = useState("");
+  const [refundReason, setRefundReason] = useState("");
 
   const navigate = useNavigate();
 
@@ -113,14 +126,17 @@ export default function MyOrderPage() {
 
   const handleCancelOrder = async (orderId) => {
     try {
-      const res = await cancelOrder(orderId);
+      await cancelOrder(orderId);
       fetchOrders();
+      fetchCounts();
       notifySuccess("Hủy đơn hàng thành công");
     } catch (error) {
       const message = error.response?.data?.message || "Hủy đơn hàng thất bại";
       notifyError(message);
     } finally {
       setShowConfirm(false);
+      setDeleteId(null);
+      setCancelOptions(null);
     }
   };
 
@@ -143,9 +159,48 @@ export default function MyOrderPage() {
     console.log(orderId);
   };
 
-  const handleAskCancel = (orderId) => {
+  const handleAskCancel = async (orderId, options = {}) => {
     setDeleteId(orderId);
+    setCancelOptions(options);
+
+    if (options.needRefund) {
+      try {
+        const res = await getBankAccounts();
+        setBankAccounts(res.data || []);
+        setSelectedBankId(res.data?.find((x) => x.isDefault)?.id || "");
+        setRefundReason("");
+        setShowRefundModal(true);
+      } catch {
+        notifyError("Không tải được danh sách tài khoản ngân hàng");
+      }
+
+      return;
+    }
+
     setShowConfirm(true);
+  };
+
+  const handleCreateRefund = async (data) => {
+    console.log("refund data:", data);
+    if (!data?.bankAccountId) {
+      notifyError("Vui lòng chọn tài khoản ngân hàng nhận hoàn tiền");
+      return;
+    }
+
+    try {
+      await createRefundRequest(deleteId, {
+        bankAccountId: Number(data.bankAccountId),
+        reason: data.reason,
+      });
+
+      notifySuccess("Đã gửi yêu cầu hủy đơn và hoàn tiền");
+      setShowRefundModal(false);
+      setDeleteId(null);
+      fetchOrders();
+      fetchCounts();
+    } catch (error) {
+      notifyError(error.response?.data || "Gửi yêu cầu hoàn tiền thất bại");
+    }
   };
 
   useEffect(() => {
@@ -188,6 +243,12 @@ export default function MyOrderPage() {
         cancelText="Hủy"
         onConfirm={() => handleCancelOrder(deleteId)}
         onCancel={() => setShowConfirm(false)}
+      />
+      <RefundModal
+        open={showRefundModal}
+        onClose={() => setShowRefundModal(false)}
+        bankAccounts={bankAccounts}
+        onSubmit={handleCreateRefund}
       />
       {showReviewModal && (
         <div className={cx("review-modal-overlay")}>

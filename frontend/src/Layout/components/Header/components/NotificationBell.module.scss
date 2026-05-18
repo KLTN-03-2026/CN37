@@ -1,0 +1,142 @@
+.wrapper {
+  position: relative;
+}
+
+.bellBtn {
+  position: relative;
+  background: #b60014;
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.25s ease;
+
+  &:hover {
+    background: #d40018;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(182, 0, 20, 0.3);
+  }
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+
+  min-width: 18px;
+  height: 18px;
+
+  padding: 0 5px;
+
+  border-radius: 999px;
+  background: white;
+  color: #b60014;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #b60014;
+}
+
+.dropdown {
+  position: absolute;
+  top: 52px;
+  right: 0;
+
+  width: 360px;
+  max-height: 500px;
+
+  overflow-y: auto;
+
+  background: white;
+  border-radius: 18px;
+
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+
+  z-index: 9999;
+
+  animation: fadeIn 0.25s ease;
+}
+
+.header {
+  padding: 16px 18px;
+  border-bottom: 1px solid #eee;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  color: #222;
+}
+
+.empty {
+  padding: 30px 20px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+}
+
+.notificationItem {
+  padding: 14px 18px;
+  border-bottom: 1px solid #f3f3f3;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f9f9f9;
+  }
+}
+
+.unread {
+  background: #FFF8DC;
+
+  &:hover {
+    background: #ffe8eb;
+  }
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.message {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.time {
+  margin-top: 6px;
+
+  font-size: 11px;
+  color: #999;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

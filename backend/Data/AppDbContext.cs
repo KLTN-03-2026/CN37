@@ -44,6 +44,9 @@ public class AppDbContext : DbContext
     public DbSet<ProductView> ProductViews { get; set; }
     public DbSet<InventoryBatch> InventoryBatches { get; set; }
     public DbSet<InventoryExportItemBatch> InventoryExportItemBatches { get; set; }
+    public DbSet<UserBankAccount> UserBankAccounts { get; set; }
+    public DbSet<RefundRequest> RefundRequests { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -400,7 +403,7 @@ public class AppDbContext : DbContext
         });
         modelBuilder.Entity<UserBankAccount>(entity =>
         {
-            entity.ToTable("user_bank_accounts");
+            entity.ToTable("user_bank_account");
 
             entity.HasKey(x => x.Id);
 
@@ -426,6 +429,10 @@ public class AppDbContext : DbContext
                 .HasMaxLength(255)
                 .IsRequired();
 
+            entity.Property(x => x.BankLogo)
+                .HasColumnName("bank_logo")
+                .HasMaxLength(255);
+
             entity.Property(x => x.IsDefault)
                 .HasColumnName("is_default")
                 .HasDefaultValue(false);
@@ -444,7 +451,7 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<RefundRequest>(entity =>
         {
-            entity.ToTable("refund_requests");
+            entity.ToTable("refund_request");
 
             entity.HasKey(x => x.Id);
 
@@ -489,6 +496,10 @@ public class AppDbContext : DbContext
                 .HasMaxLength(255)
                 .IsRequired();
 
+            entity.Property(x => x.BankLogo)
+                .HasColumnName("bank_logo")
+                .HasMaxLength(255);
+
             entity.Property(x => x.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamp")
@@ -507,6 +518,54 @@ public class AppDbContext : DbContext
             // 🔗 Relation User
             entity.HasOne(x => x.User)
                 .WithMany(u => u.RefundRequests)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("notifications");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id)
+                .HasColumnName("id");
+
+            entity.Property(x => x.UserId)
+                .HasColumnName("user_id")
+                .IsRequired();
+
+            entity.Property(x => x.Title)
+                .HasColumnName("title")
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(x => x.Message)
+                .HasColumnName("message")
+                .HasColumnType("text")
+                .IsRequired();
+
+            entity.Property(x => x.Type)
+                .HasColumnName("type")
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(x => x.IsRead)
+                .HasColumnName("is_read")
+                .HasDefaultValue(false);
+
+            entity.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasColumnType("timestamp")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(x => x.Link)
+                .HasColumnName("link")
+                .HasMaxLength(500);
+
+            // 🔗 Relation User
+            entity.HasOne(x => x.User)
+                .WithMany(u => u.Notifications)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

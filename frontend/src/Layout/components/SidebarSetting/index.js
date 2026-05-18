@@ -77,8 +77,8 @@ export default function SidebarSettings() {
       </div>
 
       <div className={cx("menu")}>
-        <NavLink to="/warranty" className={cx("item")}>
-          Thông tin bảo hành
+        <NavLink to="/bank-accounts" className={cx("item")}>
+          Tài khoản ngân hàng
         </NavLink>
 
         <NavLink to="/address" className={cx("item")}>

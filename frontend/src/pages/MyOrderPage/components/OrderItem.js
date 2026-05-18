@@ -36,6 +36,12 @@ export default function OrderItem({
     order.paymentStatus === "Chờ thanh toán" &&
     order.status !== "Đã hủy";
 
+  const isPaidPayOS =
+    order.paymentMethod === "PAYOS" && order.paymentStatus === "Đã thanh toán";
+
+  const canCancel =
+    order.status === "Chờ xác nhận" || order.status === "Chờ thanh toán";
+
   useEffect(() => {
     if (!isPayOSPending || !order.expiredAt) return;
 
@@ -84,6 +90,13 @@ export default function OrderItem({
         </div>
       )}
 
+      {isPaidPayOS && canCancel && (
+        <div className={cx("refundNotice")}>
+          Đơn hàng đã thanh toán. Nếu hủy đơn, bạn cần chọn tài khoản ngân hàng
+          để nhận hoàn tiền.
+        </div>
+      )}
+
       <div className={cx("data")}>
         {order.items?.map((item) => (
           <div key={item.productId} className={cx("item")}>
@@ -126,13 +139,18 @@ export default function OrderItem({
             </button>
           )}
 
-          {(order.status === "Chờ xác nhận" || order.status === "Chờ thanh toán") && (
+          {canCancel && (
             <>
               <button
                 className={cx("btn", "btnCancel")}
-                onClick={() => onCancel(order.id)}
+                onClick={() =>
+                  onCancel(order.id, {
+                    needRefund: isPaidPayOS,
+                    order,
+                  })
+                }
               >
-                Hủy đơn hàng
+                {isPaidPayOS ? "Yêu cầu hủy & hoàn tiền" : "Hủy đơn hàng"}
               </button>
 
               {/* <button

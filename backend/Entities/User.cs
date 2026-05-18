@@ -21,6 +21,6 @@ public class User
         = new List<ReviewReply>();
 
     public virtual ICollection<UserBankAccount> UserBankAccounts { get; set; } = new List<UserBankAccount>();
-
     public virtual ICollection<RefundRequest> RefundRequests { get; set; } = new List<RefundRequest>();
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }

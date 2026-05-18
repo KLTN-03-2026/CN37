@@ -31,6 +31,7 @@ import SearchResults from "../pages/SearchResults";
 import StatisticsDashboard from "../components/Dashboard/Statistics/StatisticsDashboard";
 import PaymentCancelPage from "../pages/PaymentPage/PaymentCancelPage";
 import PaymentSuccessPage from "../pages/PaymentPage/PaymentSuccessPage";
+import BankAccountPage from "../pages/BankAccountPage";
 
 import { ProtectedRoute } from "./Routes";
 import { AdminRoute } from "./Routes";
@@ -148,6 +149,12 @@ const routes = [
   {
     path: "/my-orders",
     component: MyOrderPage,
+    layout: SettingsLayout,
+    ProtectedRoute: true
+  },
+  {
+    path: "/bank-accounts",
+    component: BankAccountPage,
     layout: SettingsLayout,
     ProtectedRoute: true
   },

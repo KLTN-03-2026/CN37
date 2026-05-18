@@ -3,7 +3,12 @@ import styles from "./OrderItem.module.scss";
 
 const cx = classNames.bind(styles);
 
-export default function OrderItem({ order, onCancel, onEditStatus, refresh }) {
+export default function OrderItem({
+  order,
+  onCancel,
+  onEditStatus,
+  onOpenRefund,
+}) {
   const getStatusClass = (status) => {
     switch (status) {
       case "Chờ xác nhận":
@@ -14,6 +19,8 @@ export default function OrderItem({ order, onCancel, onEditStatus, refresh }) {
         return "shipping";
       case "Hoàn tất":
         return "completed";
+      case "Chờ hoàn tiền":
+        return "refund";
       case "Đã hủy":
         return "cancelled";
       default:
@@ -23,6 +30,7 @@ export default function OrderItem({ order, onCancel, onEditStatus, refresh }) {
 
   const isUnpaidPayOS =
     order.paymentMethod === "PAYOS" && order.paymentStatus !== "Đã thanh toán";
+  const isRefundPending = order.status === "Chờ hoàn tiền";
 
   const renderActions = () => {
     switch (order.status) {
@@ -49,6 +57,17 @@ export default function OrderItem({ order, onCancel, onEditStatus, refresh }) {
                 Xác nhận đơn
               </button>
             )}
+          </div>
+        );
+      case "Chờ hoàn tiền":
+        return (
+          <div className={cx("action")}>
+            <button
+              className={cx("btn", "btnRefund")}
+              onClick={() => onOpenRefund(order)}
+            >
+              Xử lý hoàn tiền
+            </button>
           </div>
         );
 
@@ -98,6 +117,12 @@ export default function OrderItem({ order, onCancel, onEditStatus, refresh }) {
           {order.status}
         </span>
       </div>
+
+      {order.status === "Chờ hoàn tiền" && (
+        <div className={cx("refundWarning")}>
+          Khách hàng đang yêu cầu hoàn tiền cho đơn hàng này
+        </div>
+      )}
 
       <div className={cx("order-info")}>
         <div className={cx("customer-info")}>

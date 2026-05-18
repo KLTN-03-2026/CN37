@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PayOS;
 using PayOS.Models;
@@ -11,13 +12,15 @@ public class OrderService : IOrderService
     private readonly IInventoryDocumentService _service;
     private readonly PayOSClient _payOS;
     private readonly IConfiguration _configuration;
-    public OrderService(IOrderRepository orderRepository, AppDbContext context, IInventoryDocumentService service, PayOSClient payOS, IConfiguration configuration)
+    private readonly IHubContext<NotificationHub> _hubContext;
+    public OrderService(IOrderRepository orderRepository, AppDbContext context, IInventoryDocumentService service, PayOSClient payOS, IConfiguration configuration, IHubContext<NotificationHub> hubContext)
     {
         _orderRepository = orderRepository;
         _context = context;
         _service = service;
         _payOS = payOS;
         _configuration = configuration;
+        _hubContext = hubContext;
     }
 
     public async Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderRequest request)
@@ -168,6 +171,24 @@ public class OrderService : IOrderService
                     Price = products.FirstOrDefault(p => p.Id == i.ProductId)?.DiscountPrice ?? 0
                 }).ToList()
             };
+
+            var notification = new Notification
+            {
+                UserId = order.UserId,
+                Title = "Đặt hàng thành công",
+                Message = $"Đơn hàng #{order.Id} đã được đặt thành công",
+                Type = "CREATE_ORDER",
+                IsRead = false,
+                CreatedAt = DateTime.Now,
+                Link = $"/my-orders"
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            await _hubContext.Clients
+                .Group($"user_{order.UserId}")
+                .SendAsync("ReceiveNotification", notification);
+
             await _service.CreateExportAsync(exportRequest, request.UserId);
             await transaction.CommitAsync();
 
@@ -495,10 +516,42 @@ public class OrderService : IOrderService
         if (current == OrderStatus.Pending && newStatus == OrderStatus.Processing)
         {
             order.Status = newStatus;
+            var notification = new Notification
+            {
+                UserId = order.UserId,
+                Title = "Đơn hàng đang được xử lý",
+                Message = $"Đơn hàng #{order.Id} của bạn đang được xử lý",
+                Type = "UPDATE_ORDER",
+                IsRead = false,
+                CreatedAt = DateTime.Now,
+                Link = $"/my-orders"
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            await _hubContext.Clients
+                .Group($"user_{order.UserId}")
+                .SendAsync("ReceiveNotification", notification);
         }
         else if (current == OrderStatus.Processing && newStatus == OrderStatus.Shipping)
         {
             order.Status = newStatus;
+            var notification = new Notification
+            {
+                UserId = order.UserId,
+                Title = "Đơn hàng đang được giao",
+                Message = $"Đơn hàng #{order.Id} của bạn đang được giao",
+                Type = "UPDATE_ORDER",
+                IsRead = false,
+                CreatedAt = DateTime.Now,
+                Link = $"/my-orders"
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            await _hubContext.Clients
+                .Group($"user_{order.UserId}")
+                .SendAsync("ReceiveNotification", notification);
         }
         else if (current == OrderStatus.Shipping && newStatus == OrderStatus.Completed)
         {
@@ -515,6 +568,21 @@ public class OrderService : IOrderService
             inventoryExport.Status = "COMPLETED";
             inventoryExport.ApprovedAt = DateTime.Now;
             inventoryExport.ApprovedBy = order.UserId;
+            var notification = new Notification
+            {
+                UserId = order.UserId,
+                Title = "Đơn hàng đã hoàn thành",
+                Message = $"Đơn hàng #{order.Id} của bạn đã hoàn thành",
+                Type = "UPDATE_ORDER",
+                IsRead = false,
+                CreatedAt = DateTime.Now,
+                Link = $"/my-orders"
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            await _hubContext.Clients
+                .Group($"user_{order.UserId}")
+                .SendAsync("ReceiveNotification", notification);
         }
         else
         {

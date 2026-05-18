@@ -6,7 +6,8 @@ import SearchBar from "./components/SearchBar";
 import UserButton from "./components/UserButton";
 import CartButton from "./components/CartButton";
 import AdminButton from "./components/AdminButton";
-import { getRolesFromToken } from "../../../helper/JwtDecodeHelper";
+import NotificationBell from "./components/NotificationBell";
+import { getRolesFromToken, getUserFromToken } from "../../../helper/JwtDecodeHelper";
 import { useEffect, useState } from "react";
 
 const cx = classNames.bind(styles);
@@ -29,6 +30,8 @@ function Header() {
     };
   }, []);
 
+  const userId = getUserFromToken()?.userId || null;
+
   return (
     <header className={cx("header")}>
       <div className={cx("container")}>
@@ -37,6 +40,7 @@ function Header() {
         <SearchBar />
 
         <div className={cx("actions")}>
+          <NotificationBell userId={userId} />
           <UserButton />
           <CartButton />
           {/* 🔥 NÚT ADMIN */}

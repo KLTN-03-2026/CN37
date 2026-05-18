@@ -1,0 +1,64 @@
+.container {
+}
+
+.pageTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.addButton {
+  background-color: var(--primary-red); /* đỏ tươi FPT style */
+    color: #fff; /* chữ trắng */
+    border: none;
+    padding: 10px 20px; /* khoảng cách chữ trong button */
+    border-radius: 10px; /* viên thuốc */
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: var(--primary-red-hover); /* đỏ đậm hơn khi hover */
+    }
+
+    &:active {
+      transform: scale(0.98); /* hiệu ứng nhấn */
+    }
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid #edf0f2;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 16px;
+  }
+
+  .pageTitle {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .addButton {
+    width: 100%;
+  }
+}

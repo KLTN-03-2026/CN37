@@ -51,6 +51,19 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod();
         });
 });
+builder.Services.AddSignalR();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddSingleton<Fido2>(sp =>
 {
     return new Fido2(new Fido2Configuration
@@ -113,6 +126,8 @@ builder.Services.AddScoped<IHybridSearchService, HybridSearchService>();
 builder.Services.AddScoped<IConversationMemoryService, ConversationMemoryService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 builder.Services.AddHostedService<ExpiredPaymentBackgroundService>();
+builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<IRefundService, RefundService>();
 
 
 builder.Services.Configure<JwtOptions>(
@@ -129,6 +144,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.UseStaticFiles();
+app.UseCors("ReactApp");
+app.MapHub<NotificationHub>("/notificationHub");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
