@@ -21,9 +21,13 @@ export default function OrderItem({ order, onCancel, onEditStatus, refresh }) {
     }
   };
 
+  const isUnpaidPayOS =
+    order.paymentMethod === "PAYOS" && order.paymentStatus !== "Đã thanh toán";
+
   const renderActions = () => {
     switch (order.status) {
       case "Chờ xác nhận":
+      case "Chờ thanh toán":
         return (
           <div className={cx("action")}>
             <button
@@ -33,12 +37,18 @@ export default function OrderItem({ order, onCancel, onEditStatus, refresh }) {
               Hủy đơn hàng
             </button>
 
-            <button
-              className={cx("btn", "btnContact")}
-              onClick={() => onEditStatus(order.id, "Chờ lấy hàng")}
-            >
-              Xác nhận đơn
-            </button>
+            {isUnpaidPayOS ? (
+              <button className={cx("btn", "btnDisabled")} disabled>
+                Chưa thanh toán
+              </button>
+            ) : (
+              <button
+                className={cx("btn", "btnContact")}
+                onClick={() => onEditStatus(order.id, "Chờ lấy hàng")}
+              >
+                Xác nhận đơn
+              </button>
+            )}
           </div>
         );
 
@@ -99,6 +109,14 @@ export default function OrderItem({ order, onCancel, onEditStatus, refresh }) {
           </span>
         </div>
         <div className={cx("order-detail")}>
+          <div className={cx("paymentInfo")}>
+            <span>
+              Thanh toán:{" "}
+              <b className={cx(isUnpaidPayOS ? "unpaid" : "paid")}>
+                {order.paymentMethod} - {order.paymentStatus}
+              </b>
+            </span>
+          </div>
           <span>Xem chi tiết</span>
         </div>
       </div>

@@ -85,9 +85,20 @@ export default function CheckoutPage({ type, productId, quantity }) {
 
       const res = await createOrder(body);
 
+      if (paymentMethod === "PAYOS") {
+        const checkoutUrl = res.data?.checkoutUrl;
+
+        if (!checkoutUrl) {
+          notifyError("Không tạo được link thanh toán PayOS");
+          return;
+        }
+
+        window.location.href = checkoutUrl;
+        return;
+      }
+
       notifySuccess("Đặt hàng thành công!");
 
-      // clear cart nếu có
       if (state?.type === "cart") {
         localStorage.removeItem("cart");
       }
@@ -95,7 +106,7 @@ export default function CheckoutPage({ type, productId, quantity }) {
       navigate("/order-success", { state: { ...res.data } }, { replace: true });
     } catch (err) {
       console.log(err.response?.data?.message);
-      
+
       const message = err.response?.data?.message || "Đặt hàng thất bại";
       notifyError(message);
     } finally {

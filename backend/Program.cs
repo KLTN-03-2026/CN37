@@ -7,6 +7,8 @@ using backend.Repositories.Interfaces;
 using backend.Services.Interfaces;
 using backend.Repositories;
 using backend.Services;
+using PayOS;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +60,20 @@ builder.Services.AddSingleton<Fido2>(sp =>
         Origins = new HashSet<string> { "http://localhost:3000" }
     });
 });
+
+
+
+builder.Services.AddSingleton<PayOSClient>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+
+    return new PayOSClient(
+        config["PayOS:ClientId"],
+        config["PayOS:ApiKey"],
+        config["PayOS:ChecksumKey"]
+    );
+});
+
 builder.Services.AddControllers();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -86,16 +102,17 @@ builder.Services.AddScoped<IAiChatService, AiChatService>();
 builder.Services.AddScoped<IProductRetrievalService, ProductRetrievalService>();
 builder.Services.AddHttpClient<IOpenAiService, OpenAiService>();
 builder.Services.AddScoped<IPromptBuilderService, PromptBuilderService>();
-builder.Services.AddScoped<IIntentDetectionService,IntentDetectionService>();
+builder.Services.AddScoped<IIntentDetectionService, IntentDetectionService>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IStatisticsRepository, StatisticsRepository>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
-builder.Services.AddScoped<IEmbeddingService,EmbeddingService>();
-builder.Services.AddScoped<ISemanticSearchService,SemanticSearchService>();
-builder.Services.AddScoped<IHybridSearchService,HybridSearchService>();
-builder.Services.AddScoped<IConversationMemoryService,ConversationMemoryService>();
-builder.Services.AddScoped<IRecommendationService,RecommendationService>();
+builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
+builder.Services.AddScoped<ISemanticSearchService, SemanticSearchService>();
+builder.Services.AddScoped<IHybridSearchService, HybridSearchService>();
+builder.Services.AddScoped<IConversationMemoryService, ConversationMemoryService>();
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
+builder.Services.AddHostedService<ExpiredPaymentBackgroundService>();
 
 
 builder.Services.Configure<JwtOptions>(

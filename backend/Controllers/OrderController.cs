@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
+
 [ApiController]
 [Route("api/orders")]
 public class OrderController : ControllerBase
@@ -23,11 +24,31 @@ public class OrderController : ControllerBase
 
         return Ok(new
         {
-            message = "Đặt hàng thành công",
-            orderId = result.Id,
-            totalPrice = result.TotalAmount,
-            createdAt = result.CreateAt
+            message = request.PaymentMethod == "PAYOS"
+                ? "Tạo link thanh toán thành công"
+                : "Đặt hàng thành công",
+
+            orderId = result.OrderId,
+            paymentMethod = result.PaymentMethod,
+            paymentStatus = result.PaymentStatus,
+
+            checkoutUrl = result.CheckoutUrl
         });
+    }
+
+    [Authorize]
+    [HttpPost("{orderId}/pay-again")]
+    public async Task<IActionResult> PayAgain(int orderId)
+    {
+        try
+        {
+            var result = await _orderService.PayAgainAsync(orderId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [Authorize]
@@ -79,7 +100,7 @@ public class OrderController : ControllerBase
         return Ok(await _orderService.GetOrderDetailAsync(id));
     }
 
-    [Authorize(Roles="ADMIN")]
+    [Authorize(Roles = "ADMIN")]
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateStatusOrderRequest request)
     {
@@ -87,7 +108,7 @@ public class OrderController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Roles="ADMIN")]
+    [Authorize(Roles = "ADMIN")]
     [HttpGet("admin/count")]
     public async Task<IActionResult> AdminCountOrders()
     {

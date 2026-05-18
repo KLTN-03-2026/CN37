@@ -9,19 +9,14 @@ export default function PaymentMethod({ paymentMethod, setPaymentMethod }) {
       <div className={cx("cardTitle")}>Phương thức thanh toán</div>
 
       <div className={cx("paymentList")}>
-
         {/* COD */}
         <div
           className={cx("paymentItem", {
-            active: paymentMethod === "COD"
+            active: paymentMethod === "COD",
           })}
           onClick={() => setPaymentMethod("COD")}
         >
-          <input
-            type="radio"
-            checked={paymentMethod === "COD"}
-            readOnly
-          />
+          <input type="radio" checked={paymentMethod === "COD"} readOnly />
 
           <div className={cx("paymentInfo")}>
             <div className={cx("paymentTitle")}>
@@ -33,29 +28,23 @@ export default function PaymentMethod({ paymentMethod, setPaymentMethod }) {
           </div>
         </div>
 
-        {/* BANK */}
         <div
           className={cx("paymentItem", {
-            active: paymentMethod === "BANK"
+            active: paymentMethod === "PAYOS",
           })}
-          onClick={() => setPaymentMethod("BANK")}
+          onClick={() => setPaymentMethod("PAYOS")}
         >
-          <input
-            type="radio"
-            checked={paymentMethod === "BANK"}
-            readOnly
-          />
+          <input type="radio" checked={paymentMethod === "PAYOS"} readOnly />
 
           <div className={cx("paymentInfo")}>
             <div className={cx("paymentTitle")}>
-              Chuyển khoản ngân hàng
+              Thanh toán online qua PayOS
             </div>
             <div className={cx("paymentDesc")}>
-              Thanh toán qua tài khoản ngân hàng
+              Quét QR / chuyển khoản ngân hàng tự động xác nhận
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

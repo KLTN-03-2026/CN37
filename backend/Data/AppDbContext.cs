@@ -69,6 +69,8 @@ public class AppDbContext : DbContext
             entity.HasMany(x => x.Orders).WithOne(o => o.User).HasForeignKey(o => o.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(x => x.UserAddresses).WithOne(ua => ua.User).HasForeignKey(ua => ua.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(x => x.Reviews).WithOne(r => r.User).HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(x => x.UserBankAccounts).WithOne(uba => uba.User).HasForeignKey(uba => uba.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.RefundRequests).WithOne(rr => rr.User).HasForeignKey(rr => rr.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<EmailVerificationToken>(entity =>
@@ -353,6 +355,7 @@ public class AppDbContext : DbContext
             entity.HasMany(x => x.OrderItems).WithOne(oi => oi.Order).HasForeignKey(oi => oi.OrderId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(x => x.Payments).WithOne(p => p.Order).HasForeignKey(p => p.OrderId).OnDelete(DeleteBehavior.Cascade);
             entity.HasMany(x => x.Reviews).WithOne(oi => oi.Order).HasForeignKey(oi => oi.OrderId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(x => x.RefundRequests).WithOne(rr => rr.Order).HasForeignKey(rr => rr.OrderId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
@@ -379,15 +382,133 @@ public class AppDbContext : DbContext
             entity.ToTable("payments");
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.OrderCode).HasColumnName("order_code");
             entity.Property(x => x.OrderId).HasColumnName("order_id").IsRequired();
             entity.Property(x => x.PaymentMethod).HasColumnName("payment_method").HasMaxLength(50).IsRequired();
             entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
             entity.Property(x => x.Amount).HasColumnName("amount").HasColumnType("decimal(12,2)").IsRequired();
             entity.Property(x => x.TransactionId).HasColumnName("transaction_id").HasMaxLength(255);
+            entity.Property(x => x.CheckoutUrl).HasColumnName("checkout_url").HasColumnType("text");
+            entity.Property(x => x.ExpiredAt).HasColumnName("expired_at").HasColumnType("datetime");
+
+            entity.Property(x => x.PaidAt).HasColumnName("paid_at").HasColumnType("datetime");
+
             entity.Property(x => x.CreateAt).HasColumnName("create_at").HasColumnType("timestamp").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // 🔗 Relation Order
             entity.HasOne(x => x.Order).WithMany(o => o.Payments).HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<UserBankAccount>(entity =>
+        {
+            entity.ToTable("user_bank_accounts");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id)
+                .HasColumnName("id");
+
+            entity.Property(x => x.UserId)
+                .HasColumnName("user_id")
+                .IsRequired();
+
+            entity.Property(x => x.BankName)
+                .HasColumnName("bank_name")
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(x => x.BankAccountNumber)
+                .HasColumnName("bank_account_number")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(x => x.BankAccountName)
+                .HasColumnName("bank_account_name")
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(x => x.IsDefault)
+                .HasColumnName("is_default")
+                .HasDefaultValue(false);
+
+            entity.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasColumnType("timestamp")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // 🔗 Relation User
+            entity.HasOne(x => x.User)
+                .WithMany(u => u.UserBankAccounts)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<RefundRequest>(entity =>
+        {
+            entity.ToTable("refund_requests");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id)
+                .HasColumnName("id");
+
+            entity.Property(x => x.OrderId)
+                .HasColumnName("order_id")
+                .IsRequired();
+
+            entity.Property(x => x.UserId)
+                .HasColumnName("user_id")
+                .IsRequired();
+
+            entity.Property(x => x.Amount)
+                .HasColumnName("amount")
+                .HasColumnType("decimal(12,2)")
+                .IsRequired();
+
+            entity.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasMaxLength(50)
+                .HasDefaultValue("Pending")
+                .IsRequired();
+
+            entity.Property(x => x.Reason)
+                .HasColumnName("reason")
+                .HasColumnType("text");
+
+            entity.Property(x => x.BankName)
+                .HasColumnName("bank_name")
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(x => x.BankAccountNumber)
+                .HasColumnName("bank_account_number")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(x => x.BankAccountName)
+                .HasColumnName("bank_account_name")
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasColumnType("timestamp")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(x => x.RefundedAt)
+                .HasColumnName("refunded_at")
+                .HasColumnType("datetime");
+
+            // 🔗 Relation Order
+            entity.HasOne(x => x.Order)
+                .WithMany(o => o.RefundRequests)
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 🔗 Relation User
+            entity.HasOne(x => x.User)
+                .WithMany(u => u.RefundRequests)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<AuditLog>(entity =>

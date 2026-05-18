@@ -4,6 +4,10 @@ export const createOrder = (data) => {
   return api.post("/orders", data);
 };
 
+export const rePayment = (orderId) =>{
+  return api.post(`/orders/${orderId}/pay-again`);
+};
+
 export const getOrders = (params) =>{
   return api.get("/orders", { params });
 };

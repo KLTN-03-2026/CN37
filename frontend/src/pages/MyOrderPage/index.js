@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import classNames from "classnames/bind";
 import styles from "./MyOrderPage.module.scss";
-import { getOrders, cancelOrder, getCountByStatus } from "../../api/OrderApi";
+import {
+  getOrders,
+  cancelOrder,
+  getCountByStatus,
+  rePayment,
+} from "../../api/OrderApi";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { notifyError, notifySuccess } from "../../components/Nofitication";
 
@@ -119,6 +124,21 @@ export default function MyOrderPage() {
     }
   };
 
+  const handlePayAgain = async (orderId) => {
+    try {
+      const res = await rePayment(orderId);
+
+      if (!res.data?.checkoutUrl) {
+        notifyError("Không tạo được link thanh toán");
+        return;
+      }
+
+      window.location.href = res.data.checkoutUrl;
+    } catch (err) {
+      notifyError(err.response?.data || "Không thể thanh toán lại");
+    }
+  };
+
   const handleEditAddress = (orderId) => {
     console.log(orderId);
   };
@@ -152,7 +172,10 @@ export default function MyOrderPage() {
               onCancel={handleAskCancel}
               onEditAddress={handleEditAddress}
               refresh={fetchOrders}
-              onReview={(productId, orderId) => handleOpenReview(productId, orderId)}
+              onReview={(productId, orderId) =>
+                handleOpenReview(productId, orderId)
+              }
+              onPayAgain={handlePayAgain}
             />
           )}
         </div>

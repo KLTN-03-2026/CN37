@@ -613,6 +613,7 @@ Services/
  mysqlconnector/2.4.0/lib/net9.0/MySqlConnector.dll
  newtonsoft.json/13.0.4/lib/net6.0/Newtonsoft.Json.dll
  nsec.cryptography/25.4.0/lib/net8.0/NSec.Cryptography.dll
+ payos/2.1.0/lib/net9.0/PayOS.dll
  pomelo.entityframeworkcore.mysql/9.0.0/lib/net8.0/Pomelo.EntityFrameworkCore.MySql.dll
  system.codedom/7.0.0/lib/net7.0/System.CodeDom.dll
  system.identitymodel.tokens.jwt/8.0.1/lib/net9.0/System.IdentityModel.Tokens.Jwt.dll

@@ -1,19 +1,26 @@
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
+using PayOS;
+using PayOS.Models;
+using PayOS.Models.V2.PaymentRequests;
 
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly AppDbContext _context;
     private readonly IInventoryDocumentService _service;
-    public OrderService(IOrderRepository orderRepository, AppDbContext context, IInventoryDocumentService service)
+    private readonly PayOSClient _payOS;
+    private readonly IConfiguration _configuration;
+    public OrderService(IOrderRepository orderRepository, AppDbContext context, IInventoryDocumentService service, PayOSClient payOS, IConfiguration configuration)
     {
         _orderRepository = orderRepository;
         _context = context;
         _service = service;
+        _payOS = payOS;
+        _configuration = configuration;
     }
 
-    public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
+    public async Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderRequest request)
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -101,6 +108,33 @@ public class OrderService : IOrderService
             };
 
             _context.Payments.Add(payment);
+            string? checkoutUrl = null;
+
+            if (request.PaymentMethod == "PAYOS")
+            {
+                var orderCode = long.Parse($"{order.Id}{DateTimeOffset.Now.ToUnixTimeSeconds()}");
+
+                var paymentRequest = new CreatePaymentLinkRequest
+                {
+                    OrderCode = orderCode,
+                    Amount = (int)(totalAmount ?? 0),
+                    Description = $"DH{order.Id}",
+                    CancelUrl = _configuration["PayOS:CancelUrl"],
+                    ReturnUrl = _configuration["PayOS:ReturnUrl"]
+                };
+
+                var paymentLink = await _payOS.PaymentRequests.CreateAsync(paymentRequest);
+
+                checkoutUrl = paymentLink.CheckoutUrl;
+
+                payment.OrderCode = orderCode;
+                payment.CheckoutUrl = checkoutUrl;
+                payment.Status = "Pending";
+                payment.ExpiredAt = DateTime.Now.AddHours(24);
+
+                order.PaymentStatus = "Chờ thanh toán";
+                order.Status = "Chờ thanh toán";
+            }
 
             if (request.Type == "cart")
             {
@@ -137,7 +171,13 @@ public class OrderService : IOrderService
             await _service.CreateExportAsync(exportRequest, request.UserId);
             await transaction.CommitAsync();
 
-            return order;
+            return new CreateOrderResponseDto
+            {
+                OrderId = order.Id,
+                PaymentMethod = order.PaymentMethod,
+                PaymentStatus = order.PaymentStatus,
+                CheckoutUrl = checkoutUrl
+            };
         }
         catch
         {
@@ -177,6 +217,9 @@ public class OrderService : IOrderService
                 CustomerName = o.Address.ReceiverName,
                 Phone = o.Address.ReceiverPhone,
                 TotalAmount = o.TotalAmount,
+                PaymentStatus = o.PaymentStatus,
+                PaymentMethod = o.PaymentMethod,
+                ExpiredAt = o.Payments.OrderByDescending(p => p.CreateAt).Select(p => p.ExpiredAt).FirstOrDefault(),
                 Status = o.Status,
                 UpdateAt = o.UpdateAt,
                 Items = o.OrderItems.Select(i => new OrderItemDto
@@ -237,6 +280,57 @@ public class OrderService : IOrderService
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<PayAgainResponseDto> PayAgainAsync(int orderId)
+    {
+        var order = await _context.Orders
+            .FirstOrDefaultAsync(x => x.Id == orderId);
+
+        if (order == null)
+            throw new Exception("Không tìm thấy đơn hàng");
+
+        if (order.PaymentMethod != "PAYOS")
+            throw new Exception("Đơn hàng không dùng PayOS");
+
+        if (order.PaymentStatus == "Đã thanh toán")
+            throw new Exception("Đơn hàng đã thanh toán");
+
+        var payment = await _context.Payments
+            .Where(x => x.OrderId == orderId && x.Status == "Pending")
+            .OrderBy(x => x.Id)
+            .FirstOrDefaultAsync();
+
+        if (payment == null)
+            throw new Exception("Không tìm thấy giao dịch thanh toán");
+
+        if (payment.ExpiredAt == null || payment.ExpiredAt <= DateTime.Now)
+            throw new Exception("Đơn hàng đã hết hạn thanh toán");
+
+        var orderCode = long.Parse($"{order.Id}{DateTimeOffset.Now.ToUnixTimeSeconds()}");
+
+        var paymentRequest = new CreatePaymentLinkRequest
+        {
+            OrderCode = orderCode,
+            Amount = (int)order.TotalAmount,
+            Description = $"DH{order.Id}",
+            CancelUrl = _configuration["PayOS:CancelUrl"],
+            ReturnUrl = _configuration["PayOS:ReturnUrl"]
+        };
+
+        var paymentLink = await _payOS.PaymentRequests.CreateAsync(paymentRequest);
+
+        payment.OrderCode = orderCode;
+        payment.CheckoutUrl = paymentLink.CheckoutUrl;
+        payment.Status = "Pending";
+
+        await _context.SaveChangesAsync();
+
+        return new PayAgainResponseDto
+        {
+            CheckoutUrl = paymentLink.CheckoutUrl,
+            ExpiredAt = payment.ExpiredAt
+        };
     }
 
     public async Task UpdateAddressAsync(long userId, long orderId, long newAddressId)
@@ -336,6 +430,9 @@ public class OrderService : IOrderService
                 TotalAmount = o.TotalAmount,
                 Status = o.Status,
                 UpdateAt = o.UpdateAt,
+                PaymentStatus = o.PaymentStatus,
+                PaymentMethod = o.PaymentMethod,
+                ExpiredAt = o.Payments.OrderByDescending(p => p.CreateAt).Select(p => p.ExpiredAt).FirstOrDefault(),
 
                 Items = o.OrderItems.Select(i => new OrderItemDto
                 {
@@ -387,6 +484,11 @@ public class OrderService : IOrderService
         if (order == null)
             throw new Exception("Order not found");
 
+        if (order.PaymentMethod == "PAYOS" && order.PaymentStatus != "Đã thanh toán" && newStatus != "Đã hủy")
+        {
+            throw new Exception("Đơn hàng PayOS chưa thanh toán, không thể xác nhận đơn.");
+        }
+
         var current = order.Status;
 
         // ❌ validate flow
@@ -412,20 +514,12 @@ public class OrderService : IOrderService
 
             inventoryExport.Status = "COMPLETED";
             inventoryExport.ApprovedAt = DateTime.Now;
-            inventoryExport.ApprovedBy = order.UserId; 
+            inventoryExport.ApprovedBy = order.UserId;
         }
         else
         {
             throw new Exception("Invalid status transition");
         }
-
-        // 📝 log
-        // _context.OrderLogs.Add(new OrderLog
-        // {
-        //     OrderId = order.Id,
-        //     Status = newStatus,
-        //     Note = $"Changed from {current} to {newStatus}"
-        // });
         order.UpdateAt = DateTime.Now;
 
         await _context.SaveChangesAsync();

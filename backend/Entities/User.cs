@@ -19,4 +19,8 @@ public class User
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
     public ICollection<ReviewReply> ReviewReplies { get; set; }
         = new List<ReviewReply>();
+
+    public virtual ICollection<UserBankAccount> UserBankAccounts { get; set; } = new List<UserBankAccount>();
+
+    public virtual ICollection<RefundRequest> RefundRequests { get; set; } = new List<RefundRequest>();
 }

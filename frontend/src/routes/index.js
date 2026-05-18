@@ -29,6 +29,8 @@ import SupplierPage from "../pages/SupplierPage";
 import ReviewManagement from "../pages/Seller/ReviewManagement/ReviewManagement";
 import SearchResults from "../pages/SearchResults";
 import StatisticsDashboard from "../components/Dashboard/Statistics/StatisticsDashboard";
+import PaymentCancelPage from "../pages/PaymentPage/PaymentCancelPage";
+import PaymentSuccessPage from "../pages/PaymentPage/PaymentSuccessPage";
 
 import { ProtectedRoute } from "./Routes";
 import { AdminRoute } from "./Routes";
@@ -123,6 +125,24 @@ const routes = [
     path: "/order-success",
     component: OrderSuccess,
     layout: DefaultLayout,
+    ProtectedRoute: true
+  },
+  {
+    path: "/my-orders",
+    component: MyOrderPage,
+    layout: SettingsLayout,
+    ProtectedRoute: true
+  },
+  {
+    path: "/payment-success",
+    component: PaymentSuccessPage,
+    layout: SettingsLayout,
+    ProtectedRoute: true
+  },
+  {
+    path: "/payment-cancel",
+    component: PaymentCancelPage,
+    layout: SettingsLayout,
     ProtectedRoute: true
   },
   {
