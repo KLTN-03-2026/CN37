@@ -26,7 +26,7 @@ public interface IStatisticsRepository
     Task<DashboardSummaryDto> GetDashboardSummaryAsync();
     
     // Category Analytics
-    Task<List<CategoricalRevenueDto>> GetRevenueByCategoryAsync(DateTime? fromDate = null, DateTime? toDate = null);
+    Task<List<CategoricalRevenueDto>> GetRevenueByCategoryAsync(string normalizedType, DateTime fromDate, DateTime toDate);
     
     // Comparison
     Task<ComparisonStatisticsDto> CompareCurrentVsPreviousMonthAsync();

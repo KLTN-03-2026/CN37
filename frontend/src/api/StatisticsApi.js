@@ -122,11 +122,12 @@ export const getTopProfitProducts = async (topCount = 10) => {
 
 // Category Revenue
 export const getRevenuByCategory = async (
+    type = "daily",
     fromDate = null,
     toDate = null
 ) => {
     const params = new URLSearchParams();
-
+    params.append("type", type);
     if (fromDate) params.append("fromDate", fromDate);
     if (toDate) params.append("toDate", toDate);
 
@@ -141,6 +142,11 @@ export const getRevenuByCategory = async (
 export const compareCurrentVsPreviousMonth = async () => {
     const res = await api.get(`/statistics/comparison/month`);
     return res.data;
+};
+
+export const getBusinessAlerts = async () => {
+  const res = await api.get("/statistics/business-alerts");
+  return res.data;
 };
 
 export const compareCurrentVsPreviousYear = async () => {

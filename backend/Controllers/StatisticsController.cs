@@ -60,6 +60,19 @@ public class StatisticsController : ControllerBase
         }
     }
 
+    [HttpGet("business-alerts")]
+    public async Task<IActionResult> GetBusinessAlerts()
+    {
+        var alerts = await _statisticsService.GetBusinessAlertsAsync();
+
+        return Ok(new
+        {
+            success = true,
+            data = alerts,
+            message = "Business alerts retrieved successfully"
+        });
+    }
+
     /// <summary>
     /// Get product analytics with pagination
     /// GET /api/statistics/products?pageNumber=1&pageSize=50
@@ -204,12 +217,13 @@ public class StatisticsController : ControllerBase
     /// </summary>
     [HttpGet("category-revenue")]
     public async Task<IActionResult> GetRevenuByCategory(
+        [FromQuery] string type = "daily",
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null)
     {
         try
         {
-            var result = await _statisticsService.GetRevenueByCategoryAsync(fromDate, toDate);
+            var result = await _statisticsService.GetRevenueByCategoryAsync(type, fromDate, toDate);
             return Ok(new
             {
                 success = true,

@@ -557,6 +557,8 @@ public class OrderService : IOrderService
         else if (current == OrderStatus.Shipping && newStatus == OrderStatus.Completed)
         {
             order.Status = newStatus;
+            order.PaymentStatus = "Đã thanh toán";
+            order.Payments.FirstOrDefault(p => p.Status == "Pending").Status = "Paid";
             order.CompletedAt = DateTime.Now;
             var inventoryExport = await _context.InventoryExports
                 .FirstOrDefaultAsync(x =>

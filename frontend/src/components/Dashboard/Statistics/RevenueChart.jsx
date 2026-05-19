@@ -1,12 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import styles from "./RevenueChart.module.scss";
 import {
   compareCurrentVsPreviousMonth,
   getBusinessStatistics,
+  getRevenuByCategory,
 } from "../../../api/StatisticsApi";
 import RevenueSummaryCards from "./RevenueSummaryCards";
 import RevenueLineChart from "./RevenueLineChart";
 import RevenueFilterBar from "./RevenueFilterBar";
+import TopProductsTable from "./TopProductsTable";
+import RecentOrders from "./RecentOrders";
+import CategoryRevenueChart from "./CategoryRevenueChart";
+import BusinessAlerts from "./BusinessAlerts";
+import { getAdminOrders } from "../../../api/OrderApi";
 
 const RevenueChart = () => {
   const [data, setData] = useState([]);
@@ -28,13 +34,63 @@ const RevenueChart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [type, setType] = useState("daily");
+  const [recentOrdersData, setRecentOrdersData] = useState([]);
+  const [categoryRevenueData, setCategoryRevenueData] = useState([]);
+
+  const fetchRecentOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await getAdminOrders({
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        order: "desc",
+      });
+      if (response) {
+        setRecentOrdersData(response.data || []);
+        console.log("Fetched recent orders:", response.data);
+      } else {
+        console.error("Failed to load recent orders:", response.message);
+      }
+    } catch (err) {
+      console.error("Error fetching recent orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategoryData = async () => {
+    try {
+      setLoading(true);
+      const fromDate = formatDateForApi(dateRange[0]);
+      const toDate = formatDateForApi(dateRange[1]);
+
+      const response = await getRevenuByCategory(type, fromDate, toDate);
+      console.log("Category response:", type, fromDate, toDate, response);
+
+      if (response.success) {
+        setCategoryRevenueData(response.data || []);
+        setError(null);
+      }
+    } catch (err) {
+      setError("Failed to load category data");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecentOrders();
+    
+  }, []);
 
   useEffect(() => {
     const [fromDate, toDate] = dateRange;
-
     if ((fromDate && toDate) || (!fromDate && !toDate)) {
       fetchStatisticsData();
       fetchChartData();
+      fetchCategoryData();
     }
   }, [type, dateRange]);
 
@@ -169,7 +225,11 @@ const RevenueChart = () => {
         <div className={styles.loadingOverlay}>Đang tải dữ liệu...</div>
       )}
 
-      <RevenueSummaryCards summary={summary} formatCurrency={formatCurrency} filterType={type}/>
+      <RevenueSummaryCards
+        summary={summary}
+        formatCurrency={formatCurrency}
+        filterType={type}
+      />
 
       <RevenueLineChart
         data={chartData}
@@ -177,6 +237,15 @@ const RevenueChart = () => {
         formatCurrency={formatCurrency}
         formatChartCurrency={formatChartCurrency}
       />
+      <div className={styles.topProductsContainer}>
+        <TopProductsTable type="selling" />
+        <TopProductsTable type="profit" />
+      </div>
+      <RecentOrders orders={recentOrdersData} isLoading={loading} />
+      <div className={styles.topProductsContainer}>
+        <CategoryRevenueChart data={categoryRevenueData} isLoading={loading} />
+        <BusinessAlerts />
+      </div>
     </div>
   );
 };

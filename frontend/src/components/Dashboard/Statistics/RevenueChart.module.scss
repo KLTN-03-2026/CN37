@@ -72,6 +72,21 @@
   margin-top: 20px;
 }
 
+.topProductsContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 24px;
+  align-items: start;
+}
+
+/* responsive */
+@media (max-width: 992px) {
+  .topProductsContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .summaryCards {
     grid-template-columns: 1fr;

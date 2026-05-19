@@ -1,16 +1,19 @@
 using backend.DTOs.Statistics;
 using backend.Repositories.Interfaces;
 using backend.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services;
 
 public class StatisticsService : IStatisticsService
 {
     private readonly IStatisticsRepository _statisticsRepository;
+    private readonly AppDbContext _context;
 
-    public StatisticsService(IStatisticsRepository statisticsRepository)
+    public StatisticsService(IStatisticsRepository statisticsRepository, AppDbContext context)
     {
         _statisticsRepository = statisticsRepository;
+        _context = context;
     }
 
     public async Task<StatisticsResponseDto<BusinessStatisticsDto>> GetBusinessStatisticsAsync(
@@ -115,9 +118,53 @@ public class StatisticsService : IStatisticsService
     }
 
     public async Task<List<CategoricalRevenueDto>> GetRevenueByCategoryAsync(
-        DateTime? fromDate = null, DateTime? toDate = null)
+    string type,
+    DateTime? fromDate = null,
+    DateTime? toDate = null)
     {
-        return await _statisticsRepository.GetRevenueByCategoryAsync(fromDate, toDate);
+        var normalizedType = string.IsNullOrWhiteSpace(type)
+            ? "daily"
+            : type.ToLower();
+
+        if (!fromDate.HasValue && !toDate.HasValue)
+        {
+            switch (normalizedType)
+            {
+                case "daily":
+                    fromDate = DateTime.Now.Date;
+                    toDate = DateTime.Now.Date;
+                    break;
+
+                case "monthly":
+                    fromDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-11);
+                    toDate = DateTime.Now.Date;
+                    break;
+
+                case "quarterly":
+                    fromDate = DateTime.Now.AddYears(-1).Date;
+                    toDate = DateTime.Now.Date;
+                    break;
+
+                case "yearly":
+                    fromDate = new DateTime(DateTime.Now.Year - 4, 1, 1);
+                    toDate = DateTime.Now.Date;
+                    break;
+
+                default:
+                    fromDate = DateTime.Now.Date;
+                    toDate = DateTime.Now.Date;
+                    break;
+            }
+        }
+
+        fromDate ??= DateTime.Now.Date;
+        toDate ??= DateTime.Now.Date;
+
+        return await _statisticsRepository.GetRevenueByCategoryAsync(
+            normalizedType,
+            fromDate.Value,
+            toDate.Value
+        );
     }
 
     public async Task<ComparisonStatisticsDto> CompareCurrentVsPreviousMonthAsync()
@@ -204,6 +251,129 @@ public class StatisticsService : IStatisticsService
         };
 
         return kpiCards;
+    }
+
+    public async Task<List<BusinessAlertDto>> GetBusinessAlertsAsync()
+    {
+        var alerts = new List<BusinessAlertDto>();
+        var id = 1;
+
+        var now = DateTime.Now;
+
+        var currentMonthStart = new DateTime(now.Year, now.Month, 1);
+        var previousMonthStart = currentMonthStart.AddMonths(-1);
+        var previousMonthEnd = currentMonthStart;
+
+        var currentRevenue = await _context.Orders
+            .Where(o =>
+                o.Status == "Đã giao" &&
+                o.CompletedAt >= currentMonthStart &&
+                o.CompletedAt <= now)
+            .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+
+        var previousRevenue = await _context.Orders
+            .Where(o =>
+                o.Status == "Đã giao" &&
+                o.CompletedAt >= previousMonthStart &&
+                o.CompletedAt < previousMonthEnd)
+            .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+
+        if (previousRevenue > 0)
+        {
+            var change = ((currentRevenue - previousRevenue) / previousRevenue) * 100;
+
+            if (change < -10)
+            {
+                alerts.Add(new BusinessAlertDto
+                {
+                    Id = id++,
+                    Type = "danger",
+                    Title = "Doanh thu giảm mạnh",
+                    Message = $"Doanh thu tháng này giảm {Math.Abs(change):0.0}% so với tháng trước.",
+                    Time = "Vừa cập nhật"
+                });
+            }
+            else if (change > 10)
+            {
+                alerts.Add(new BusinessAlertDto
+                {
+                    Id = id++,
+                    Type = "success",
+                    Title = "Doanh thu tăng trưởng tốt",
+                    Message = $"Doanh thu tháng này tăng {change:0.0}% so với tháng trước.",
+                    Time = "Vừa cập nhật"
+                });
+            }
+        }
+
+        var outStockProducts = await _context.Products
+            .CountAsync(p =>
+            p.Inventory == null ||
+            p.Inventory.Quantity <= 0);
+
+        if (outStockProducts > 0)
+        {
+            alerts.Add(new BusinessAlertDto
+            {
+                Id = id++,
+                Type = "danger",
+                Title = "Sản phẩm hết hàng",
+                Message = $"Có {outStockProducts} sản phẩm đã hết hàng> Hãy nhập thêm hàng ngay.",
+                Time = "Hôm nay"
+            });
+        }
+
+        var lowStockProducts = await _context.Products
+            .Where(p => p.Inventory.Quantity <= 5)
+            .CountAsync();
+
+        if (lowStockProducts > 0)
+        {
+            alerts.Add(new BusinessAlertDto
+            {
+                Id = id++,
+                Type = "warning",
+                Title = "Sản phẩm sắp hết hàng",
+                Message = $"Có {lowStockProducts} sản phẩm có tồn kho thấp, cần nhập thêm hàng.",
+                Time = "Hôm nay"
+            });
+        }
+
+        var pendingOrders = await _context.Orders
+            .Where(o =>
+                o.Status == "Chờ xác nhận" &&
+                o.CreateAt <= now.AddHours(-12))
+            .CountAsync();
+
+        if (pendingOrders > 0)
+        {
+            alerts.Add(new BusinessAlertDto
+            {
+                Id = id++,
+                Type = "info",
+                Title = "Đơn hàng chờ xử lý",
+                Message = $"Có {pendingOrders} đơn hàng chờ xác nhận quá 12 giờ.",
+                Time = "Hôm nay"
+            });
+        }
+        var refundOrders = await _context.Orders
+            .Where(o =>
+                o.Status == "Chờ hoàn tiền")
+            .CountAsync();
+
+        if (refundOrders > 0)
+        {
+            alerts.Add(new BusinessAlertDto
+            {
+                Id = id++,
+                Type = "info",
+                Title = "Đơn hàng chờ hoàn tiền",
+                Message = $"Có {refundOrders} đơn hàng chờ hoàn tiền. Hãy kiểm tra và xử lý ngay",
+                Time = "Hôm nay"
+            });
+        }
+
+        return alerts;
     }
 
     public async Task<byte[]> ExportStatisticsToExcelAsync(ExportStatisticsRequestDto request)

@@ -344,7 +344,7 @@ public class StatisticsRepository : IStatisticsRepository
         return analytics;
     }
 
-    public async Task<List<ProductAnalyticsDto>> GetLowStockProductsAsync(int threshold = 50)
+    public async Task<List<ProductAnalyticsDto>> GetLowStockProductsAsync(int threshold = 5)
     {
         return await _context.Inventories
             .AsNoTracking()
@@ -477,10 +477,31 @@ public class StatisticsRepository : IStatisticsRepository
 
     #region Category Analytics
 
-    public async Task<List<CategoricalRevenueDto>> GetRevenueByCategoryAsync(DateTime? fromDate = null, DateTime? toDate = null)
+    public async Task<List<CategoricalRevenueDto>> GetRevenueByCategoryAsync(string normalizedType, DateTime fromDate, DateTime toDate)
     {
-        var startDate = (fromDate ?? DateTime.Now.AddMonths(-1)).Date;
-        var endDate = (toDate ?? DateTime.Now).Date.AddDays(1);
+        DateTime startDate;
+        DateTime endDate;
+
+        if (normalizedType == "daily")
+        {
+            startDate = fromDate.Date;
+            endDate = toDate.Date.AddDays(1);
+        }
+        else if (normalizedType == "monthly")
+        {
+            startDate = new DateTime(fromDate.Year, fromDate.Month, 1);
+            endDate = new DateTime(toDate.Year, toDate.Month, 1).AddMonths(1);
+        }
+        else if (normalizedType == "quarterly")
+        {
+            startDate = fromDate.Date;
+            endDate = toDate.Date.AddDays(1);
+        }
+        else
+        {
+            startDate = fromDate.Date;
+            endDate = toDate.Date.AddDays(1);
+        }
 
         var result = await _context.OrderItems
             .AsNoTracking()
@@ -491,8 +512,12 @@ public class StatisticsRepository : IStatisticsRepository
                 oi.Order.CompletedAt.Value < endDate)
             .GroupBy(oi => new
             {
-                CategoryId = oi.Product.Category.Id,
-                CategoryName = oi.Product.Category.Name
+                CategoryId = oi.Product.Category.Parent != null
+                    ? oi.Product.Category.Parent.Id
+                    : oi.Product.Category.Id,
+                CategoryName = oi.Product.Category.Parent != null
+                    ? oi.Product.Category.Parent.Name
+                    : oi.Product.Category.Name
             })
             .Select(g => new
             {

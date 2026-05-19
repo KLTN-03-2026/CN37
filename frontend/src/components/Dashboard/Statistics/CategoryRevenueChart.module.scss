@@ -1,0 +1,114 @@
+.card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 6px 22px rgba(15, 23, 42, 0.08);
+
+}
+
+.header {
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #111827;
+    font-weight: 700;
+  }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.chartBox {
+  flex: 1;
+  min-width: 0;
+}
+
+.legend {
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.name {
+  flex: 1;
+  font-size: 14px;
+  color: #64748b;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.percent {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.tooltip {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+
+  p {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  strong {
+    color: #2563eb;
+    font-size: 14px;
+  }
+}
+
+.tooltipName {
+  color: #111827 !important;
+  font-weight: 700;
+}
+
+.skeletonTitle,
+.skeletonChart {
+  background: #e5e7eb;
+  border-radius: 12px;
+}
+
+.skeletonTitle {
+  width: 240px;
+  height: 24px;
+  margin-bottom: 20px;
+}
+
+.skeletonChart {
+  height: 260px;
+}
+
+@media (max-width: 992px) {
+  .content {
+    flex-direction: column;
+  }
+
+  .legend {
+    width: 100%;
+  }
+}

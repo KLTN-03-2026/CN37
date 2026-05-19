@@ -24,6 +24,8 @@ public interface IStatisticsService
     // Product Analytics
     Task<PaginatedStatisticsDto<ProductAnalyticsDto>> GetProductAnalyticsAsync(
         int pageNumber = 1, int pageSize = 50);
+
+    Task<List<BusinessAlertDto>> GetBusinessAlertsAsync();
     
     Task<ProductAnalyticsDto> GetProductAnalyticsByIdAsync(long productId);
     
@@ -35,7 +37,7 @@ public interface IStatisticsService
     Task<DashboardSummaryDto> GetDashboardSummaryAsync();
     
     // Category Analytics
-    Task<List<CategoricalRevenueDto>> GetRevenueByCategoryAsync(DateTime? fromDate = null, DateTime? toDate = null);
+    Task<List<CategoricalRevenueDto>> GetRevenueByCategoryAsync(string type,DateTime? fromDate = null, DateTime? toDate = null);
     
     // Comparison
     Task<ComparisonStatisticsDto> CompareCurrentVsPreviousMonthAsync();

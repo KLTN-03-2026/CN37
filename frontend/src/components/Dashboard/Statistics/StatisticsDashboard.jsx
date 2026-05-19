@@ -4,7 +4,11 @@ import RevenueChart from "./RevenueChart";
 import CategoryChart from "./CategoryChart";
 import TopProductsTable from "./TopProductsTable";
 import styles from "./StatisticsDashboard.module.scss";
-import { exportToExcel, exportToPdf, getKpiCards } from "../../../api/StatisticsApi";
+import {
+  exportToExcel,
+  exportToPdf,
+  getKpiCards,
+} from "../../../api/StatisticsApi";
 
 const StatisticsDashboard = () => {
   const [kpiCards, setKpiCards] = useState([]);
@@ -44,7 +48,10 @@ const StatisticsDashboard = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `statistics_${new Date().toISOString()}.xlsx`);
+      link.setAttribute(
+        "download",
+        `statistics_${new Date().toISOString()}.xlsx`,
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -66,7 +73,10 @@ const StatisticsDashboard = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `statistics_${new Date().toISOString()}.pdf`);
+      link.setAttribute(
+        "download",
+        `statistics_${new Date().toISOString()}.pdf`,
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -103,7 +113,7 @@ const StatisticsDashboard = () => {
   return (
     <div className={styles.dashboard}>
       <div className={styles.header}>
-        <h1>Analytics Dashboard</h1>
+        <h2>Báo cáo thống kê</h2>
         <div className={styles.controls}>
           <button className={styles.exportButton} onClick={handleExportExcel}>
             📊 Export Excel
@@ -129,55 +139,7 @@ const StatisticsDashboard = () => {
         ))}
       </div>
 
-      {/* Tabs */}
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${activeTab === "overview" ? styles.active : ""}`}
-          onClick={() => setActiveTab("overview")}
-        >
-          📈 Tổng quan
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === "products" ? styles.active : ""}`}
-          onClick={() => setActiveTab("products")}
-        >
-          🛍️ Sản Phẩm
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === "categories" ? styles.active : ""}`}
-          onClick={() => setActiveTab("categories")}
-        >
-          📁 Danh mục
-        </button>
-      </div>
-
-      {/* Tab Content */}
-      <div className={styles.content}>
-        {activeTab === "overview" && (
-          <div>
-            <RevenueChart />
-          </div>
-        )}
-
-        {activeTab === "products" && (
-          <div>
-            <div className={styles.tablesRow}>
-              <div className={styles.halfWidth}>
-                <TopProductsTable type="selling" />
-              </div>
-              <div className={styles.halfWidth}>
-                <TopProductsTable type="profit" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "categories" && (
-          <div>
-            <CategoryChart />
-          </div>
-        )}
-      </div>
+      <RevenueChart />
     </div>
   );
 };
