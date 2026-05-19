@@ -7,4 +7,5 @@ public interface ISupplierService
     Task<PagedResult<SupplierDto>> SearchSuppliersAsync(SupplierSearchParams p);
     Task DeleteSupplierAsync(long supplierId, long adminId, string ip);
     Task<SupplierDto> ToggleSupplierStatusAsync(long supplierId, long adminId, string ip);
+    Task<byte[]> ExportSuppliersExcelAsync();
 }

@@ -13,7 +13,8 @@ import {
   updateUser,
   assignUserRole,
   removeUserRole,
-  softDeleteUser
+  softDeleteUser,
+  exportToExcel,
 } from "../../api/UserApi";
 import { getAllRole } from "../../api/RoleApi";
 
@@ -24,6 +25,7 @@ import UserPreviewModal from "./components/UserPreviewModal";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import CreateModal from "./components/CreateModal";
 import { notifyError, notifySuccess } from "../../components/Nofitication";
+import { FileSpreadsheet } from "lucide-react";
 
 const cx = classNames.bind(styles);
 
@@ -90,7 +92,7 @@ const AdminUserPage = () => {
       open: true,
       userId: id,
     });
-  };  
+  };
 
   const handleChangePage = (page) => {
     setFilters((prev) => ({
@@ -114,8 +116,8 @@ const AdminUserPage = () => {
       setIsCreate(false);
       fetchUsers();
     } catch (error) {
-      const errMsg = error.response?.data.message || "Tạo khách hàng thất bại"
-      notifyError(errMsg)
+      const errMsg = error.response?.data.message || "Tạo khách hàng thất bại";
+      notifyError(errMsg);
     }
   };
 
@@ -135,12 +137,12 @@ const AdminUserPage = () => {
     try {
       await softDeleteUser(confirmDelete.userId);
       notifySuccess("Xóa khách hàng thành công");
-      setConfirmDelete({ open: false, userId: null })
+      setConfirmDelete({ open: false, userId: null });
       fetchUsers();
     } catch (error) {
-      notifyError("Xóa khách hàng thất bại")
+      notifyError("Xóa khách hàng thất bại");
     }
-  }
+  };
 
   const handleRemoveRole = async (id, roleId) => {
     setIsPreviewOpen(false);
@@ -184,6 +186,14 @@ const AdminUserPage = () => {
     }
   };
 
+  const handleExportExcel = async () => {
+    try {
+      await exportToExcel();
+    } catch (err) {
+      console.error("Export Excel error:", err);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, [filters]);
@@ -198,6 +208,7 @@ const AdminUserPage = () => {
           setIsOpen={setIsOpen}
           isCreate={isCreate}
           setIsCreate={setIsCreate}
+          onExportExcel={handleExportExcel}
         />
       </div>
 
@@ -260,9 +271,8 @@ const AdminUserPage = () => {
       <ConfirmDialog
         open={confirmDelete.open}
         title="Xóa tài khoản"
-        
         message="Bạn có chắc muốn xóa tài khoản này?"
-        confirmText= "Xác nhận"
+        confirmText="Xác nhận"
         cancelText="Hủy"
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete({ open: false, userId: null })}

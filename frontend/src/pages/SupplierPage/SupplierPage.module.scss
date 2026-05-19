@@ -25,3 +25,17 @@
   margin-bottom: 16px;
   letter-spacing: -0.3px;
 }
+.exportBtn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #59c241;
+  color: #fff;
+}
+

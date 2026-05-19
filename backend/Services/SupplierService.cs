@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 
 public class SupplierService : ISupplierService
@@ -235,5 +236,129 @@ public class SupplierService : ISupplierService
             $"Changed supplier status to {supplier.IsActive}", ip);
 
         return await GetSupplierAsync(supplierId);
+    }
+    public async Task<byte[]> ExportSuppliersExcelAsync()
+    {
+        var suppliers = await _context.Suppliers
+            .OrderByDescending(s => s.Id)
+            .Select(s => new
+            {
+                s.Code,
+                s.Name,
+                s.ContactPerson,
+                s.Phone,
+                s.Email,
+                s.Address,
+                s.Province,
+                s.District,
+                s.TaxCode,
+                s.BankName,
+                s.BankAccount,
+                s.Note,
+                s.CreatedAt,
+                s.UpdatedAt
+            })
+            .ToListAsync();
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Nhà cung cấp");
+
+        worksheet.Range("A1:N1").Merge();
+        worksheet.Cell("A1").Value = "DANH SÁCH NHÀ CUNG CẤP";
+        worksheet.Cell("A1").Style.Font.Bold = true;
+        worksheet.Cell("A1").Style.Font.FontSize = 20;
+        worksheet.Cell("A1").Style.Font.FontColor = XLColor.White;
+        worksheet.Cell("A1").Style.Fill.BackgroundColor = XLColor.DarkGreen;
+        worksheet.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+        worksheet.Range("A2:N2").Merge();
+        worksheet.Cell("A2").Value = $"Ngày xuất: {DateTime.Now:dd/MM/yyyy HH:mm}";
+        worksheet.Cell("A2").Style.Font.Italic = true;
+        worksheet.Cell("A2").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+        int headerRow = 4;
+
+        string[] headers =
+        {
+            "STT",
+            "Mã NCC",
+            "Tên nhà cung cấp",
+            "Người liên hệ",
+            "Số điện thoại",
+            "Email",
+            "Địa chỉ",
+            "Tỉnh/Thành",
+            "Quận/Huyện",
+            "Mã số thuế",
+            "Ngân hàng",
+            "Số tài khoản",
+            "Ghi chú",
+            "Ngày tạo"
+        };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(headerRow, i + 1).Value = headers[i];
+        }
+
+        var headerRange = worksheet.Range($"A{headerRow}:N{headerRow}");
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Font.FontColor = XLColor.White;
+        headerRange.Style.Fill.BackgroundColor = XLColor.Green;
+        headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+        headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+        int row = headerRow + 1;
+        int stt = 1;
+
+        foreach (var item in suppliers)
+        {
+            worksheet.Cell(row, 1).Value = stt++;
+            worksheet.Cell(row, 2).Value = item.Code ?? "N/A";
+            worksheet.Cell(row, 3).Value = item.Name ?? "N/A";
+            worksheet.Cell(row, 4).Value = item.ContactPerson ?? "N/A";
+            worksheet.Cell(row, 5).Value = item.Phone ?? "N/A";
+            worksheet.Cell(row, 6).Value = item.Email ?? "N/A";
+            worksheet.Cell(row, 7).Value = item.Address ?? "N/A";
+            worksheet.Cell(row, 8).Value = item.Province ?? "N/A";
+            worksheet.Cell(row, 9).Value = item.District ?? "N/A";
+            worksheet.Cell(row, 10).Value = item.TaxCode ?? "N/A";
+            worksheet.Cell(row, 11).Value = item.BankName ?? "N/A";
+            worksheet.Cell(row, 12).Value = item.BankAccount ?? "N/A";
+            worksheet.Cell(row, 13).Value = item.Note ?? "";
+            worksheet.Cell(row, 14).Value = item.CreatedAt.ToString("dd/MM/yyyy HH:mm");
+
+            var dataRange = worksheet.Range($"A{row}:N{row}");
+            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            if (row % 2 == 0)
+            {
+                dataRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+            }
+
+            row++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        worksheet.Column(1).Width = 8;
+        worksheet.Column(3).Width = 30;
+        worksheet.Column(6).Width = 30;
+        worksheet.Column(7).Width = 35;
+        worksheet.Column(13).Width = 35;
+        worksheet.Column(14).Width = 22;
+
+        worksheet.Column(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        worksheet.Column(12).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        worksheet.Column(14).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+        worksheet.SheetView.FreezeRows(headerRow);
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return stream.ToArray();
     }
 }

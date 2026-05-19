@@ -39,3 +39,18 @@ export const assignUserRole = (id, roleId) => {
 export const removeUserRole = (id, roleId) => {
   return api.delete(`/admin/users/${id}/remove-role`, {data: { roleId }});
 };
+
+export const exportToExcel = async () => {
+  const response = await api.get("/admin/users/export-excel", {
+    responseType: "blob",
+  });
+
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.setAttribute("download", "DanhSachKhachHang.xlsx");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};

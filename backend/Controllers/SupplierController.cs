@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize(Roles="ADMIN")]
+[Authorize(Roles = "ADMIN")]
 [ApiController]
 [Route("api/admin/suppliers")]
 public class SupplierController : ControllerBase
@@ -129,5 +129,16 @@ public class SupplierController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+    [HttpGet("export-excel")]
+    public async Task<IActionResult> ExportExcel()
+    {
+        var fileBytes = await _supplierService.ExportSuppliersExcelAsync();
+
+        return File(
+            fileBytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            $"DanhSachNhaCungCap_{DateTime.Now:ddMMyyyy}.xlsx"
+        );
     }
 }

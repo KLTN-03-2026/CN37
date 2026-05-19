@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 
 public class InventoryDocumentService : IInventoryDocumentService
@@ -240,6 +241,122 @@ public class InventoryDocumentService : IInventoryDocumentService
 
         return export.Id;
     }
+    public async Task<byte[]> ExportInventoryExcelAsync()
+    {
+        var inventories = await _context.Products
+            .Where(p => p.IsActive)
+            .Include(p => p.Category)
+            .Select(p => new
+    {
+        ProductId = p.Id,
+        ProductName = p.Name,
+
+        CategoryName = p.Category != null
+            ? p.Category.Name
+            : "N/A",
+
+        Quantity = _context.Inventories
+            .Where(i => i.ProductId == p.Id)
+            .Select(i => (int?)i.Quantity)
+            .FirstOrDefault() ?? 0,
+
+        CostPrice = _context.InventoryBatches
+            .Where(b => b.ProductId == p.Id && b.RemainingQuantity > 0)
+            .OrderByDescending(b => b.CreatedAt)
+            .Select(b => (decimal?)b.CostPrice)
+            .FirstOrDefault() ?? 0,
+
+        LastUpdated = _context.Inventories
+            .Where(i => i.ProductId == p.Id)
+            .Select(i => (DateTime?)i.LastUpdated)
+            .FirstOrDefault()
+    })
+    .ToListAsync();
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Quản lý kho");
+
+        worksheet.Range("A1:G1").Merge();
+        worksheet.Cell("A1").Value = "DANH SÁCH TỒN KHO";
+        worksheet.Cell("A1").Style.Font.Bold = true;
+        worksheet.Cell("A1").Style.Font.FontSize = 20;
+        worksheet.Cell("A1").Style.Font.FontColor = XLColor.White;
+        worksheet.Cell("A1").Style.Fill.BackgroundColor = XLColor.DarkGreen;
+        worksheet.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+        worksheet.Range("A2:G2").Merge();
+        worksheet.Cell("A2").Value = $"Ngày xuất: {DateTime.Now:dd/MM/yyyy HH:mm}";
+        worksheet.Cell("A2").Style.Font.Italic = true;
+        worksheet.Cell("A2").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+        int headerRow = 4;
+
+        string[] headers =
+        {
+            "STT", "Tên sản phẩm", "Danh mục", "Giá gốc",
+            "Tồn kho", "Trạng thái", "Cập nhật lần cuối"
+        };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(headerRow, i + 1).Value = headers[i];
+        }
+
+        var headerRange = worksheet.Range($"A{headerRow}:G{headerRow}");
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Font.FontColor = XLColor.White;
+        headerRange.Style.Fill.BackgroundColor = XLColor.Green;
+        headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+        headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+        int row = headerRow + 1;
+        int stt = 1;
+
+        foreach (var item in inventories)
+        {
+            string status = item.Quantity == 0
+                ? "Hết hàng"
+                : item.Quantity < 5
+                    ? "Sắp hết"
+                    : "Còn hàng";
+
+            worksheet.Cell(row, 1).Value = stt++;
+            worksheet.Cell(row, 2).Value = item.ProductName ?? "N/A";
+            worksheet.Cell(row, 3).Value = item.CategoryName ?? "N/A";
+            worksheet.Cell(row, 4).Value = item.CostPrice;
+            worksheet.Cell(row, 5).Value = item.Quantity;
+            worksheet.Cell(row, 6).Value = status;
+            worksheet.Cell(row, 7).Value = item.LastUpdated.HasValue
+                ? item.LastUpdated.Value.ToString("dd/MM/yyyy HH:mm")
+                : "Chưa cập nhật";
+            var dataRange = worksheet.Range($"A{row}:G{row}");
+            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            if (row % 2 == 0)
+            {
+                dataRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+            }
+
+            row++;
+        }
+
+        worksheet.Column(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        worksheet.Column(4).Style.NumberFormat.Format = "#,##0 VNĐ";
+        worksheet.Column(5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        worksheet.Column(6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        worksheet.Column(7).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+        worksheet.Columns().AdjustToContents();
+        worksheet.SheetView.FreezeRows(headerRow);
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return stream.ToArray();
+    }
+
 
     // ================= PRIVATE =================
     private async Task<Inventory> GetOrCreateInventory(long productId)

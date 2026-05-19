@@ -10,4 +10,5 @@ public interface IUserService
         Task RemoveRoleAsync(long userId, long roleId, long adminId, string ip);
         Task<string> GeneratePasswordResetTokenAsync(long userId, long adminId, string ip);
         Task ResetPasswordUsingTokenAsync(string token, string newPassword);
+        Task<byte[]> ExportCustomersExcelAsync();
     }

@@ -133,4 +133,16 @@ public class AdminUsersController : ControllerBase
         var logs = await _audit.GetLogsForTargetAsync(id, page, pageSize);
         return Ok(logs);
     }
+
+    [HttpGet("export-excel")]
+    public async Task<IActionResult> ExportExcel()
+    {
+        var fileBytes = await _userService.ExportCustomersExcelAsync();
+
+        return File(
+            fileBytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            $"DanhSachKhachHang_{DateTime.Now:ddMMyyyy}.xlsx"
+        );
+    }
 }

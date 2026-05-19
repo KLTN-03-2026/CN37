@@ -39,3 +39,18 @@ export const createImport = (data) => {
 export const createExport = (data) => {
   return api.post("/inventory-documents/export", data);
 };
+
+export const exportToExcel = async () => {
+  const response = await api.get("/inventory-documents/export-excel", {
+    responseType: "blob",
+  });
+
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.setAttribute("download", "DanhSachTonKho.xlsx");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};

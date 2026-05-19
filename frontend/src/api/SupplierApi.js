@@ -24,3 +24,18 @@ export const updateSupplier = (id, data) => {
 export const deleteSupplier = (id) => {
   return api.delete(`/admin/suppliers/${id}`);
 };
+
+export const exportToExcel = async () => {
+  const response = await api.get("/admin/suppliers/export-excel", {
+    responseType: "blob",
+  });
+
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.setAttribute("download", "DanhSachNhaCungCap.xlsx");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};

@@ -8,6 +8,7 @@ import {
   createSupplier,
   updateSupplier,
   deleteSupplier,
+  exportToExcel,
 } from "../../api/SupplierApi";
 
 import SupplierTable from "./components/SupplierTable";
@@ -16,6 +17,7 @@ import SupplierAction from "./components/SupplierAction";
 import SupplierPreviewModal from "./components/SupplierPreviewModal";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { notifyError, notifySuccess } from "../../components/Nofitication";
+import { FileSpreadsheet } from "lucide-react";
 
 const cx = classNames.bind(styles);
 
@@ -103,10 +105,18 @@ const SupplierPage = () => {
     setFilters({ page, pageSize });
   };
 
+  const handleExportExcel = async () => {
+    await exportToExcel();
+  };
+
   return (
     <div className={cx("container")}>
       <div className={cx("header")}>
         <h2 className={cx("title")}>Quản lý nhà cung cấp</h2>
+        <button className={cx("exportBtn")} onClick={handleExportExcel}>
+          <FileSpreadsheet size={16} />
+          Xuất Excel
+        </button>
       </div>
 
       <SupplierSearch onSearch={handleSearch} onAdd={() => setIsOpen(true)} />

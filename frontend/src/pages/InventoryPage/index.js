@@ -6,9 +6,10 @@ import FilterBar from "./components/FilterBar";
 import HistoryAllModal from "./components/HistoryModal";
 import ImportExportModal from "./components/ImportExportModal";
 
-import { getProductInventory } from "../../api/InventoryApi";
+import { exportToExcel, getProductInventory } from "../../api/InventoryApi";
 import { getCategories } from "../../api/CategoryApi";
 import { notifyWarning } from "../../components/Nofitication";
+import { FileSpreadsheet } from "lucide-react";
 
 const cx = classNames.bind(styles);
 
@@ -47,37 +48,46 @@ function InventoryPage() {
     p.name.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const handleExportExcel = async () => {
+    await exportToExcel();
+  };
+
   return (
     <div className={cx("wrapper")}>
       <div className={cx("header")}>
         <h2 className={cx("title")}>Quản lý kho</h2>
-
-        <FilterBar
-          search={search}
-          setSearch={setSearch}
-          category={category}
-          setCategory={setCategory}
-          status={status}
-          setStatus={setStatus}
-          categories={categories}
-          onSearch={fetchData}
-          onOpenHistoryAll={() => setShowHistoryAll(true)}
-          onOpenImport={() => {
-            if (selectedProducts.length === 0) {
-              notifyWarning("Chưa chọn sản phẩm");
-              return;
-            }
-            setModalType("IMPORT");
-          }}
-          onOpenExport={() => {
-            if (selectedProducts.length === 0) {
-              notifyWarning("Chưa chọn sản phẩm");
-              return;
-            }
-            setModalType("EXPORT");
-          }}
-        />
+        <button className={cx("exportBtn")} onClick={handleExportExcel}>
+          <FileSpreadsheet size={16} />
+          Xuất Excel
+        </button>
       </div>
+
+      <FilterBar
+        search={search}
+        setSearch={setSearch}
+        category={category}
+        setCategory={setCategory}
+        status={status}
+        setStatus={setStatus}
+        categories={categories}
+        onSearch={fetchData}
+        onOpenHistoryAll={() => setShowHistoryAll(true)}
+        onOpenImport={() => {
+          if (selectedProducts.length === 0) {
+            notifyWarning("Chưa chọn sản phẩm");
+            return;
+          }
+          setModalType("IMPORT");
+        }}
+        onOpenExport={() => {
+          if (selectedProducts.length === 0) {
+            notifyWarning("Chưa chọn sản phẩm");
+            return;
+          }
+          setModalType("EXPORT");
+        }}
+      />
+
       <div className={cx("data")}>
         <StockTable
           data={filteredData}

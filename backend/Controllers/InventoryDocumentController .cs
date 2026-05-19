@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-[Authorize(Roles="ADMIN")]
+[Authorize(Roles = "ADMIN")]
 [ApiController]
 [Route("api/inventory-documents")]
 public class InventoryDocumentController : ControllerBase
@@ -69,5 +69,17 @@ public class InventoryDocumentController : ControllerBase
         var id = await _service.CreateExportAsync(request, userId);
 
         return Ok(new { message = "Xuất kho thành công", id });
+    }
+
+    [HttpGet("export-excel")]
+    public async Task<IActionResult> ExportExcel()
+    {
+        var fileBytes = await _service.ExportInventoryExcelAsync();
+
+        return File(
+            fileBytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            $"DanhSachTonKho_{DateTime.Now:ddMMyyyy}.xlsx"
+        );
     }
 }
