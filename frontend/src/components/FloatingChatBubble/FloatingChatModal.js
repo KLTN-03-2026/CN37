@@ -2,7 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import classNames from "classnames/bind";
 import styles from "./FloatingChatModal.module.scss";
 import { FaTimes } from "react-icons/fa";
-import { sendMessage, getUserSessions, getSession, deleteSession } from "../../api/AiChatApi";
+import {
+  sendMessage,
+  getUserSessions,
+  getSession,
+  deleteSession,
+} from "../../api/AiChatApi";
 
 const cx = classNames.bind(styles);
 
@@ -41,7 +46,20 @@ export default function FloatingChatModal({ isOpen, onClose }) {
       const loadSession = async () => {
         try {
           const response = await getSession(currentSessionId);
-          setCurrentMessages(response.data.messages || []);
+          const parsedMessages = (response.data.messages || []).map((msg) => {
+            if (msg.role !== "assistant") return msg;
+
+            const parsed = parseBotMessage(msg.message);
+
+            return {
+              ...msg,
+              type: parsed.type || "text",
+              message: parsed.message || "",
+              data: parsed.data || null,
+            };
+          });
+
+          setCurrentMessages(parsedMessages);
         } catch (error) {
           console.error("Failed to load session:", error);
         }
@@ -90,11 +108,16 @@ export default function FloatingChatModal({ isOpen, onClose }) {
       }
 
       // Add AI response
+      const botResponse = parseBotMessage(response.data.message);
+
       const aiMessage = {
         role: "assistant",
-        message: response.data.message,
+        type: botResponse.type,
+        message: botResponse.message,
+        data: botResponse.data,
         createdAt: new Date().toISOString(),
       };
+
       setCurrentMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -158,8 +181,10 @@ export default function FloatingChatModal({ isOpen, onClose }) {
   const getSessionTitle = (session) => {
     if (session.messages && session.messages.length > 0) {
       const firstMessage = session.messages[0];
-      return firstMessage.message.substring(0, 20) +
-        (firstMessage.message.length > 20 ? "..." : "");
+      return (
+        firstMessage.message.substring(0, 20) +
+        (firstMessage.message.length > 20 ? "..." : "")
+      );
     }
     return "New Chat";
   };
@@ -185,20 +210,193 @@ export default function FloatingChatModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
+  const parseBotMessage = (rawMessage) => {
+    try {
+      if (!rawMessage) {
+        return {
+          type: "text",
+          message: "",
+          data: null,
+        };
+      }
+
+      // Nếu đã là object
+      if (typeof rawMessage === "object") {
+        return rawMessage;
+      }
+
+      // Remove markdown
+      let cleaned = rawMessage
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
+      // Lấy JSON object đầu tiên
+      const firstBrace = cleaned.indexOf("{");
+      const lastBrace = cleaned.lastIndexOf("}");
+
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+      }
+
+      return JSON.parse(cleaned);
+    } catch (err) {
+      console.error("Parse AI message failed:", err);
+
+      return {
+        type: "text",
+        message: rawMessage,
+        data: null,
+      };
+    }
+  };
+
+  const renderAssistantMessage = (msg) => {
+    if (msg.type === "product_cards") {
+      return (
+        <>
+          <p>{msg.message}</p>
+
+          <div className={cx("productCards")}>
+            {msg.data?.map((product) => (
+              <div key={product.id} className={cx("productCard")}>
+                {/* IMAGE */}
+                <div className={cx("productImageWrapper")}>
+                  <img
+                    src={product.thumbnail}
+                    alt={product.name}
+                    className={cx("productImage")}
+                  />
+                </div>
+
+                {/* NAME */}
+                <h4>{product.name}</h4>
+
+                {/* PRICE */}
+                <p className={cx("productPrice")}>
+                  {Number(product.price).toLocaleString("vi-VN")} VNĐ
+                </p>
+
+                {/* BRAND */}
+                <p>Thương hiệu: {product.brand}</p>
+
+                {/* HIGHLIGHTS */}
+                {product.highlights?.length > 0 && (
+                  <ul>
+                    {product.highlights.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* BUTTON */}
+                <button>Xem chi tiết</button>
+              </div>
+            ))}
+          </div>
+        </>
+      );
+    }
+
+    if (msg.type === "spec_table") {
+      return (
+        <>
+          <p>{msg.message}</p>
+
+          <table className={cx("specTable")}>
+            <tbody>
+              {msg.data?.specs?.map((spec, index) => (
+                <tr key={index}>
+                  <td>{spec.label}</td>
+                  <td>{spec.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      );
+    }
+
+    if (msg.type === "compare_table") {
+      return (
+        <>
+          <p>{msg.message}</p>
+
+          <div className={cx("compareTableWrapper")}>
+            <table className={cx("compareTable")}>
+              <thead>
+                <tr>
+                  <th>Tiêu chí</th>
+                  {msg.data?.map((product) => (
+                    <th key={product.id}>{product.name}</th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>Giá</td>
+                  {msg.data?.map((product) => (
+                    <td key={product.id}>
+                      {Number(product.price).toLocaleString("vi-VN")} VNĐ
+                    </td>
+                  ))}
+                </tr>
+
+                <tr>
+                  <td>Thương hiệu</td>
+                  {msg.data?.map((product) => (
+                    <td key={product.id}>{product.brand}</td>
+                  ))}
+                </tr>
+
+                {[
+                  ...new Set(
+                    msg.data?.flatMap(
+                      (product) =>
+                        product.specs?.map((spec) => spec.label) || [],
+                    ),
+                  ),
+                ].map((label) => (
+                  <tr key={label}>
+                    <td>{label}</td>
+
+                    {msg.data?.map((product) => {
+                      const spec = product.specs?.find(
+                        (item) => item.label === label,
+                      );
+
+                      return (
+                        <td key={product.id}>
+                          {spec?.value || "Không có dữ liệu"}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+
+    return <p>{msg.message}</p>;
+  };
+
   return (
     <div className={cx("modalOverlay")} onClick={onClose}>
-      <div className={cx("modalContainer")} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={cx("modalContainer")}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className={cx("modalHeader")}>
           <div className={cx("headerContent")}>
             <h3>AI Assistant</h3>
             <p className={cx("subtitle")}>Trợ lý ảo của bạn</p>
           </div>
-          <button
-            className={cx("closeBtn")}
-            onClick={onClose}
-            title="Đóng"
-          >
+          <button className={cx("closeBtn")} onClick={onClose} title="Đóng">
             <FaTimes />
           </button>
         </div>
@@ -265,7 +463,12 @@ export default function FloatingChatModal({ isOpen, onClose }) {
                   {currentMessages.map((msg, index) => (
                     <div key={index} className={cx("message", msg.role)}>
                       <div className={cx("messageContent")}>
-                        <p>{msg.message}</p>
+                        {msg.role === "assistant" ? (
+                          renderAssistantMessage(msg)
+                        ) : (
+                          <p>{msg.message}</p>
+                        )}
+
                         <span className={cx("messageTime")}>
                           {formatTime(msg.createdAt)}
                         </span>

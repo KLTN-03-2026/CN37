@@ -382,6 +382,101 @@
   }
 }
 
+.productCards {
+  display: grid;
+  gap: 16px;
+}
+
+.productCard {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.productImageWrapper {
+  width: 100%;
+  height: 180px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.productPrice {
+  color: #e11d48;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.productCard ul {
+  padding-left: 18px;
+  margin: 8px 0;
+}
+
+.productCard button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.specTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  background: #fff;
+}
+
+.specTable td {
+  border: 1px solid #e5e7eb;
+  padding: 8px;
+}
+
+.specTable td:first-child {
+  font-weight: 600;
+  background: #f9fafb;
+}
+
+.compareTableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.compareTable {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.compareTable th,
+.compareTable td {
+  border: 1px solid #e5e7eb;
+  padding: 10px;
+  vertical-align: top;
+  font-size: 14px;
+}
+
+.compareTable th {
+  background: #f3f4f6;
+  font-weight: 700;
+}
+
+.compareTable td:first-child {
+  font-weight: 600;
+  background: #f9fafb;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -415,7 +510,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
   }
 

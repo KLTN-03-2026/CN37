@@ -15,7 +15,9 @@ import {
   updateProduct,
   toggleProduct,
   getAdminProductId,
+  exportToExcel,
 } from "../../api/ProductApi";
+import { FileSpreadsheet } from "lucide-react";
 
 const cx = classNames.bind(styles);
 
@@ -50,7 +52,7 @@ function AdminProductPage() {
         filter.search,
         filter.parentCategoryId,
         filter.categoryId,
-        filter.status
+        filter.status,
       );
       setProducts(res.data);
     } finally {
@@ -116,9 +118,19 @@ function AdminProductPage() {
     });
   };
 
+  const handleExportExcel = async () => {
+    await exportToExcel();
+  };
+
   return (
     <div className={cx("wrapper")}>
-      <h2 className={cx("title")}>Quản lý sản phẩm</h2>
+      <div className={cx("header")}>
+        <h2 className={cx("title")}>Quản lý sản phẩm</h2>
+        <button className={cx("exportBtn")} onClick={handleExportExcel}>
+          <FileSpreadsheet size={16} />
+          Xuất Excel
+        </button>
+      </div>
 
       <ProductFilter
         filter={filter}
@@ -165,14 +177,10 @@ function AdminProductPage() {
             ? "Bạn có chắc muốn vô hiệu hóa sản phẩm này?"
             : "Bạn có chắc muốn kích hoạt sản phẩm này?"
         }
-        confirmText={
-          confirmState.isDisableAction ? "Vô hiệu hóa" : "Kích hoạt"
-        }
+        confirmText={confirmState.isDisableAction ? "Vô hiệu hóa" : "Kích hoạt"}
         cancelText="Hủy"
         onConfirm={handleToggle}
-        onCancel={() =>
-          setConfirmState({ open: false, productId: null })
-        }
+        onCancel={() => setConfirmState({ open: false, productId: null })}
       />
     </div>
   );

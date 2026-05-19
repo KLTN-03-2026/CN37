@@ -21,7 +21,6 @@
 
   background: #f8f9fb;
 
-  padding: 16px 20px 0px 20px;
   margin-bottom: 20px;
 }
 
@@ -38,7 +37,8 @@
   border-collapse: collapse;
 }
 
-.table th, .table td {
+.table th,
+.table td {
   border: 1px solid #eee;
   padding: 10px;
 }
@@ -49,6 +49,20 @@
 
 .inactive {
   color: red;
+}
+
+.exportBtn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #59c241;
+  color: #fff;
 }
 
 .btn {
@@ -76,7 +90,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .modalContent {

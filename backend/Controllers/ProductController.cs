@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ClosedXML.Excel;
+
 
 [ApiController]
 [Route("api/products")]
@@ -234,5 +236,136 @@ public class ProductController : ControllerBase
 
         var results = await _service.SearchAsync(keyword);
         return Ok(results);
+    }
+
+    [Authorize(Roles = "ADMIN")]
+    [HttpGet("export-excel")]
+    public async Task<IActionResult> ExportExcel()
+    {
+        var products = await _context.Products
+            .Include(p => p.Category)
+                .ThenInclude(c => c.Parent)
+            .ToListAsync();
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Danh sách sản phẩm");
+
+        // ===== TIÊU ĐỀ =====
+
+        worksheet.Range("A1:H1").Merge();
+        worksheet.Cell("A1").Value = "DANH SÁCH SẢN PHẨM";
+
+        worksheet.Cell("A1").Style.Font.Bold = true;
+        worksheet.Cell("A1").Style.Font.FontSize = 20;
+        worksheet.Cell("A1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        worksheet.Cell("A1").Style.Fill.BackgroundColor = XLColor.Green;
+        worksheet.Cell("A1").Style.Font.FontColor = XLColor.White;
+
+        // ===== NGÀY XUẤT =====
+
+        worksheet.Range("A2:H2").Merge();
+        worksheet.Cell("A2").Value = $"Ngày xuất: {DateTime.Now:dd/MM/yyyy HH:mm}";
+
+        worksheet.Cell("A2").Style.Font.Italic = true;
+        worksheet.Cell("A2").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+        // ===== HEADER =====
+
+        int headerRow = 4;
+
+        worksheet.Cell(headerRow, 1).Value = "STT";
+        worksheet.Cell(headerRow, 2).Value = "Tên sản phẩm";
+        worksheet.Cell(headerRow, 3).Value = "Danh mục cha";
+        worksheet.Cell(headerRow, 4).Value = "Danh mục con";
+        worksheet.Cell(headerRow, 5).Value = "Thương hiệu";
+        worksheet.Cell(headerRow, 6).Value = "Giá bán";
+        worksheet.Cell(headerRow, 7).Value = "Trạng thái";
+        worksheet.Cell(headerRow, 8).Value = "Ngày tạo";
+
+        var headerRange = worksheet.Range($"A{headerRow}:H{headerRow}");
+
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.DarkGreen;
+        headerRange.Style.Font.FontColor = XLColor.White;
+        headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+        headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+        // ===== DỮ LIỆU =====
+
+        int row = headerRow + 1;
+        int stt = 1;
+
+        foreach (var item in products)
+        {
+            worksheet.Cell(row, 1).Value = stt++;
+
+            worksheet.Cell(row, 2).Value = item.Name ?? "N/A";
+
+            worksheet.Cell(row, 3).Value =
+                item.Category?.Parent?.Name ?? "N/A";
+
+            worksheet.Cell(row, 4).Value =
+                item.Category?.Name ?? "N/A";
+
+            worksheet.Cell(row, 5).Value = item.Brand ?? "N/A";
+
+            worksheet.Cell(row, 6).Value = item.Price;
+
+            worksheet.Cell(row, 7).Value =
+                item.IsActive ? "Hoạt động" : "Khóa";
+
+            worksheet.Cell(row, 8).Value =
+                item.CreateAt.ToString("dd/MM/yyyy");
+
+            // Border
+
+            var dataRange = worksheet.Range($"A{row}:H{row}");
+
+            dataRange.Style.Border.OutsideBorder =
+                XLBorderStyleValues.Thin;
+
+            dataRange.Style.Border.InsideBorder =
+                XLBorderStyleValues.Thin;
+
+            // Zebra Row
+
+            if (row % 2 == 0)
+            {
+                dataRange.Style.Fill.BackgroundColor =
+                    XLColor.LightGray;
+            }
+
+            row++;
+        }
+
+        // ===== FORMAT GIÁ =====
+
+        worksheet.Column(6).Style.NumberFormat.Format = "#,##0 VNĐ";
+
+        // ===== CĂN CHỈNH =====
+
+        worksheet.Columns().AdjustToContents();
+
+        worksheet.Column(1).Width = 8;
+        worksheet.Column(2).Width = 40;
+        worksheet.Column(3).Width = 20;
+        worksheet.Column(4).Width = 20;
+
+        // ===== FREEZE HEADER =====
+
+        worksheet.SheetView.FreezeRows(headerRow);
+
+        // ===== XUẤT FILE =====
+
+        using var stream = new MemoryStream();
+
+        workbook.SaveAs(stream);
+
+        return File(
+            stream.ToArray(),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            $"DanhSachSanPham_{DateTime.Now:ddMMyyyy}.xlsx"
+        );
     }
 }
